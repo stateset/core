@@ -1,0 +1,15 @@
+syntax = "proto3";
+package stateset.core.invoice;
+
+import "invoice/invoice.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/stateset/core/x/invoice/types";
+
+// GenesisState defines the invoice module's genesis state.
+message GenesisState {
+    repeated Invoice invoiceList = 1 [(gogoproto.nullable) = false];
+  uint64 invoiceCount = 2;
+  // this line is used by starport scaffolding # genesis/proto/state
+}

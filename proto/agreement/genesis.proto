@@ -1,0 +1,11 @@
+syntax = "proto3";
+package stateset.core.agreement;
+
+// this line is used by starport scaffolding # genesis/proto/import
+
+option go_package = "github.com/stateset/core/x/agreement/types";
+
+// GenesisState defines the agreement module's genesis state.
+message GenesisState {
+    // this line is used by starport scaffolding # genesis/proto/state
+}

@@ -87,11 +87,23 @@ import (
 	"github.com/tendermint/spm/openapiconsole"
 
 	"github.com/stateset/core/docs"
+	agreementmodule "github.com/stateset/core/x/agreement"
+	agreementmodulekeeper "github.com/stateset/core/x/agreement/keeper"
+	agreementmoduletypes "github.com/stateset/core/x/agreement/types"
+	invoicemodule "github.com/stateset/core/x/invoice"
+	invoicemodulekeeper "github.com/stateset/core/x/invoice/keeper"
+	invoicemoduletypes "github.com/stateset/core/x/invoice/types"
+	loanmodule "github.com/stateset/core/x/loan"
+	loanmodulekeeper "github.com/stateset/core/x/loan/keeper"
+	loanmoduletypes "github.com/stateset/core/x/loan/types"
+	purchaseordermodule "github.com/stateset/core/x/purchaseorder"
+	purchaseordermodulekeeper "github.com/stateset/core/x/purchaseorder/keeper"
+	purchaseordermoduletypes "github.com/stateset/core/x/purchaseorder/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 )
 
 const (
-	AccountAddressPrefix = "cosmos"
+	AccountAddressPrefix = "stateset"
 	Name                 = "core"
 )
 
@@ -137,18 +149,26 @@ var (
 		evidence.AppModuleBasic{},
 		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
+		loanmodule.AppModuleBasic{},
+		agreementmodule.AppModuleBasic{},
+		purchaseordermodule.AppModuleBasic{},
+		invoicemodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
 	// module account permissions
 	maccPerms = map[string][]string{
-		authtypes.FeeCollectorName:     nil,
-		distrtypes.ModuleName:          nil,
-		minttypes.ModuleName:           {authtypes.Minter},
-		stakingtypes.BondedPoolName:    {authtypes.Burner, authtypes.Staking},
-		stakingtypes.NotBondedPoolName: {authtypes.Burner, authtypes.Staking},
-		govtypes.ModuleName:            {authtypes.Burner},
-		ibctransfertypes.ModuleName:    {authtypes.Minter, authtypes.Burner},
+		authtypes.FeeCollectorName:          nil,
+		distrtypes.ModuleName:               nil,
+		minttypes.ModuleName:                {authtypes.Minter},
+		stakingtypes.BondedPoolName:         {authtypes.Burner, authtypes.Staking},
+		stakingtypes.NotBondedPoolName:      {authtypes.Burner, authtypes.Staking},
+		govtypes.ModuleName:                 {authtypes.Burner},
+		ibctransfertypes.ModuleName:         {authtypes.Minter, authtypes.Burner},
+		loanmoduletypes.ModuleName:          {authtypes.Minter, authtypes.Burner, authtypes.Staking},
+		agreementmoduletypes.ModuleName:     {authtypes.Minter, authtypes.Burner, authtypes.Staking},
+		purchaseordermoduletypes.ModuleName: {authtypes.Minter, authtypes.Burner, authtypes.Staking},
+		invoicemoduletypes.ModuleName:       {authtypes.Minter, authtypes.Burner, authtypes.Staking},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
 	}
 )
@@ -205,6 +225,13 @@ type App struct {
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
 	ScopedTransferKeeper capabilitykeeper.ScopedKeeper
 
+	LoanKeeper loanmodulekeeper.Keeper
+
+	AgreementKeeper agreementmodulekeeper.Keeper
+
+	PurchaseorderKeeper purchaseordermodulekeeper.Keeper
+
+	InvoiceKeeper invoicemodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// the module manager
@@ -238,6 +265,10 @@ func New(
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, ibchost.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey,
+		loanmoduletypes.StoreKey,
+		agreementmoduletypes.StoreKey,
+		purchaseordermoduletypes.StoreKey,
+		invoicemoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -336,6 +367,42 @@ func New(
 		&stakingKeeper, govRouter,
 	)
 
+	app.LoanKeeper = *loanmodulekeeper.NewKeeper(
+		appCodec,
+		keys[loanmoduletypes.StoreKey],
+		keys[loanmoduletypes.MemStoreKey],
+
+		app.BankKeeper,
+	)
+	loanModule := loanmodule.NewAppModule(appCodec, app.LoanKeeper)
+
+	app.AgreementKeeper = *agreementmodulekeeper.NewKeeper(
+		appCodec,
+		keys[agreementmoduletypes.StoreKey],
+		keys[agreementmoduletypes.MemStoreKey],
+
+		app.BankKeeper,
+	)
+	agreementModule := agreementmodule.NewAppModule(appCodec, app.AgreementKeeper)
+
+	app.PurchaseorderKeeper = *purchaseordermodulekeeper.NewKeeper(
+		appCodec,
+		keys[purchaseordermoduletypes.StoreKey],
+		keys[purchaseordermoduletypes.MemStoreKey],
+
+		app.BankKeeper,
+	)
+	purchaseorderModule := purchaseordermodule.NewAppModule(appCodec, app.PurchaseorderKeeper)
+
+	app.InvoiceKeeper = *invoicemodulekeeper.NewKeeper(
+		appCodec,
+		keys[invoicemoduletypes.StoreKey],
+		keys[invoicemoduletypes.MemStoreKey],
+
+		app.BankKeeper,
+	)
+	invoiceModule := invoicemodule.NewAppModule(appCodec, app.InvoiceKeeper)
+
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
 	// Create static IBC router, add transfer route, then set and seal it
@@ -374,6 +441,10 @@ func New(
 		ibc.NewAppModule(app.IBCKeeper),
 		params.NewAppModule(app.ParamsKeeper),
 		transferModule,
+		loanModule,
+		agreementModule,
+		purchaseorderModule,
+		invoiceModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -408,6 +479,10 @@ func New(
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
+		loanmoduletypes.ModuleName,
+		agreementmoduletypes.ModuleName,
+		purchaseordermoduletypes.ModuleName,
+		invoicemoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -595,6 +670,10 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibchost.ModuleName)
+	paramsKeeper.Subspace(loanmoduletypes.ModuleName)
+	paramsKeeper.Subspace(agreementmoduletypes.ModuleName)
+	paramsKeeper.Subspace(purchaseordermoduletypes.ModuleName)
+	paramsKeeper.Subspace(invoicemoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper

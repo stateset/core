@@ -1,0 +1,13 @@
+syntax = "proto3";
+package stateset.core.agreement;
+
+// this line is used by starport scaffolding # proto/tx/import
+
+option go_package = "github.com/stateset/core/x/agreement/types";
+
+// Msg defines the Msg service.
+service Msg {
+    // this line is used by starport scaffolding # proto/tx/rpc
+}
+
+// this line is used by starport scaffolding # proto/tx/message

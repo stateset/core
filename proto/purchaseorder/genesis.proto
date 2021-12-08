@@ -1,0 +1,15 @@
+syntax = "proto3";
+package stateset.core.purchaseorder;
+
+import "purchaseorder/purchaseorder.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/stateset/core/x/purchaseorder/types";
+
+// GenesisState defines the purchaseorder module's genesis state.
+message GenesisState {
+    repeated Purchaseorder purchaseorderList = 1 [(gogoproto.nullable) = false];
+  uint64 purchaseorderCount = 2;
+  // this line is used by starport scaffolding # genesis/proto/state
+}

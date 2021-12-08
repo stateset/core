@@ -1,0 +1,22 @@
+syntax = "proto3";
+package stateset.core.invoice;
+
+// this line is used by starport scaffolding # proto/tx/import
+
+option go_package = "github.com/stateset/core/x/invoice/types";
+
+// Msg defines the Msg service.
+service Msg {
+      rpc FactorInvoice(MsgFactorInvoice) returns (MsgFactorInvoiceResponse);
+// this line is used by starport scaffolding # proto/tx/rpc
+}
+
+message MsgFactorInvoice {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgFactorInvoiceResponse {
+}
+
+// this line is used by starport scaffolding # proto/tx/message

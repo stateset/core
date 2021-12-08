@@ -1,0 +1,15 @@
+syntax = "proto3";
+package stateset.core.invoice;
+
+option go_package = "github.com/stateset/core/x/invoice/types";
+
+import "gogoproto/gogo.proto";
+
+
+message Invoice {
+  uint64 id = 1;
+  string did = 2; 
+  string uri = 3; 
+  string amout = 4; 
+  
+}

@@ -1,0 +1,22 @@
+syntax = "proto3";
+package stateset.core.purchaseorder;
+
+// this line is used by starport scaffolding # proto/tx/import
+
+option go_package = "github.com/stateset/core/x/purchaseorder/types";
+
+// Msg defines the Msg service.
+service Msg {
+      rpc FinancePurchaseorder(MsgFinancePurchaseorder) returns (MsgFinancePurchaseorderResponse);
+// this line is used by starport scaffolding # proto/tx/rpc
+}
+
+message MsgFinancePurchaseorder {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgFinancePurchaseorderResponse {
+}
+
+// this line is used by starport scaffolding # proto/tx/message
