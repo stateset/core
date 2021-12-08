@@ -1,0 +1,14 @@
+syntax = "proto3";
+package stateset.core.agreement;
+
+option go_package = "github.com/stateset/core/x/agreement/types";
+
+import "gogoproto/gogo.proto";
+
+
+message SentAgreement {
+  uint64 id = 1;
+  string did = 2; 
+  string chain = 3; 
+  string creator = 4;
+}

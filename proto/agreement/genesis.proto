@@ -1,11 +1,21 @@
 syntax = "proto3";
 package stateset.core.agreement;
 
+import "agreement/sent_agreement.proto";
+import "agreement/timedout_agreement.proto";
+import "agreement/agreement.proto";
 // this line is used by starport scaffolding # genesis/proto/import
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/stateset/core/x/agreement/types";
 
 // GenesisState defines the agreement module's genesis state.
 message GenesisState {
-    // this line is used by starport scaffolding # genesis/proto/state
+    repeated SentAgreement sentAgreementList = 1 [(gogoproto.nullable) = false];
+  uint64 sentAgreementCount = 2;
+  repeated TimedoutAgreement timedoutAgreementList = 3 [(gogoproto.nullable) = false];
+  uint64 timedoutAgreementCount = 4;
+  repeated Agreement agreementList = 5 [(gogoproto.nullable) = false];
+  uint64 agreementCount = 6;
+  // this line is used by starport scaffolding # genesis/proto/state
 }

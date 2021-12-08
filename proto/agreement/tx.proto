@@ -1,13 +1,109 @@
 syntax = "proto3";
 package stateset.core.agreement;
 
+import "agreement/sent_agreement.proto";
+import "agreement/timedout_agreement.proto";
 // this line is used by starport scaffolding # proto/tx/import
 
 option go_package = "github.com/stateset/core/x/agreement/types";
 
 // Msg defines the Msg service.
 service Msg {
-    // this line is used by starport scaffolding # proto/tx/rpc
+      rpc ActivateAgreement(MsgActivateAgreement) returns (MsgActivateAgreementResponse);
+  rpc ExpireAgreement(MsgExpireAgreement) returns (MsgExpireAgreementResponse);
+  rpc RenewAgreement(MsgRenewAgreement) returns (MsgRenewAgreementResponse);
+  rpc TerminateAgreement(MsgTerminateAgreement) returns (MsgTerminateAgreementResponse);
+rpc CreateSentAgreement(MsgCreateSentAgreement) returns (MsgCreateSentAgreementResponse);
+  rpc UpdateSentAgreement(MsgUpdateSentAgreement) returns (MsgUpdateSentAgreementResponse);
+  rpc DeleteSentAgreement(MsgDeleteSentAgreement) returns (MsgDeleteSentAgreementResponse);
+rpc CreateTimedoutAgreement(MsgCreateTimedoutAgreement) returns (MsgCreateTimedoutAgreementResponse);
+  rpc UpdateTimedoutAgreement(MsgUpdateTimedoutAgreement) returns (MsgUpdateTimedoutAgreementResponse);
+  rpc DeleteTimedoutAgreement(MsgDeleteTimedoutAgreement) returns (MsgDeleteTimedoutAgreementResponse);
+// this line is used by starport scaffolding # proto/tx/rpc
 }
+
+message MsgActivateAgreement {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgActivateAgreementResponse {
+}
+
+message MsgExpireAgreement {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgExpireAgreementResponse {
+}
+
+message MsgRenewAgreement {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgRenewAgreementResponse {
+}
+
+message MsgTerminateAgreement {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgTerminateAgreementResponse {
+}
+
+message MsgCreateSentAgreement {
+  string creator = 1;
+  string did = 2;
+  string chain = 3;
+}
+
+message MsgCreateSentAgreementResponse {
+  uint64 id = 1;
+}
+
+message MsgUpdateSentAgreement {
+  string creator = 1;
+  uint64 id = 2;
+  string did = 3;
+  string chain = 4;
+}
+
+message MsgUpdateSentAgreementResponse {}
+
+message MsgDeleteSentAgreement {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgDeleteSentAgreementResponse {}
+
+message MsgCreateTimedoutAgreement {
+  string creator = 1;
+  string did = 2;
+  string chain = 3;
+}
+
+message MsgCreateTimedoutAgreementResponse {
+  uint64 id = 1;
+}
+
+message MsgUpdateTimedoutAgreement {
+  string creator = 1;
+  uint64 id = 2;
+  string did = 3;
+  string chain = 4;
+}
+
+message MsgUpdateTimedoutAgreementResponse {}
+
+message MsgDeleteTimedoutAgreement {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgDeleteTimedoutAgreementResponse {}
 
 // this line is used by starport scaffolding # proto/tx/message

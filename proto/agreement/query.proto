@@ -3,13 +3,98 @@ package stateset.core.agreement;
 
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
+import "agreement/sent_agreement.proto";
+import "agreement/timedout_agreement.proto";
+import "agreement/agreement.proto";
 // this line is used by starport scaffolding # 1
+import "gogoproto/gogo.proto";
 
 option go_package = "github.com/stateset/core/x/agreement/types";
 
 // Query defines the gRPC querier service.
 service Query {
-    // this line is used by starport scaffolding # 2
+    // Queries a sentAgreement by id.
+	rpc SentAgreement(QueryGetSentAgreementRequest) returns (QueryGetSentAgreementResponse) {
+		option (google.api.http).get = "/stateset/core/agreement/sentAgreement/{id}";
+	}
+
+	// Queries a list of sentAgreement items.
+	rpc SentAgreementAll(QueryAllSentAgreementRequest) returns (QueryAllSentAgreementResponse) {
+		option (google.api.http).get = "/stateset/core/agreement/sentAgreement";
+	}
+
+// Queries a timedoutAgreement by id.
+	rpc TimedoutAgreement(QueryGetTimedoutAgreementRequest) returns (QueryGetTimedoutAgreementResponse) {
+		option (google.api.http).get = "/stateset/core/agreement/timedoutAgreement/{id}";
+	}
+
+	// Queries a list of timedoutAgreement items.
+	rpc TimedoutAgreementAll(QueryAllTimedoutAgreementRequest) returns (QueryAllTimedoutAgreementResponse) {
+		option (google.api.http).get = "/stateset/core/agreement/timedoutAgreement";
+	}
+
+// Queries a agreement by id.
+	rpc Agreement(QueryGetAgreementRequest) returns (QueryGetAgreementResponse) {
+		option (google.api.http).get = "/stateset/core/agreement/agreement/{id}";
+	}
+
+	// Queries a list of agreement items.
+	rpc AgreementAll(QueryAllAgreementRequest) returns (QueryAllAgreementResponse) {
+		option (google.api.http).get = "/stateset/core/agreement/agreement";
+	}
+
+// this line is used by starport scaffolding # 2
+}
+
+message QueryGetSentAgreementRequest {
+	uint64 id = 1;
+}
+
+message QueryGetSentAgreementResponse {
+	SentAgreement SentAgreement = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllSentAgreementRequest {
+	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllSentAgreementResponse {
+	repeated SentAgreement SentAgreement = 1 [(gogoproto.nullable) = false];
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetTimedoutAgreementRequest {
+	uint64 id = 1;
+}
+
+message QueryGetTimedoutAgreementResponse {
+	TimedoutAgreement TimedoutAgreement = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllTimedoutAgreementRequest {
+	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllTimedoutAgreementResponse {
+	repeated TimedoutAgreement TimedoutAgreement = 1 [(gogoproto.nullable) = false];
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetAgreementRequest {
+	uint64 id = 1;
+}
+
+message QueryGetAgreementResponse {
+	Agreement Agreement = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllAgreementRequest {
+	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllAgreementResponse {
+	repeated Agreement Agreement = 1 [(gogoproto.nullable) = false];
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 
 // this line is used by starport scaffolding # 3

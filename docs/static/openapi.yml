@@ -12501,6 +12501,529 @@ paths:
                         }
       tags:
         - Query
+  /stateset/core/agreement/agreement:
+    get:
+      summary: Queries a list of agreement items.
+      operationId: StatesetCoreAgreementAgreementAll
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              Agreement:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uint64
+                    did:
+                      type: string
+                    uri:
+                      type: string
+                    amount:
+                      type: string
+                    state:
+                      type: string
+              pagination:
+                type: object
+                properties:
+                  nextKey:
+                    type: string
+                    format: byte
+                    title: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.countTotal
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  '/stateset/core/agreement/agreement/{id}':
+    get:
+      summary: Queries a agreement by id.
+      operationId: StatesetCoreAgreementAgreement
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              Agreement:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uint64
+                  did:
+                    type: string
+                  uri:
+                    type: string
+                  amount:
+                    type: string
+                  state:
+                    type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
+  /stateset/core/agreement/sentAgreement:
+    get:
+      summary: Queries a list of sentAgreement items.
+      operationId: StatesetCoreAgreementSentAgreementAll
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              SentAgreement:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uint64
+                    did:
+                      type: string
+                    chain:
+                      type: string
+                    creator:
+                      type: string
+              pagination:
+                type: object
+                properties:
+                  nextKey:
+                    type: string
+                    format: byte
+                    title: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.countTotal
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  '/stateset/core/agreement/sentAgreement/{id}':
+    get:
+      summary: Queries a sentAgreement by id.
+      operationId: StatesetCoreAgreementSentAgreement
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              SentAgreement:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uint64
+                  did:
+                    type: string
+                  chain:
+                    type: string
+                  creator:
+                    type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
+  /stateset/core/agreement/timedoutAgreement:
+    get:
+      summary: Queries a list of timedoutAgreement items.
+      operationId: StatesetCoreAgreementTimedoutAgreementAll
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              TimedoutAgreement:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uint64
+                    did:
+                      type: string
+                    chain:
+                      type: string
+                    creator:
+                      type: string
+              pagination:
+                type: object
+                properties:
+                  nextKey:
+                    type: string
+                    format: byte
+                    title: |-
+                      next_key is the key to be passed to PageRequest.key to
+                      query the next page most efficiently
+                  total:
+                    type: string
+                    format: uint64
+                    title: >-
+                      total is total number of results available if
+                      PageRequest.count_total
+
+                      was set, its value is undefined otherwise
+                description: >-
+                  PageResponse is to be embedded in gRPC response messages where
+                  the
+
+                  corresponding request message has used PageRequest.
+
+                   message SomeResponse {
+                           repeated Bar results = 1;
+                           PageResponse page = 2;
+                   }
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: pagination.key
+          description: |-
+            key is a value returned in PageResponse.next_key to begin
+            querying the next page most efficiently. Only one of offset or key
+            should be set.
+          in: query
+          required: false
+          type: string
+          format: byte
+        - name: pagination.offset
+          description: >-
+            offset is a numeric offset that can be used when key is unavailable.
+
+            It is less efficient than using key. Only one of offset or key
+            should
+
+            be set.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.limit
+          description: >-
+            limit is the total number of results to be returned in the result
+            page.
+
+            If left empty it will default to a value to be set by each app.
+          in: query
+          required: false
+          type: string
+          format: uint64
+        - name: pagination.countTotal
+          description: >-
+            count_total is set to true  to indicate that the result set should
+            include
+
+            a count of the total number of items available for pagination in
+            UIs.
+
+            count_total is only respected when offset is used. It is ignored
+            when key
+
+            is set.
+          in: query
+          required: false
+          type: boolean
+        - name: pagination.reverse
+          description: >-
+            reverse is set to true if results are to be returned in the
+            descending order.
+          in: query
+          required: false
+          type: boolean
+      tags:
+        - Query
+  '/stateset/core/agreement/timedoutAgreement/{id}':
+    get:
+      summary: Queries a timedoutAgreement by id.
+      operationId: StatesetCoreAgreementTimedoutAgreement
+      responses:
+        '200':
+          description: A successful response.
+          schema:
+            type: object
+            properties:
+              TimedoutAgreement:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uint64
+                  did:
+                    type: string
+                  chain:
+                    type: string
+                  creator:
+                    type: string
+        default:
+          description: An unexpected error response.
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+              message:
+                type: string
+              details:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    '@type':
+                      type: string
+                  additionalProperties: {}
+      parameters:
+        - name: id
+          in: path
+          required: true
+          type: string
+          format: uint64
+      tags:
+        - Query
   /stateset/core/invoice/invoice:
     get:
       summary: Queries a list of invoice items.
@@ -12523,7 +13046,7 @@ paths:
                       type: string
                     uri:
                       type: string
-                    amout:
+                    amount:
                       type: string
               pagination:
                 type: object
@@ -12646,7 +13169,7 @@ paths:
                     type: string
                   uri:
                     type: string
-                  amout:
+                  amount:
                     type: string
         default:
           description: An unexpected error response.
@@ -21046,6 +21569,247 @@ definitions:
       and
 
       freezing clients
+  stateset.core.agreement.Agreement:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uint64
+      did:
+        type: string
+      uri:
+        type: string
+      amount:
+        type: string
+      state:
+        type: string
+  stateset.core.agreement.MsgActivateAgreementResponse:
+    type: object
+  stateset.core.agreement.MsgCreateSentAgreementResponse:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uint64
+  stateset.core.agreement.MsgCreateTimedoutAgreementResponse:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uint64
+  stateset.core.agreement.MsgDeleteSentAgreementResponse:
+    type: object
+  stateset.core.agreement.MsgDeleteTimedoutAgreementResponse:
+    type: object
+  stateset.core.agreement.MsgExpireAgreementResponse:
+    type: object
+  stateset.core.agreement.MsgRenewAgreementResponse:
+    type: object
+  stateset.core.agreement.MsgTerminateAgreementResponse:
+    type: object
+  stateset.core.agreement.MsgUpdateSentAgreementResponse:
+    type: object
+  stateset.core.agreement.MsgUpdateTimedoutAgreementResponse:
+    type: object
+  stateset.core.agreement.QueryAllAgreementResponse:
+    type: object
+    properties:
+      Agreement:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uint64
+            did:
+              type: string
+            uri:
+              type: string
+            amount:
+              type: string
+            state:
+              type: string
+      pagination:
+        type: object
+        properties:
+          nextKey:
+            type: string
+            format: byte
+            title: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  stateset.core.agreement.QueryAllSentAgreementResponse:
+    type: object
+    properties:
+      SentAgreement:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uint64
+            did:
+              type: string
+            chain:
+              type: string
+            creator:
+              type: string
+      pagination:
+        type: object
+        properties:
+          nextKey:
+            type: string
+            format: byte
+            title: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  stateset.core.agreement.QueryAllTimedoutAgreementResponse:
+    type: object
+    properties:
+      TimedoutAgreement:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+              format: uint64
+            did:
+              type: string
+            chain:
+              type: string
+            creator:
+              type: string
+      pagination:
+        type: object
+        properties:
+          nextKey:
+            type: string
+            format: byte
+            title: |-
+              next_key is the key to be passed to PageRequest.key to
+              query the next page most efficiently
+          total:
+            type: string
+            format: uint64
+            title: >-
+              total is total number of results available if
+              PageRequest.count_total
+
+              was set, its value is undefined otherwise
+        description: |-
+          PageResponse is to be embedded in gRPC response messages where the
+          corresponding request message has used PageRequest.
+
+           message SomeResponse {
+                   repeated Bar results = 1;
+                   PageResponse page = 2;
+           }
+  stateset.core.agreement.QueryGetAgreementResponse:
+    type: object
+    properties:
+      Agreement:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uint64
+          did:
+            type: string
+          uri:
+            type: string
+          amount:
+            type: string
+          state:
+            type: string
+  stateset.core.agreement.QueryGetSentAgreementResponse:
+    type: object
+    properties:
+      SentAgreement:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uint64
+          did:
+            type: string
+          chain:
+            type: string
+          creator:
+            type: string
+  stateset.core.agreement.QueryGetTimedoutAgreementResponse:
+    type: object
+    properties:
+      TimedoutAgreement:
+        type: object
+        properties:
+          id:
+            type: string
+            format: uint64
+          did:
+            type: string
+          chain:
+            type: string
+          creator:
+            type: string
+  stateset.core.agreement.SentAgreement:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uint64
+      did:
+        type: string
+      chain:
+        type: string
+      creator:
+        type: string
+  stateset.core.agreement.TimedoutAgreement:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uint64
+      did:
+        type: string
+      chain:
+        type: string
+      creator:
+        type: string
   stateset.core.invoice.Invoice:
     type: object
     properties:
@@ -21056,7 +21820,7 @@ definitions:
         type: string
       uri:
         type: string
-      amout:
+      amount:
         type: string
   stateset.core.invoice.MsgCreateSentInvoiceResponse:
     type: object
@@ -21095,7 +21859,7 @@ definitions:
               type: string
             uri:
               type: string
-            amout:
+            amount:
               type: string
       pagination:
         type: object
@@ -21219,7 +21983,7 @@ definitions:
             type: string
           uri:
             type: string
-          amout:
+          amount:
             type: string
   stateset.core.invoice.QueryGetSentInvoiceResponse:
     type: object

@@ -2,7 +2,7 @@
 import * as Long from "long";
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
 export const protobufPackage = "stateset.core.invoice";
-const baseInvoice = { id: 0, did: "", uri: "", amout: "" };
+const baseInvoice = { id: 0, did: "", uri: "", amount: "" };
 export const Invoice = {
     encode(message, writer = Writer.create()) {
         if (message.id !== 0) {
@@ -14,8 +14,8 @@ export const Invoice = {
         if (message.uri !== "") {
             writer.uint32(26).string(message.uri);
         }
-        if (message.amout !== "") {
-            writer.uint32(34).string(message.amout);
+        if (message.amount !== "") {
+            writer.uint32(34).string(message.amount);
         }
         return writer;
     },
@@ -36,7 +36,7 @@ export const Invoice = {
                     message.uri = reader.string();
                     break;
                 case 4:
-                    message.amout = reader.string();
+                    message.amount = reader.string();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -65,11 +65,11 @@ export const Invoice = {
         else {
             message.uri = "";
         }
-        if (object.amout !== undefined && object.amout !== null) {
-            message.amout = String(object.amout);
+        if (object.amount !== undefined && object.amount !== null) {
+            message.amount = String(object.amount);
         }
         else {
-            message.amout = "";
+            message.amount = "";
         }
         return message;
     },
@@ -78,7 +78,7 @@ export const Invoice = {
         message.id !== undefined && (obj.id = message.id);
         message.did !== undefined && (obj.did = message.did);
         message.uri !== undefined && (obj.uri = message.uri);
-        message.amout !== undefined && (obj.amout = message.amout);
+        message.amount !== undefined && (obj.amount = message.amount);
         return obj;
     },
     fromPartial(object) {
@@ -101,11 +101,11 @@ export const Invoice = {
         else {
             message.uri = "";
         }
-        if (object.amout !== undefined && object.amout !== null) {
-            message.amout = object.amout;
+        if (object.amount !== undefined && object.amount !== null) {
+            message.amount = object.amount;
         }
         else {
-            message.amout = "";
+            message.amount = "";
         }
         return message;
     },

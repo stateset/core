@@ -4,7 +4,7 @@ export interface Invoice {
     id: number;
     did: string;
     uri: string;
-    amout: string;
+    amount: string;
 }
 export declare const Invoice: {
     encode(message: Invoice, writer?: Writer): Writer;

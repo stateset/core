@@ -3,7 +3,7 @@ export interface InvoiceInvoice {
     id?: string;
     did?: string;
     uri?: string;
-    amout?: string;
+    amount?: string;
 }
 export interface InvoiceMsgCreateSentInvoiceResponse {
     /** @format uint64 */

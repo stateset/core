@@ -29,6 +29,16 @@ func GetTxCmd() *cobra.Command {
 		RunE:                       client.ValidateCmd,
 	}
 
+	cmd.AddCommand(CmdActivateAgreement())
+	cmd.AddCommand(CmdExpireAgreement())
+	cmd.AddCommand(CmdRenewAgreement())
+	cmd.AddCommand(CmdTerminateAgreement())
+	cmd.AddCommand(CmdCreateSentAgreement())
+	cmd.AddCommand(CmdUpdateSentAgreement())
+	cmd.AddCommand(CmdDeleteSentAgreement())
+	cmd.AddCommand(CmdCreateTimedoutAgreement())
+	cmd.AddCommand(CmdUpdateTimedoutAgreement())
+	cmd.AddCommand(CmdDeleteTimedoutAgreement())
 	// this line is used by starport scaffolding # 1
 
 	return cmd

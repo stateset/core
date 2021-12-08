@@ -8,5 +8,6 @@ import (
 
 // x/agreement module sentinel errors
 var (
-	ErrSample = sdkerrors.Register(ModuleName, 1100, "sample error")
+	ErrWrongAgreementState = sdkerrors.Register(ModuleName, 1, "wrong agreement state")
+	ErrDeadline            = sdkerrors.Register(ModuleName, 2, "deadline")
 )
