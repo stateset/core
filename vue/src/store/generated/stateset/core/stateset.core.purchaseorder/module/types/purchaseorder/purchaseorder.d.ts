@@ -5,6 +5,7 @@ export interface Purchaseorder {
     did: string;
     uri: string;
     amount: string;
+    state: string;
 }
 export declare const Purchaseorder: {
     encode(message: Purchaseorder, writer?: Writer): Writer;

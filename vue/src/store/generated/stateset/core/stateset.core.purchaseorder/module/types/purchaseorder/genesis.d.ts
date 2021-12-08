@@ -1,11 +1,17 @@
 import { Writer, Reader } from "protobufjs/minimal";
 import { Purchaseorder } from "../purchaseorder/purchaseorder";
+import { SentPurchaseorder } from "../purchaseorder/sent_purchaseorder";
+import { TimedoutPurchaseorder } from "../purchaseorder/timedout_purchaseorder";
 export declare const protobufPackage = "stateset.core.purchaseorder";
 /** GenesisState defines the purchaseorder module's genesis state. */
 export interface GenesisState {
     purchaseorderList: Purchaseorder[];
-    /** this line is used by starport scaffolding # genesis/proto/state */
     purchaseorderCount: number;
+    sentPurchaseorderList: SentPurchaseorder[];
+    sentPurchaseorderCount: number;
+    timedoutPurchaseorderList: TimedoutPurchaseorder[];
+    /** this line is used by starport scaffolding # genesis/proto/state */
+    timedoutPurchaseorderCount: number;
 }
 export declare const GenesisState: {
     encode(message: GenesisState, writer?: Writer): Writer;

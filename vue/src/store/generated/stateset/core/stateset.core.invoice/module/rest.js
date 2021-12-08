@@ -165,5 +165,63 @@ export class Api extends HttpClient {
             format: "json",
             ...params,
         });
+        /**
+         * No description
+         *
+         * @tags Query
+         * @name QuerySentInvoiceAll
+         * @summary Queries a list of sentInvoice items.
+         * @request GET:/stateset/core/invoice/sentInvoice
+         */
+        this.querySentInvoiceAll = (query, params = {}) => this.request({
+            path: `/stateset/core/invoice/sentInvoice`,
+            method: "GET",
+            query: query,
+            format: "json",
+            ...params,
+        });
+        /**
+         * No description
+         *
+         * @tags Query
+         * @name QuerySentInvoice
+         * @summary Queries a sentInvoice by id.
+         * @request GET:/stateset/core/invoice/sentInvoice/{id}
+         */
+        this.querySentInvoice = (id, params = {}) => this.request({
+            path: `/stateset/core/invoice/sentInvoice/${id}`,
+            method: "GET",
+            format: "json",
+            ...params,
+        });
+        /**
+         * No description
+         *
+         * @tags Query
+         * @name QueryTimedoutInvoiceAll
+         * @summary Queries a list of timedoutInvoice items.
+         * @request GET:/stateset/core/invoice/timedoutInvoice
+         */
+        this.queryTimedoutInvoiceAll = (query, params = {}) => this.request({
+            path: `/stateset/core/invoice/timedoutInvoice`,
+            method: "GET",
+            query: query,
+            format: "json",
+            ...params,
+        });
+        /**
+         * No description
+         *
+         * @tags Query
+         * @name QueryTimedoutInvoice
+         * @summary Queries a timedoutInvoice by id.
+         * @request GET:/stateset/core/invoice/timedoutInvoice/{id}
+         */
+        this.queryTimedoutInvoice = (id, params = {}) => this.request({
+            path: `/stateset/core/invoice/timedoutInvoice/${id}`,
+            method: "GET",
+            format: "json",
+            ...params,
+        });
     }
 }

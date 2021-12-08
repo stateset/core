@@ -20,6 +20,24 @@ func TestGenesis(t *testing.T) {
 			},
 		},
 		InvoiceCount: 2,
+		SentInvoiceList: []types.SentInvoice{
+			{
+				Id: 0,
+			},
+			{
+				Id: 1,
+			},
+		},
+		SentInvoiceCount: 2,
+		TimedoutInvoiceList: []types.TimedoutInvoice{
+			{
+				Id: 0,
+			},
+			{
+				Id: 1,
+			},
+		},
+		TimedoutInvoiceCount: 2,
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
@@ -31,5 +49,11 @@ func TestGenesis(t *testing.T) {
 	require.Len(t, got.InvoiceList, len(genesisState.InvoiceList))
 	require.Subset(t, genesisState.InvoiceList, got.InvoiceList)
 	require.Equal(t, genesisState.InvoiceCount, got.InvoiceCount)
+	require.Len(t, got.SentInvoiceList, len(genesisState.SentInvoiceList))
+	require.Subset(t, genesisState.SentInvoiceList, got.SentInvoiceList)
+	require.Equal(t, genesisState.SentInvoiceCount, got.SentInvoiceCount)
+	require.Len(t, got.TimedoutInvoiceList, len(genesisState.TimedoutInvoiceList))
+	require.Subset(t, genesisState.TimedoutInvoiceList, got.TimedoutInvoiceList)
+	require.Equal(t, genesisState.TimedoutInvoiceCount, got.TimedoutInvoiceCount)
 	// this line is used by starport scaffolding # genesis/test/assert
 }

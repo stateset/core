@@ -25,3 +25,13 @@ const (
 	InvoiceKey      = "Invoice-value-"
 	InvoiceCountKey = "Invoice-count-"
 )
+
+const (
+	SentInvoiceKey      = "SentInvoice-value-"
+	SentInvoiceCountKey = "SentInvoice-count-"
+)
+
+const (
+	TimedoutInvoiceKey      = "TimedoutInvoice-value-"
+	TimedoutInvoiceCountKey = "TimedoutInvoice-count-"
+)

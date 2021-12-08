@@ -16,6 +16,20 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 
 	// Set purchaseorder count
 	k.SetPurchaseorderCount(ctx, genState.PurchaseorderCount)
+	// Set all the sentPurchaseorder
+	for _, elem := range genState.SentPurchaseorderList {
+		k.SetSentPurchaseorder(ctx, elem)
+	}
+
+	// Set sentPurchaseorder count
+	k.SetSentPurchaseorderCount(ctx, genState.SentPurchaseorderCount)
+	// Set all the timedoutPurchaseorder
+	for _, elem := range genState.TimedoutPurchaseorderList {
+		k.SetTimedoutPurchaseorder(ctx, elem)
+	}
+
+	// Set timedoutPurchaseorder count
+	k.SetTimedoutPurchaseorderCount(ctx, genState.TimedoutPurchaseorderCount)
 	// this line is used by starport scaffolding # genesis/module/init
 }
 
@@ -25,6 +39,10 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 
 	genesis.PurchaseorderList = k.GetAllPurchaseorder(ctx)
 	genesis.PurchaseorderCount = k.GetPurchaseorderCount(ctx)
+	genesis.SentPurchaseorderList = k.GetAllSentPurchaseorder(ctx)
+	genesis.SentPurchaseorderCount = k.GetSentPurchaseorderCount(ctx)
+	genesis.TimedoutPurchaseorderList = k.GetAllTimedoutPurchaseorder(ctx)
+	genesis.TimedoutPurchaseorderCount = k.GetTimedoutPurchaseorderCount(ctx)
 	// this line is used by starport scaffolding # genesis/module/export
 
 	return genesis

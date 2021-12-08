@@ -17,7 +17,25 @@ export interface InvoiceInvoice {
   amout?: string;
 }
 
+export interface InvoiceMsgCreateSentInvoiceResponse {
+  /** @format uint64 */
+  id?: string;
+}
+
+export interface InvoiceMsgCreateTimedoutInvoiceResponse {
+  /** @format uint64 */
+  id?: string;
+}
+
+export type InvoiceMsgDeleteSentInvoiceResponse = object;
+
+export type InvoiceMsgDeleteTimedoutInvoiceResponse = object;
+
 export type InvoiceMsgFactorInvoiceResponse = object;
+
+export type InvoiceMsgUpdateSentInvoiceResponse = object;
+
+export type InvoiceMsgUpdateTimedoutInvoiceResponse = object;
 
 export interface InvoiceQueryAllInvoiceResponse {
   Invoice?: InvoiceInvoice[];
@@ -34,8 +52,62 @@ export interface InvoiceQueryAllInvoiceResponse {
   pagination?: V1Beta1PageResponse;
 }
 
+export interface InvoiceQueryAllSentInvoiceResponse {
+  SentInvoice?: InvoiceSentInvoice[];
+
+  /**
+   * PageResponse is to be embedded in gRPC response messages where the
+   * corresponding request message has used PageRequest.
+   *
+   *  message SomeResponse {
+   *          repeated Bar results = 1;
+   *          PageResponse page = 2;
+   *  }
+   */
+  pagination?: V1Beta1PageResponse;
+}
+
+export interface InvoiceQueryAllTimedoutInvoiceResponse {
+  TimedoutInvoice?: InvoiceTimedoutInvoice[];
+
+  /**
+   * PageResponse is to be embedded in gRPC response messages where the
+   * corresponding request message has used PageRequest.
+   *
+   *  message SomeResponse {
+   *          repeated Bar results = 1;
+   *          PageResponse page = 2;
+   *  }
+   */
+  pagination?: V1Beta1PageResponse;
+}
+
 export interface InvoiceQueryGetInvoiceResponse {
   Invoice?: InvoiceInvoice;
+}
+
+export interface InvoiceQueryGetSentInvoiceResponse {
+  SentInvoice?: InvoiceSentInvoice;
+}
+
+export interface InvoiceQueryGetTimedoutInvoiceResponse {
+  TimedoutInvoice?: InvoiceTimedoutInvoice;
+}
+
+export interface InvoiceSentInvoice {
+  /** @format uint64 */
+  id?: string;
+  did?: string;
+  chain?: string;
+  creator?: string;
+}
+
+export interface InvoiceTimedoutInvoice {
+  /** @format uint64 */
+  id?: string;
+  did?: string;
+  chain?: string;
+  creator?: string;
 }
 
 export interface ProtobufAny {
@@ -341,6 +413,90 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   queryInvoice = (id: string, params: RequestParams = {}) =>
     this.request<InvoiceQueryGetInvoiceResponse, RpcStatus>({
       path: `/stateset/core/invoice/invoice/${id}`,
+      method: "GET",
+      format: "json",
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QuerySentInvoiceAll
+   * @summary Queries a list of sentInvoice items.
+   * @request GET:/stateset/core/invoice/sentInvoice
+   */
+  querySentInvoiceAll = (
+    query?: {
+      "pagination.key"?: string;
+      "pagination.offset"?: string;
+      "pagination.limit"?: string;
+      "pagination.countTotal"?: boolean;
+      "pagination.reverse"?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<InvoiceQueryAllSentInvoiceResponse, RpcStatus>({
+      path: `/stateset/core/invoice/sentInvoice`,
+      method: "GET",
+      query: query,
+      format: "json",
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QuerySentInvoice
+   * @summary Queries a sentInvoice by id.
+   * @request GET:/stateset/core/invoice/sentInvoice/{id}
+   */
+  querySentInvoice = (id: string, params: RequestParams = {}) =>
+    this.request<InvoiceQueryGetSentInvoiceResponse, RpcStatus>({
+      path: `/stateset/core/invoice/sentInvoice/${id}`,
+      method: "GET",
+      format: "json",
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QueryTimedoutInvoiceAll
+   * @summary Queries a list of timedoutInvoice items.
+   * @request GET:/stateset/core/invoice/timedoutInvoice
+   */
+  queryTimedoutInvoiceAll = (
+    query?: {
+      "pagination.key"?: string;
+      "pagination.offset"?: string;
+      "pagination.limit"?: string;
+      "pagination.countTotal"?: boolean;
+      "pagination.reverse"?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<InvoiceQueryAllTimedoutInvoiceResponse, RpcStatus>({
+      path: `/stateset/core/invoice/timedoutInvoice`,
+      method: "GET",
+      query: query,
+      format: "json",
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QueryTimedoutInvoice
+   * @summary Queries a timedoutInvoice by id.
+   * @request GET:/stateset/core/invoice/timedoutInvoice/{id}
+   */
+  queryTimedoutInvoice = (id: string, params: RequestParams = {}) =>
+    this.request<InvoiceQueryGetTimedoutInvoiceResponse, RpcStatus>({
+      path: `/stateset/core/invoice/timedoutInvoice/${id}`,
       method: "GET",
       format: "json",
       ...params,

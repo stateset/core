@@ -1,11 +1,17 @@
 import { Writer, Reader } from "protobufjs/minimal";
 import { Invoice } from "../invoice/invoice";
+import { SentInvoice } from "../invoice/sent_invoice";
+import { TimedoutInvoice } from "../invoice/timedout_invoice";
 export declare const protobufPackage = "stateset.core.invoice";
 /** GenesisState defines the invoice module's genesis state. */
 export interface GenesisState {
     invoiceList: Invoice[];
-    /** this line is used by starport scaffolding # genesis/proto/state */
     invoiceCount: number;
+    sentInvoiceList: SentInvoice[];
+    sentInvoiceCount: number;
+    timedoutInvoiceList: TimedoutInvoice[];
+    /** this line is used by starport scaffolding # genesis/proto/state */
+    timedoutInvoiceCount: number;
 }
 export declare const GenesisState: {
     encode(message: GenesisState, writer?: Writer): Writer;

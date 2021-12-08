@@ -2,17 +2,27 @@
 import * as Long from "long";
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
 import { Invoice } from "../invoice/invoice";
+import { SentInvoice } from "../invoice/sent_invoice";
+import { TimedoutInvoice } from "../invoice/timedout_invoice";
 
 export const protobufPackage = "stateset.core.invoice";
 
 /** GenesisState defines the invoice module's genesis state. */
 export interface GenesisState {
   invoiceList: Invoice[];
-  /** this line is used by starport scaffolding # genesis/proto/state */
   invoiceCount: number;
+  sentInvoiceList: SentInvoice[];
+  sentInvoiceCount: number;
+  timedoutInvoiceList: TimedoutInvoice[];
+  /** this line is used by starport scaffolding # genesis/proto/state */
+  timedoutInvoiceCount: number;
 }
 
-const baseGenesisState: object = { invoiceCount: 0 };
+const baseGenesisState: object = {
+  invoiceCount: 0,
+  sentInvoiceCount: 0,
+  timedoutInvoiceCount: 0,
+};
 
 export const GenesisState = {
   encode(message: GenesisState, writer: Writer = Writer.create()): Writer {
@@ -22,6 +32,18 @@ export const GenesisState = {
     if (message.invoiceCount !== 0) {
       writer.uint32(16).uint64(message.invoiceCount);
     }
+    for (const v of message.sentInvoiceList) {
+      SentInvoice.encode(v!, writer.uint32(26).fork()).ldelim();
+    }
+    if (message.sentInvoiceCount !== 0) {
+      writer.uint32(32).uint64(message.sentInvoiceCount);
+    }
+    for (const v of message.timedoutInvoiceList) {
+      TimedoutInvoice.encode(v!, writer.uint32(42).fork()).ldelim();
+    }
+    if (message.timedoutInvoiceCount !== 0) {
+      writer.uint32(48).uint64(message.timedoutInvoiceCount);
+    }
     return writer;
   },
 
@@ -30,6 +52,8 @@ export const GenesisState = {
     let end = length === undefined ? reader.len : reader.pos + length;
     const message = { ...baseGenesisState } as GenesisState;
     message.invoiceList = [];
+    message.sentInvoiceList = [];
+    message.timedoutInvoiceList = [];
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -38,6 +62,22 @@ export const GenesisState = {
           break;
         case 2:
           message.invoiceCount = longToNumber(reader.uint64() as Long);
+          break;
+        case 3:
+          message.sentInvoiceList.push(
+            SentInvoice.decode(reader, reader.uint32())
+          );
+          break;
+        case 4:
+          message.sentInvoiceCount = longToNumber(reader.uint64() as Long);
+          break;
+        case 5:
+          message.timedoutInvoiceList.push(
+            TimedoutInvoice.decode(reader, reader.uint32())
+          );
+          break;
+        case 6:
+          message.timedoutInvoiceCount = longToNumber(reader.uint64() as Long);
           break;
         default:
           reader.skipType(tag & 7);
@@ -50,6 +90,8 @@ export const GenesisState = {
   fromJSON(object: any): GenesisState {
     const message = { ...baseGenesisState } as GenesisState;
     message.invoiceList = [];
+    message.sentInvoiceList = [];
+    message.timedoutInvoiceList = [];
     if (object.invoiceList !== undefined && object.invoiceList !== null) {
       for (const e of object.invoiceList) {
         message.invoiceList.push(Invoice.fromJSON(e));
@@ -59,6 +101,38 @@ export const GenesisState = {
       message.invoiceCount = Number(object.invoiceCount);
     } else {
       message.invoiceCount = 0;
+    }
+    if (
+      object.sentInvoiceList !== undefined &&
+      object.sentInvoiceList !== null
+    ) {
+      for (const e of object.sentInvoiceList) {
+        message.sentInvoiceList.push(SentInvoice.fromJSON(e));
+      }
+    }
+    if (
+      object.sentInvoiceCount !== undefined &&
+      object.sentInvoiceCount !== null
+    ) {
+      message.sentInvoiceCount = Number(object.sentInvoiceCount);
+    } else {
+      message.sentInvoiceCount = 0;
+    }
+    if (
+      object.timedoutInvoiceList !== undefined &&
+      object.timedoutInvoiceList !== null
+    ) {
+      for (const e of object.timedoutInvoiceList) {
+        message.timedoutInvoiceList.push(TimedoutInvoice.fromJSON(e));
+      }
+    }
+    if (
+      object.timedoutInvoiceCount !== undefined &&
+      object.timedoutInvoiceCount !== null
+    ) {
+      message.timedoutInvoiceCount = Number(object.timedoutInvoiceCount);
+    } else {
+      message.timedoutInvoiceCount = 0;
     }
     return message;
   },
@@ -74,12 +148,32 @@ export const GenesisState = {
     }
     message.invoiceCount !== undefined &&
       (obj.invoiceCount = message.invoiceCount);
+    if (message.sentInvoiceList) {
+      obj.sentInvoiceList = message.sentInvoiceList.map((e) =>
+        e ? SentInvoice.toJSON(e) : undefined
+      );
+    } else {
+      obj.sentInvoiceList = [];
+    }
+    message.sentInvoiceCount !== undefined &&
+      (obj.sentInvoiceCount = message.sentInvoiceCount);
+    if (message.timedoutInvoiceList) {
+      obj.timedoutInvoiceList = message.timedoutInvoiceList.map((e) =>
+        e ? TimedoutInvoice.toJSON(e) : undefined
+      );
+    } else {
+      obj.timedoutInvoiceList = [];
+    }
+    message.timedoutInvoiceCount !== undefined &&
+      (obj.timedoutInvoiceCount = message.timedoutInvoiceCount);
     return obj;
   },
 
   fromPartial(object: DeepPartial<GenesisState>): GenesisState {
     const message = { ...baseGenesisState } as GenesisState;
     message.invoiceList = [];
+    message.sentInvoiceList = [];
+    message.timedoutInvoiceList = [];
     if (object.invoiceList !== undefined && object.invoiceList !== null) {
       for (const e of object.invoiceList) {
         message.invoiceList.push(Invoice.fromPartial(e));
@@ -89,6 +183,38 @@ export const GenesisState = {
       message.invoiceCount = object.invoiceCount;
     } else {
       message.invoiceCount = 0;
+    }
+    if (
+      object.sentInvoiceList !== undefined &&
+      object.sentInvoiceList !== null
+    ) {
+      for (const e of object.sentInvoiceList) {
+        message.sentInvoiceList.push(SentInvoice.fromPartial(e));
+      }
+    }
+    if (
+      object.sentInvoiceCount !== undefined &&
+      object.sentInvoiceCount !== null
+    ) {
+      message.sentInvoiceCount = object.sentInvoiceCount;
+    } else {
+      message.sentInvoiceCount = 0;
+    }
+    if (
+      object.timedoutInvoiceList !== undefined &&
+      object.timedoutInvoiceList !== null
+    ) {
+      for (const e of object.timedoutInvoiceList) {
+        message.timedoutInvoiceList.push(TimedoutInvoice.fromPartial(e));
+      }
+    }
+    if (
+      object.timedoutInvoiceCount !== undefined &&
+      object.timedoutInvoiceCount !== null
+    ) {
+      message.timedoutInvoiceCount = object.timedoutInvoiceCount;
+    } else {
+      message.timedoutInvoiceCount = 0;
     }
     return message;
   },

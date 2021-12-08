@@ -165,5 +165,63 @@ export class Api extends HttpClient {
             format: "json",
             ...params,
         });
+        /**
+         * No description
+         *
+         * @tags Query
+         * @name QuerySentPurchaseorderAll
+         * @summary Queries a list of sentPurchaseorder items.
+         * @request GET:/stateset/core/purchaseorder/sentPurchaseorder
+         */
+        this.querySentPurchaseorderAll = (query, params = {}) => this.request({
+            path: `/stateset/core/purchaseorder/sentPurchaseorder`,
+            method: "GET",
+            query: query,
+            format: "json",
+            ...params,
+        });
+        /**
+         * No description
+         *
+         * @tags Query
+         * @name QuerySentPurchaseorder
+         * @summary Queries a sentPurchaseorder by id.
+         * @request GET:/stateset/core/purchaseorder/sentPurchaseorder/{id}
+         */
+        this.querySentPurchaseorder = (id, params = {}) => this.request({
+            path: `/stateset/core/purchaseorder/sentPurchaseorder/${id}`,
+            method: "GET",
+            format: "json",
+            ...params,
+        });
+        /**
+         * No description
+         *
+         * @tags Query
+         * @name QueryTimedoutPurchaseorderAll
+         * @summary Queries a list of timedoutPurchaseorder items.
+         * @request GET:/stateset/core/purchaseorder/timedoutPurchaseorder
+         */
+        this.queryTimedoutPurchaseorderAll = (query, params = {}) => this.request({
+            path: `/stateset/core/purchaseorder/timedoutPurchaseorder`,
+            method: "GET",
+            query: query,
+            format: "json",
+            ...params,
+        });
+        /**
+         * No description
+         *
+         * @tags Query
+         * @name QueryTimedoutPurchaseorder
+         * @summary Queries a timedoutPurchaseorder by id.
+         * @request GET:/stateset/core/purchaseorder/timedoutPurchaseorder/{id}
+         */
+        this.queryTimedoutPurchaseorder = (id, params = {}) => this.request({
+            path: `/stateset/core/purchaseorder/timedoutPurchaseorder/${id}`,
+            method: "GET",
+            format: "json",
+            ...params,
+        });
     }
 }

@@ -6,6 +6,50 @@ export interface MsgFactorInvoice {
 }
 export interface MsgFactorInvoiceResponse {
 }
+export interface MsgCreateSentInvoice {
+    creator: string;
+    did: string;
+    chain: string;
+}
+export interface MsgCreateSentInvoiceResponse {
+    id: number;
+}
+export interface MsgUpdateSentInvoice {
+    creator: string;
+    id: number;
+    did: string;
+    chain: string;
+}
+export interface MsgUpdateSentInvoiceResponse {
+}
+export interface MsgDeleteSentInvoice {
+    creator: string;
+    id: number;
+}
+export interface MsgDeleteSentInvoiceResponse {
+}
+export interface MsgCreateTimedoutInvoice {
+    creator: string;
+    did: string;
+    chain: string;
+}
+export interface MsgCreateTimedoutInvoiceResponse {
+    id: number;
+}
+export interface MsgUpdateTimedoutInvoice {
+    creator: string;
+    id: number;
+    did: string;
+    chain: string;
+}
+export interface MsgUpdateTimedoutInvoiceResponse {
+}
+export interface MsgDeleteTimedoutInvoice {
+    creator: string;
+    id: number;
+}
+export interface MsgDeleteTimedoutInvoiceResponse {
+}
 export declare const MsgFactorInvoice: {
     encode(message: MsgFactorInvoice, writer?: Writer): Writer;
     decode(input: Reader | Uint8Array, length?: number): MsgFactorInvoice;
@@ -20,15 +64,111 @@ export declare const MsgFactorInvoiceResponse: {
     toJSON(_: MsgFactorInvoiceResponse): unknown;
     fromPartial(_: DeepPartial<MsgFactorInvoiceResponse>): MsgFactorInvoiceResponse;
 };
+export declare const MsgCreateSentInvoice: {
+    encode(message: MsgCreateSentInvoice, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgCreateSentInvoice;
+    fromJSON(object: any): MsgCreateSentInvoice;
+    toJSON(message: MsgCreateSentInvoice): unknown;
+    fromPartial(object: DeepPartial<MsgCreateSentInvoice>): MsgCreateSentInvoice;
+};
+export declare const MsgCreateSentInvoiceResponse: {
+    encode(message: MsgCreateSentInvoiceResponse, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgCreateSentInvoiceResponse;
+    fromJSON(object: any): MsgCreateSentInvoiceResponse;
+    toJSON(message: MsgCreateSentInvoiceResponse): unknown;
+    fromPartial(object: DeepPartial<MsgCreateSentInvoiceResponse>): MsgCreateSentInvoiceResponse;
+};
+export declare const MsgUpdateSentInvoice: {
+    encode(message: MsgUpdateSentInvoice, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgUpdateSentInvoice;
+    fromJSON(object: any): MsgUpdateSentInvoice;
+    toJSON(message: MsgUpdateSentInvoice): unknown;
+    fromPartial(object: DeepPartial<MsgUpdateSentInvoice>): MsgUpdateSentInvoice;
+};
+export declare const MsgUpdateSentInvoiceResponse: {
+    encode(_: MsgUpdateSentInvoiceResponse, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgUpdateSentInvoiceResponse;
+    fromJSON(_: any): MsgUpdateSentInvoiceResponse;
+    toJSON(_: MsgUpdateSentInvoiceResponse): unknown;
+    fromPartial(_: DeepPartial<MsgUpdateSentInvoiceResponse>): MsgUpdateSentInvoiceResponse;
+};
+export declare const MsgDeleteSentInvoice: {
+    encode(message: MsgDeleteSentInvoice, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgDeleteSentInvoice;
+    fromJSON(object: any): MsgDeleteSentInvoice;
+    toJSON(message: MsgDeleteSentInvoice): unknown;
+    fromPartial(object: DeepPartial<MsgDeleteSentInvoice>): MsgDeleteSentInvoice;
+};
+export declare const MsgDeleteSentInvoiceResponse: {
+    encode(_: MsgDeleteSentInvoiceResponse, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgDeleteSentInvoiceResponse;
+    fromJSON(_: any): MsgDeleteSentInvoiceResponse;
+    toJSON(_: MsgDeleteSentInvoiceResponse): unknown;
+    fromPartial(_: DeepPartial<MsgDeleteSentInvoiceResponse>): MsgDeleteSentInvoiceResponse;
+};
+export declare const MsgCreateTimedoutInvoice: {
+    encode(message: MsgCreateTimedoutInvoice, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgCreateTimedoutInvoice;
+    fromJSON(object: any): MsgCreateTimedoutInvoice;
+    toJSON(message: MsgCreateTimedoutInvoice): unknown;
+    fromPartial(object: DeepPartial<MsgCreateTimedoutInvoice>): MsgCreateTimedoutInvoice;
+};
+export declare const MsgCreateTimedoutInvoiceResponse: {
+    encode(message: MsgCreateTimedoutInvoiceResponse, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgCreateTimedoutInvoiceResponse;
+    fromJSON(object: any): MsgCreateTimedoutInvoiceResponse;
+    toJSON(message: MsgCreateTimedoutInvoiceResponse): unknown;
+    fromPartial(object: DeepPartial<MsgCreateTimedoutInvoiceResponse>): MsgCreateTimedoutInvoiceResponse;
+};
+export declare const MsgUpdateTimedoutInvoice: {
+    encode(message: MsgUpdateTimedoutInvoice, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgUpdateTimedoutInvoice;
+    fromJSON(object: any): MsgUpdateTimedoutInvoice;
+    toJSON(message: MsgUpdateTimedoutInvoice): unknown;
+    fromPartial(object: DeepPartial<MsgUpdateTimedoutInvoice>): MsgUpdateTimedoutInvoice;
+};
+export declare const MsgUpdateTimedoutInvoiceResponse: {
+    encode(_: MsgUpdateTimedoutInvoiceResponse, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgUpdateTimedoutInvoiceResponse;
+    fromJSON(_: any): MsgUpdateTimedoutInvoiceResponse;
+    toJSON(_: MsgUpdateTimedoutInvoiceResponse): unknown;
+    fromPartial(_: DeepPartial<MsgUpdateTimedoutInvoiceResponse>): MsgUpdateTimedoutInvoiceResponse;
+};
+export declare const MsgDeleteTimedoutInvoice: {
+    encode(message: MsgDeleteTimedoutInvoice, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgDeleteTimedoutInvoice;
+    fromJSON(object: any): MsgDeleteTimedoutInvoice;
+    toJSON(message: MsgDeleteTimedoutInvoice): unknown;
+    fromPartial(object: DeepPartial<MsgDeleteTimedoutInvoice>): MsgDeleteTimedoutInvoice;
+};
+export declare const MsgDeleteTimedoutInvoiceResponse: {
+    encode(_: MsgDeleteTimedoutInvoiceResponse, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgDeleteTimedoutInvoiceResponse;
+    fromJSON(_: any): MsgDeleteTimedoutInvoiceResponse;
+    toJSON(_: MsgDeleteTimedoutInvoiceResponse): unknown;
+    fromPartial(_: DeepPartial<MsgDeleteTimedoutInvoiceResponse>): MsgDeleteTimedoutInvoiceResponse;
+};
 /** Msg defines the Msg service. */
 export interface Msg {
-    /** this line is used by starport scaffolding # proto/tx/rpc */
     FactorInvoice(request: MsgFactorInvoice): Promise<MsgFactorInvoiceResponse>;
+    CreateSentInvoice(request: MsgCreateSentInvoice): Promise<MsgCreateSentInvoiceResponse>;
+    UpdateSentInvoice(request: MsgUpdateSentInvoice): Promise<MsgUpdateSentInvoiceResponse>;
+    DeleteSentInvoice(request: MsgDeleteSentInvoice): Promise<MsgDeleteSentInvoiceResponse>;
+    CreateTimedoutInvoice(request: MsgCreateTimedoutInvoice): Promise<MsgCreateTimedoutInvoiceResponse>;
+    UpdateTimedoutInvoice(request: MsgUpdateTimedoutInvoice): Promise<MsgUpdateTimedoutInvoiceResponse>;
+    /** this line is used by starport scaffolding # proto/tx/rpc */
+    DeleteTimedoutInvoice(request: MsgDeleteTimedoutInvoice): Promise<MsgDeleteTimedoutInvoiceResponse>;
 }
 export declare class MsgClientImpl implements Msg {
     private readonly rpc;
     constructor(rpc: Rpc);
     FactorInvoice(request: MsgFactorInvoice): Promise<MsgFactorInvoiceResponse>;
+    CreateSentInvoice(request: MsgCreateSentInvoice): Promise<MsgCreateSentInvoiceResponse>;
+    UpdateSentInvoice(request: MsgUpdateSentInvoice): Promise<MsgUpdateSentInvoiceResponse>;
+    DeleteSentInvoice(request: MsgDeleteSentInvoice): Promise<MsgDeleteSentInvoiceResponse>;
+    CreateTimedoutInvoice(request: MsgCreateTimedoutInvoice): Promise<MsgCreateTimedoutInvoiceResponse>;
+    UpdateTimedoutInvoice(request: MsgUpdateTimedoutInvoice): Promise<MsgUpdateTimedoutInvoiceResponse>;
+    DeleteTimedoutInvoice(request: MsgDeleteTimedoutInvoice): Promise<MsgDeleteTimedoutInvoiceResponse>;
 }
 interface Rpc {
     request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;

@@ -25,3 +25,13 @@ const (
 	PurchaseorderKey      = "Purchaseorder-value-"
 	PurchaseorderCountKey = "Purchaseorder-count-"
 )
+
+const (
+	SentPurchaseorderKey      = "SentPurchaseorder-value-"
+	SentPurchaseorderCountKey = "SentPurchaseorder-count-"
+)
+
+const (
+	TimedoutPurchaseorderKey      = "TimedoutPurchaseorder-value-"
+	TimedoutPurchaseorderCountKey = "TimedoutPurchaseorder-count-"
+)

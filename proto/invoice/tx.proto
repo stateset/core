@@ -1,6 +1,8 @@
 syntax = "proto3";
 package stateset.core.invoice;
 
+import "invoice/sent_invoice.proto";
+import "invoice/timedout_invoice.proto";
 // this line is used by starport scaffolding # proto/tx/import
 
 option go_package = "github.com/stateset/core/x/invoice/types";
@@ -8,6 +10,12 @@ option go_package = "github.com/stateset/core/x/invoice/types";
 // Msg defines the Msg service.
 service Msg {
       rpc FactorInvoice(MsgFactorInvoice) returns (MsgFactorInvoiceResponse);
+rpc CreateSentInvoice(MsgCreateSentInvoice) returns (MsgCreateSentInvoiceResponse);
+  rpc UpdateSentInvoice(MsgUpdateSentInvoice) returns (MsgUpdateSentInvoiceResponse);
+  rpc DeleteSentInvoice(MsgDeleteSentInvoice) returns (MsgDeleteSentInvoiceResponse);
+rpc CreateTimedoutInvoice(MsgCreateTimedoutInvoice) returns (MsgCreateTimedoutInvoiceResponse);
+  rpc UpdateTimedoutInvoice(MsgUpdateTimedoutInvoice) returns (MsgUpdateTimedoutInvoiceResponse);
+  rpc DeleteTimedoutInvoice(MsgDeleteTimedoutInvoice) returns (MsgDeleteTimedoutInvoiceResponse);
 // this line is used by starport scaffolding # proto/tx/rpc
 }
 
@@ -18,5 +26,57 @@ message MsgFactorInvoice {
 
 message MsgFactorInvoiceResponse {
 }
+
+message MsgCreateSentInvoice {
+  string creator = 1;
+  string did = 2;
+  string chain = 3;
+}
+
+message MsgCreateSentInvoiceResponse {
+  uint64 id = 1;
+}
+
+message MsgUpdateSentInvoice {
+  string creator = 1;
+  uint64 id = 2;
+  string did = 3;
+  string chain = 4;
+}
+
+message MsgUpdateSentInvoiceResponse {}
+
+message MsgDeleteSentInvoice {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgDeleteSentInvoiceResponse {}
+
+message MsgCreateTimedoutInvoice {
+  string creator = 1;
+  string did = 2;
+  string chain = 3;
+}
+
+message MsgCreateTimedoutInvoiceResponse {
+  uint64 id = 1;
+}
+
+message MsgUpdateTimedoutInvoice {
+  string creator = 1;
+  uint64 id = 2;
+  string did = 3;
+  string chain = 4;
+}
+
+message MsgUpdateTimedoutInvoiceResponse {}
+
+message MsgDeleteTimedoutInvoice {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgDeleteTimedoutInvoiceResponse {}
 
 // this line is used by starport scaffolding # proto/tx/message

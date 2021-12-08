@@ -4,6 +4,8 @@ package stateset.core.purchaseorder;
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "purchaseorder/purchaseorder.proto";
+import "purchaseorder/sent_purchaseorder.proto";
+import "purchaseorder/timedout_purchaseorder.proto";
 // this line is used by starport scaffolding # 1
 import "gogoproto/gogo.proto";
 
@@ -19,6 +21,26 @@ service Query {
 	// Queries a list of purchaseorder items.
 	rpc PurchaseorderAll(QueryAllPurchaseorderRequest) returns (QueryAllPurchaseorderResponse) {
 		option (google.api.http).get = "/stateset/core/purchaseorder/purchaseorder";
+	}
+
+// Queries a sentPurchaseorder by id.
+	rpc SentPurchaseorder(QueryGetSentPurchaseorderRequest) returns (QueryGetSentPurchaseorderResponse) {
+		option (google.api.http).get = "/stateset/core/purchaseorder/sentPurchaseorder/{id}";
+	}
+
+	// Queries a list of sentPurchaseorder items.
+	rpc SentPurchaseorderAll(QueryAllSentPurchaseorderRequest) returns (QueryAllSentPurchaseorderResponse) {
+		option (google.api.http).get = "/stateset/core/purchaseorder/sentPurchaseorder";
+	}
+
+// Queries a timedoutPurchaseorder by id.
+	rpc TimedoutPurchaseorder(QueryGetTimedoutPurchaseorderRequest) returns (QueryGetTimedoutPurchaseorderResponse) {
+		option (google.api.http).get = "/stateset/core/purchaseorder/timedoutPurchaseorder/{id}";
+	}
+
+	// Queries a list of timedoutPurchaseorder items.
+	rpc TimedoutPurchaseorderAll(QueryAllTimedoutPurchaseorderRequest) returns (QueryAllTimedoutPurchaseorderResponse) {
+		option (google.api.http).get = "/stateset/core/purchaseorder/timedoutPurchaseorder";
 	}
 
 // this line is used by starport scaffolding # 2
@@ -38,6 +60,40 @@ message QueryAllPurchaseorderRequest {
 
 message QueryAllPurchaseorderResponse {
 	repeated Purchaseorder Purchaseorder = 1 [(gogoproto.nullable) = false];
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetSentPurchaseorderRequest {
+	uint64 id = 1;
+}
+
+message QueryGetSentPurchaseorderResponse {
+	SentPurchaseorder SentPurchaseorder = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllSentPurchaseorderRequest {
+	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllSentPurchaseorderResponse {
+	repeated SentPurchaseorder SentPurchaseorder = 1 [(gogoproto.nullable) = false];
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetTimedoutPurchaseorderRequest {
+	uint64 id = 1;
+}
+
+message QueryGetTimedoutPurchaseorderResponse {
+	TimedoutPurchaseorder TimedoutPurchaseorder = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllTimedoutPurchaseorderRequest {
+	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllTimedoutPurchaseorderResponse {
+	repeated TimedoutPurchaseorder TimedoutPurchaseorder = 1 [(gogoproto.nullable) = false];
 	cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 

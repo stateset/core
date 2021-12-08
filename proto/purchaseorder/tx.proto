@@ -1,14 +1,33 @@
 syntax = "proto3";
 package stateset.core.purchaseorder;
 
+import "purchaseorder/sent_purchaseorder.proto";
+import "purchaseorder/timedout_purchaseorder.proto";
 // this line is used by starport scaffolding # proto/tx/import
 
 option go_package = "github.com/stateset/core/x/purchaseorder/types";
 
 // Msg defines the Msg service.
 service Msg {
-      rpc FinancePurchaseorder(MsgFinancePurchaseorder) returns (MsgFinancePurchaseorderResponse);
-// this line is used by starport scaffolding # proto/tx/rpc
+  rpc FinancePurchaseorder(MsgFinancePurchaseorder)
+      returns (MsgFinancePurchaseorderResponse);
+  rpc CancelPurchaseorder(MsgCancelPurchaseorder)
+      returns (MsgCancelPurchaseorderResponse);
+  rpc CompletePurchaseorder(MsgCompletePurchaseorder)
+      returns (MsgCompletePurchaseorderResponse);
+  rpc CreateSentPurchaseorder(MsgCreateSentPurchaseorder)
+      returns (MsgCreateSentPurchaseorderResponse);
+  rpc UpdateSentPurchaseorder(MsgUpdateSentPurchaseorder)
+      returns (MsgUpdateSentPurchaseorderResponse);
+  rpc DeleteSentPurchaseorder(MsgDeleteSentPurchaseorder)
+      returns (MsgDeleteSentPurchaseorderResponse);
+  rpc CreateTimedoutPurchaseorder(MsgCreateTimedoutPurchaseorder)
+      returns (MsgCreateTimedoutPurchaseorderResponse);
+  rpc UpdateTimedoutPurchaseorder(MsgUpdateTimedoutPurchaseorder)
+      returns (MsgUpdateTimedoutPurchaseorderResponse);
+  rpc DeleteTimedoutPurchaseorder(MsgDeleteTimedoutPurchaseorder)
+      returns (MsgDeleteTimedoutPurchaseorderResponse);
+  // this line is used by starport scaffolding # proto/tx/rpc
 }
 
 message MsgFinancePurchaseorder {
@@ -16,7 +35,68 @@ message MsgFinancePurchaseorder {
   uint64 id = 2;
 }
 
-message MsgFinancePurchaseorderResponse {
+message MsgFinancePurchaseorderResponse {}
+
+message MsgCancelPurchaseorder {
+  string creator = 1;
+  uint64 id = 2;
 }
+
+message MsgCancelPurchaseorderResponse {}
+
+message MsgCompletePurchaseorder {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgCompletePurchaseorderResponse {}
+
+message MsgCreateSentPurchaseorder {
+  string creator = 1;
+  string did = 2;
+  string chain = 3;
+}
+
+message MsgCreateSentPurchaseorderResponse { uint64 id = 1; }
+
+message MsgUpdateSentPurchaseorder {
+  string creator = 1;
+  uint64 id = 2;
+  string did = 3;
+  string chain = 4;
+}
+
+message MsgUpdateSentPurchaseorderResponse {}
+
+message MsgDeleteSentPurchaseorder {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgDeleteSentPurchaseorderResponse {}
+
+message MsgCreateTimedoutPurchaseorder {
+  string creator = 1;
+  string did = 2;
+  string chain = 3;
+}
+
+message MsgCreateTimedoutPurchaseorderResponse { uint64 id = 1; }
+
+message MsgUpdateTimedoutPurchaseorder {
+  string creator = 1;
+  uint64 id = 2;
+  string did = 3;
+  string chain = 4;
+}
+
+message MsgUpdateTimedoutPurchaseorderResponse {}
+
+message MsgDeleteTimedoutPurchaseorder {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgDeleteTimedoutPurchaseorderResponse {}
 
 // this line is used by starport scaffolding # proto/tx/message

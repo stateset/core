@@ -2,6 +2,8 @@ syntax = "proto3";
 package stateset.core.invoice;
 
 import "invoice/invoice.proto";
+import "invoice/sent_invoice.proto";
+import "invoice/timedout_invoice.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 import "gogoproto/gogo.proto";
 
@@ -11,5 +13,9 @@ option go_package = "github.com/stateset/core/x/invoice/types";
 message GenesisState {
     repeated Invoice invoiceList = 1 [(gogoproto.nullable) = false];
   uint64 invoiceCount = 2;
+  repeated SentInvoice sentInvoiceList = 3 [(gogoproto.nullable) = false];
+  uint64 sentInvoiceCount = 4;
+  repeated TimedoutInvoice timedoutInvoiceList = 5 [(gogoproto.nullable) = false];
+  uint64 timedoutInvoiceCount = 6;
   // this line is used by starport scaffolding # genesis/proto/state
 }

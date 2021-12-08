@@ -9,12 +9,28 @@ import (
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgFactorInvoice{}, "invoice/FactorInvoice", nil)
+	cdc.RegisterConcrete(&MsgCreateSentInvoice{}, "invoice/CreateSentInvoice", nil)
+	cdc.RegisterConcrete(&MsgUpdateSentInvoice{}, "invoice/UpdateSentInvoice", nil)
+	cdc.RegisterConcrete(&MsgDeleteSentInvoice{}, "invoice/DeleteSentInvoice", nil)
+	cdc.RegisterConcrete(&MsgCreateTimedoutInvoice{}, "invoice/CreateTimedoutInvoice", nil)
+	cdc.RegisterConcrete(&MsgUpdateTimedoutInvoice{}, "invoice/UpdateTimedoutInvoice", nil)
+	cdc.RegisterConcrete(&MsgDeleteTimedoutInvoice{}, "invoice/DeleteTimedoutInvoice", nil)
 	// this line is used by starport scaffolding # 2
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgFactorInvoice{},
+	)
+	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgCreateSentInvoice{},
+		&MsgUpdateSentInvoice{},
+		&MsgDeleteSentInvoice{},
+	)
+	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgCreateTimedoutInvoice{},
+		&MsgUpdateTimedoutInvoice{},
+		&MsgDeleteTimedoutInvoice{},
 	)
 	// this line is used by starport scaffolding # 3
 

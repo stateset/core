@@ -30,6 +30,24 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 				},
 				InvoiceCount: 2,
+				SentInvoiceList: []types.SentInvoice{
+					{
+						Id: 0,
+					},
+					{
+						Id: 1,
+					},
+				},
+				SentInvoiceCount: 2,
+				TimedoutInvoiceList: []types.TimedoutInvoice{
+					{
+						Id: 0,
+					},
+					{
+						Id: 1,
+					},
+				},
+				TimedoutInvoiceCount: 2,
 				// this line is used by starport scaffolding # types/genesis/validField
 			},
 			valid: true,
@@ -57,6 +75,58 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 				},
 				InvoiceCount: 0,
+			},
+			valid: false,
+		},
+		{
+			desc: "duplicated sentInvoice",
+			genState: &types.GenesisState{
+				SentInvoiceList: []types.SentInvoice{
+					{
+						Id: 0,
+					},
+					{
+						Id: 0,
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "invalid sentInvoice count",
+			genState: &types.GenesisState{
+				SentInvoiceList: []types.SentInvoice{
+					{
+						Id: 1,
+					},
+				},
+				SentInvoiceCount: 0,
+			},
+			valid: false,
+		},
+		{
+			desc: "duplicated timedoutInvoice",
+			genState: &types.GenesisState{
+				TimedoutInvoiceList: []types.TimedoutInvoice{
+					{
+						Id: 0,
+					},
+					{
+						Id: 0,
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "invalid timedoutInvoice count",
+			genState: &types.GenesisState{
+				TimedoutInvoiceList: []types.TimedoutInvoice{
+					{
+						Id: 1,
+					},
+				},
+				TimedoutInvoiceCount: 0,
 			},
 			valid: false,
 		},

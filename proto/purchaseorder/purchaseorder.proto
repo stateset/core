@@ -10,6 +10,7 @@ message Purchaseorder {
   uint64 id = 1;
   string did = 2; 
   string uri = 3; 
-  string amount = 4; 
+  string amount = 4;
+  string state = 5;
   
 }

@@ -16,6 +16,20 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 
 	// Set invoice count
 	k.SetInvoiceCount(ctx, genState.InvoiceCount)
+	// Set all the sentInvoice
+	for _, elem := range genState.SentInvoiceList {
+		k.SetSentInvoice(ctx, elem)
+	}
+
+	// Set sentInvoice count
+	k.SetSentInvoiceCount(ctx, genState.SentInvoiceCount)
+	// Set all the timedoutInvoice
+	for _, elem := range genState.TimedoutInvoiceList {
+		k.SetTimedoutInvoice(ctx, elem)
+	}
+
+	// Set timedoutInvoice count
+	k.SetTimedoutInvoiceCount(ctx, genState.TimedoutInvoiceCount)
 	// this line is used by starport scaffolding # genesis/module/init
 }
 
@@ -25,6 +39,10 @@ func ExportGenesis(ctx sdk.Context, k keeper.Keeper) *types.GenesisState {
 
 	genesis.InvoiceList = k.GetAllInvoice(ctx)
 	genesis.InvoiceCount = k.GetInvoiceCount(ctx)
+	genesis.SentInvoiceList = k.GetAllSentInvoice(ctx)
+	genesis.SentInvoiceCount = k.GetSentInvoiceCount(ctx)
+	genesis.TimedoutInvoiceList = k.GetAllTimedoutInvoice(ctx)
+	genesis.TimedoutInvoiceCount = k.GetTimedoutInvoiceCount(ctx)
 	// this line is used by starport scaffolding # genesis/module/export
 
 	return genesis

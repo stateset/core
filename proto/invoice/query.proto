@@ -4,6 +4,8 @@ package stateset.core.invoice;
 import "google/api/annotations.proto";
 import "cosmos/base/query/v1beta1/pagination.proto";
 import "invoice/invoice.proto";
+import "invoice/sent_invoice.proto";
+import "invoice/timedout_invoice.proto";
 // this line is used by starport scaffolding # 1
 import "gogoproto/gogo.proto";
 
@@ -19,6 +21,26 @@ service Query {
 	// Queries a list of invoice items.
 	rpc InvoiceAll(QueryAllInvoiceRequest) returns (QueryAllInvoiceResponse) {
 		option (google.api.http).get = "/stateset/core/invoice/invoice";
+	}
+
+// Queries a sentInvoice by id.
+	rpc SentInvoice(QueryGetSentInvoiceRequest) returns (QueryGetSentInvoiceResponse) {
+		option (google.api.http).get = "/stateset/core/invoice/sentInvoice/{id}";
+	}
+
+	// Queries a list of sentInvoice items.
+	rpc SentInvoiceAll(QueryAllSentInvoiceRequest) returns (QueryAllSentInvoiceResponse) {
+		option (google.api.http).get = "/stateset/core/invoice/sentInvoice";
+	}
+
+// Queries a timedoutInvoice by id.
+	rpc TimedoutInvoice(QueryGetTimedoutInvoiceRequest) returns (QueryGetTimedoutInvoiceResponse) {
+		option (google.api.http).get = "/stateset/core/invoice/timedoutInvoice/{id}";
+	}
+
+	// Queries a list of timedoutInvoice items.
+	rpc TimedoutInvoiceAll(QueryAllTimedoutInvoiceRequest) returns (QueryAllTimedoutInvoiceResponse) {
+		option (google.api.http).get = "/stateset/core/invoice/timedoutInvoice";
 	}
 
 // this line is used by starport scaffolding # 2
@@ -38,6 +60,40 @@ message QueryAllInvoiceRequest {
 
 message QueryAllInvoiceResponse {
 	repeated Invoice Invoice = 1 [(gogoproto.nullable) = false];
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetSentInvoiceRequest {
+	uint64 id = 1;
+}
+
+message QueryGetSentInvoiceResponse {
+	SentInvoice SentInvoice = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllSentInvoiceRequest {
+	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllSentInvoiceResponse {
+	repeated SentInvoice SentInvoice = 1 [(gogoproto.nullable) = false];
+	cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryGetTimedoutInvoiceRequest {
+	uint64 id = 1;
+}
+
+message QueryGetTimedoutInvoiceResponse {
+	TimedoutInvoice TimedoutInvoice = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllTimedoutInvoiceRequest {
+	cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+message QueryAllTimedoutInvoiceResponse {
+	repeated TimedoutInvoice TimedoutInvoice = 1 [(gogoproto.nullable) = false];
 	cosmos.base.query.v1beta1.PageResponse pagination = 2;
 }
 

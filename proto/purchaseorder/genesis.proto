@@ -2,6 +2,8 @@ syntax = "proto3";
 package stateset.core.purchaseorder;
 
 import "purchaseorder/purchaseorder.proto";
+import "purchaseorder/sent_purchaseorder.proto";
+import "purchaseorder/timedout_purchaseorder.proto";
 // this line is used by starport scaffolding # genesis/proto/import
 import "gogoproto/gogo.proto";
 
@@ -11,5 +13,9 @@ option go_package = "github.com/stateset/core/x/purchaseorder/types";
 message GenesisState {
     repeated Purchaseorder purchaseorderList = 1 [(gogoproto.nullable) = false];
   uint64 purchaseorderCount = 2;
+  repeated SentPurchaseorder sentPurchaseorderList = 3 [(gogoproto.nullable) = false];
+  uint64 sentPurchaseorderCount = 4;
+  repeated TimedoutPurchaseorder timedoutPurchaseorderList = 5 [(gogoproto.nullable) = false];
+  uint64 timedoutPurchaseorderCount = 6;
   // this line is used by starport scaffolding # genesis/proto/state
 }

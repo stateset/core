@@ -30,6 +30,24 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 				},
 				PurchaseorderCount: 2,
+				SentPurchaseorderList: []types.SentPurchaseorder{
+					{
+						Id: 0,
+					},
+					{
+						Id: 1,
+					},
+				},
+				SentPurchaseorderCount: 2,
+				TimedoutPurchaseorderList: []types.TimedoutPurchaseorder{
+					{
+						Id: 0,
+					},
+					{
+						Id: 1,
+					},
+				},
+				TimedoutPurchaseorderCount: 2,
 				// this line is used by starport scaffolding # types/genesis/validField
 			},
 			valid: true,
@@ -57,6 +75,58 @@ func TestGenesisState_Validate(t *testing.T) {
 					},
 				},
 				PurchaseorderCount: 0,
+			},
+			valid: false,
+		},
+		{
+			desc: "duplicated sentPurchaseorder",
+			genState: &types.GenesisState{
+				SentPurchaseorderList: []types.SentPurchaseorder{
+					{
+						Id: 0,
+					},
+					{
+						Id: 0,
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "invalid sentPurchaseorder count",
+			genState: &types.GenesisState{
+				SentPurchaseorderList: []types.SentPurchaseorder{
+					{
+						Id: 1,
+					},
+				},
+				SentPurchaseorderCount: 0,
+			},
+			valid: false,
+		},
+		{
+			desc: "duplicated timedoutPurchaseorder",
+			genState: &types.GenesisState{
+				TimedoutPurchaseorderList: []types.TimedoutPurchaseorder{
+					{
+						Id: 0,
+					},
+					{
+						Id: 0,
+					},
+				},
+			},
+			valid: false,
+		},
+		{
+			desc: "invalid timedoutPurchaseorder count",
+			genState: &types.GenesisState{
+				TimedoutPurchaseorderList: []types.TimedoutPurchaseorder{
+					{
+						Id: 1,
+					},
+				},
+				TimedoutPurchaseorderCount: 0,
 			},
 			valid: false,
 		},

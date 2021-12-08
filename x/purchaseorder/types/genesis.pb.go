@@ -25,8 +25,12 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // GenesisState defines the purchaseorder module's genesis state.
 type GenesisState struct {
-	PurchaseorderList  []Purchaseorder `protobuf:"bytes,1,rep,name=purchaseorderList,proto3" json:"purchaseorderList"`
-	PurchaseorderCount uint64          `protobuf:"varint,2,opt,name=purchaseorderCount,proto3" json:"purchaseorderCount,omitempty"`
+	PurchaseorderList          []Purchaseorder         `protobuf:"bytes,1,rep,name=purchaseorderList,proto3" json:"purchaseorderList"`
+	PurchaseorderCount         uint64                  `protobuf:"varint,2,opt,name=purchaseorderCount,proto3" json:"purchaseorderCount,omitempty"`
+	SentPurchaseorderList      []SentPurchaseorder     `protobuf:"bytes,3,rep,name=sentPurchaseorderList,proto3" json:"sentPurchaseorderList"`
+	SentPurchaseorderCount     uint64                  `protobuf:"varint,4,opt,name=sentPurchaseorderCount,proto3" json:"sentPurchaseorderCount,omitempty"`
+	TimedoutPurchaseorderList  []TimedoutPurchaseorder `protobuf:"bytes,5,rep,name=timedoutPurchaseorderList,proto3" json:"timedoutPurchaseorderList"`
+	TimedoutPurchaseorderCount uint64                  `protobuf:"varint,6,opt,name=timedoutPurchaseorderCount,proto3" json:"timedoutPurchaseorderCount,omitempty"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -76,6 +80,34 @@ func (m *GenesisState) GetPurchaseorderCount() uint64 {
 	return 0
 }
 
+func (m *GenesisState) GetSentPurchaseorderList() []SentPurchaseorder {
+	if m != nil {
+		return m.SentPurchaseorderList
+	}
+	return nil
+}
+
+func (m *GenesisState) GetSentPurchaseorderCount() uint64 {
+	if m != nil {
+		return m.SentPurchaseorderCount
+	}
+	return 0
+}
+
+func (m *GenesisState) GetTimedoutPurchaseorderList() []TimedoutPurchaseorder {
+	if m != nil {
+		return m.TimedoutPurchaseorderList
+	}
+	return nil
+}
+
+func (m *GenesisState) GetTimedoutPurchaseorderCount() uint64 {
+	if m != nil {
+		return m.TimedoutPurchaseorderCount
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*GenesisState)(nil), "stateset.core.purchaseorder.GenesisState")
 }
@@ -83,21 +115,27 @@ func init() {
 func init() { proto.RegisterFile("purchaseorder/genesis.proto", fileDescriptor_142be3b877c419d0) }
 
 var fileDescriptor_142be3b877c419d0 = []byte{
-	// 220 bytes of a gzipped FileDescriptorProto
+	// 317 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x2e, 0x28, 0x2d, 0x4a,
 	0xce, 0x48, 0x2c, 0x4e, 0xcd, 0x2f, 0x4a, 0x49, 0x2d, 0xd2, 0x4f, 0x4f, 0xcd, 0x4b, 0x2d, 0xce,
 	0x2c, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x92, 0x2e, 0x2e, 0x49, 0x2c, 0x49, 0x2d, 0x4e,
 	0x2d, 0xd1, 0x4b, 0xce, 0x2f, 0x4a, 0xd5, 0x43, 0x51, 0x2a, 0xa5, 0x88, 0xaa, 0x13, 0x85, 0x07,
-	0xd1, 0x2f, 0x25, 0x92, 0x9e, 0x9f, 0x9e, 0x0f, 0x66, 0xea, 0x83, 0x58, 0x10, 0x51, 0xa5, 0x79,
-	0x8c, 0x5c, 0x3c, 0xee, 0x10, 0x7b, 0x82, 0x41, 0xe6, 0x0b, 0xc5, 0x71, 0x09, 0xa2, 0xe8, 0xf6,
-	0xc9, 0x2c, 0x2e, 0x91, 0x60, 0x54, 0x60, 0xd6, 0xe0, 0x36, 0xd2, 0xd2, 0xc3, 0xe3, 0x04, 0xbd,
-	0x00, 0x64, 0x9e, 0x13, 0xcb, 0x89, 0x7b, 0xf2, 0x0c, 0x41, 0x98, 0x46, 0x09, 0xe9, 0x71, 0x09,
-	0xa1, 0x08, 0x3a, 0xe7, 0x97, 0xe6, 0x95, 0x48, 0x30, 0x29, 0x30, 0x6a, 0xb0, 0x04, 0x61, 0x91,
-	0x71, 0xf2, 0x38, 0xf1, 0x48, 0x8e, 0xf1, 0xc2, 0x23, 0x39, 0xc6, 0x07, 0x8f, 0xe4, 0x18, 0x27,
-	0x3c, 0x96, 0x63, 0xb8, 0xf0, 0x58, 0x8e, 0xe1, 0xc6, 0x63, 0x39, 0x86, 0x28, 0xbd, 0xf4, 0xcc,
-	0x92, 0x8c, 0xd2, 0x24, 0xbd, 0xe4, 0xfc, 0x5c, 0x7d, 0x98, 0xc3, 0xf4, 0x41, 0x0e, 0xd3, 0xaf,
-	0x40, 0x0d, 0x00, 0xfd, 0x92, 0xca, 0x82, 0xd4, 0xe2, 0x24, 0x36, 0xb0, 0x8f, 0x8d, 0x01, 0x01,
-	0x00, 0x00, 0xff, 0xff, 0xdd, 0x9c, 0x86, 0x14, 0x66, 0x01, 0x00, 0x00,
+	0xd1, 0x2f, 0xa5, 0x86, 0xaa, 0xa4, 0x38, 0x35, 0xaf, 0x24, 0x1e, 0x9b, 0x3a, 0x2d, 0x54, 0x75,
+	0x25, 0x99, 0xb9, 0xa9, 0x29, 0xf9, 0xa5, 0xd8, 0xd5, 0x8a, 0xa4, 0xe7, 0xa7, 0xe7, 0x83, 0x99,
+	0xfa, 0x20, 0x16, 0x44, 0x54, 0xe9, 0x17, 0x33, 0x17, 0x8f, 0x3b, 0xc4, 0xed, 0xc1, 0x20, 0x37,
+	0x0b, 0xc5, 0x71, 0x09, 0xa2, 0xe8, 0xf6, 0xc9, 0x2c, 0x2e, 0x91, 0x60, 0x54, 0x60, 0xd6, 0xe0,
+	0x36, 0xd2, 0xd2, 0xc3, 0xe3, 0x2d, 0xbd, 0x00, 0x64, 0x9e, 0x13, 0xcb, 0x89, 0x7b, 0xf2, 0x0c,
+	0x41, 0x98, 0x46, 0x09, 0xe9, 0x71, 0x09, 0xa1, 0x08, 0x3a, 0xe7, 0x97, 0xe6, 0x95, 0x48, 0x30,
+	0x29, 0x30, 0x6a, 0xb0, 0x04, 0x61, 0x91, 0x11, 0xca, 0xe2, 0x12, 0x05, 0x79, 0x3f, 0x00, 0xc3,
+	0x4d, 0xcc, 0x60, 0x37, 0xe9, 0xe1, 0x75, 0x53, 0x30, 0xba, 0x4e, 0xa8, 0xbb, 0xb0, 0x1b, 0x29,
+	0x64, 0xc6, 0x25, 0x86, 0x21, 0x01, 0x71, 0x1f, 0x0b, 0xd8, 0x7d, 0x38, 0x64, 0x85, 0xca, 0xb8,
+	0x24, 0x61, 0x41, 0x8f, 0xe9, 0x4e, 0x56, 0xb0, 0x3b, 0x8d, 0xf0, 0xba, 0x33, 0x04, 0x9b, 0x6e,
+	0xa8, 0x5b, 0x71, 0x1b, 0x2d, 0x64, 0xc7, 0x25, 0x85, 0x55, 0x12, 0xe2, 0x66, 0x36, 0xb0, 0x9b,
+	0xf1, 0xa8, 0x70, 0xf2, 0x38, 0xf1, 0x48, 0x8e, 0xf1, 0xc2, 0x23, 0x39, 0xc6, 0x07, 0x8f, 0xe4,
+	0x18, 0x27, 0x3c, 0x96, 0x63, 0xb8, 0xf0, 0x58, 0x8e, 0xe1, 0xc6, 0x63, 0x39, 0x86, 0x28, 0xbd,
+	0xf4, 0xcc, 0x92, 0x8c, 0xd2, 0x24, 0xbd, 0xe4, 0xfc, 0x5c, 0x7d, 0x98, 0xc3, 0xf5, 0x41, 0x0e,
+	0xd7, 0xaf, 0xd0, 0x47, 0x4b, 0x73, 0x95, 0x05, 0xa9, 0xc5, 0x49, 0x6c, 0xe0, 0xd4, 0x64, 0x0c,
+	0x08, 0x00, 0x00, 0xff, 0xff, 0xab, 0xc0, 0x8e, 0xb3, 0x16, 0x03, 0x00, 0x00,
 }
 
 func (m *GenesisState) Marshal() (dAtA []byte, err error) {
@@ -120,6 +158,44 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.TimedoutPurchaseorderCount != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.TimedoutPurchaseorderCount))
+		i--
+		dAtA[i] = 0x30
+	}
+	if len(m.TimedoutPurchaseorderList) > 0 {
+		for iNdEx := len(m.TimedoutPurchaseorderList) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.TimedoutPurchaseorderList[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if m.SentPurchaseorderCount != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.SentPurchaseorderCount))
+		i--
+		dAtA[i] = 0x20
+	}
+	if len(m.SentPurchaseorderList) > 0 {
+		for iNdEx := len(m.SentPurchaseorderList) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.SentPurchaseorderList[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
 	if m.PurchaseorderCount != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.PurchaseorderCount))
 		i--
@@ -167,6 +243,24 @@ func (m *GenesisState) Size() (n int) {
 	}
 	if m.PurchaseorderCount != 0 {
 		n += 1 + sovGenesis(uint64(m.PurchaseorderCount))
+	}
+	if len(m.SentPurchaseorderList) > 0 {
+		for _, e := range m.SentPurchaseorderList {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if m.SentPurchaseorderCount != 0 {
+		n += 1 + sovGenesis(uint64(m.SentPurchaseorderCount))
+	}
+	if len(m.TimedoutPurchaseorderList) > 0 {
+		for _, e := range m.TimedoutPurchaseorderList {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if m.TimedoutPurchaseorderCount != 0 {
+		n += 1 + sovGenesis(uint64(m.TimedoutPurchaseorderCount))
 	}
 	return n
 }
@@ -255,6 +349,112 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.PurchaseorderCount |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SentPurchaseorderList", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SentPurchaseorderList = append(m.SentPurchaseorderList, SentPurchaseorder{})
+			if err := m.SentPurchaseorderList[len(m.SentPurchaseorderList)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SentPurchaseorderCount", wireType)
+			}
+			m.SentPurchaseorderCount = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.SentPurchaseorderCount |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TimedoutPurchaseorderList", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TimedoutPurchaseorderList = append(m.TimedoutPurchaseorderList, TimedoutPurchaseorder{})
+			if err := m.TimedoutPurchaseorderList[len(m.TimedoutPurchaseorderList)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TimedoutPurchaseorderCount", wireType)
+			}
+			m.TimedoutPurchaseorderCount = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TimedoutPurchaseorderCount |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

@@ -1,0 +1,14 @@
+syntax = "proto3";
+package stateset.core.purchaseorder;
+
+option go_package = "github.com/stateset/core/x/purchaseorder/types";
+
+import "gogoproto/gogo.proto";
+
+
+message TimedoutPurchaseorder {
+  uint64 id = 1;
+  string did = 2; 
+  string chain = 3; 
+  string creator = 4;
+}

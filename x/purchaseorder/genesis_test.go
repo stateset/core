@@ -20,6 +20,24 @@ func TestGenesis(t *testing.T) {
 			},
 		},
 		PurchaseorderCount: 2,
+		SentPurchaseorderList: []types.SentPurchaseorder{
+			{
+				Id: 0,
+			},
+			{
+				Id: 1,
+			},
+		},
+		SentPurchaseorderCount: 2,
+		TimedoutPurchaseorderList: []types.TimedoutPurchaseorder{
+			{
+				Id: 0,
+			},
+			{
+				Id: 1,
+			},
+		},
+		TimedoutPurchaseorderCount: 2,
 		// this line is used by starport scaffolding # genesis/test/state
 	}
 
@@ -31,5 +49,11 @@ func TestGenesis(t *testing.T) {
 	require.Len(t, got.PurchaseorderList, len(genesisState.PurchaseorderList))
 	require.Subset(t, genesisState.PurchaseorderList, got.PurchaseorderList)
 	require.Equal(t, genesisState.PurchaseorderCount, got.PurchaseorderCount)
+	require.Len(t, got.SentPurchaseorderList, len(genesisState.SentPurchaseorderList))
+	require.Subset(t, genesisState.SentPurchaseorderList, got.SentPurchaseorderList)
+	require.Equal(t, genesisState.SentPurchaseorderCount, got.SentPurchaseorderCount)
+	require.Len(t, got.TimedoutPurchaseorderList, len(genesisState.TimedoutPurchaseorderList))
+	require.Subset(t, genesisState.TimedoutPurchaseorderList, got.TimedoutPurchaseorderList)
+	require.Equal(t, genesisState.TimedoutPurchaseorderCount, got.TimedoutPurchaseorderCount)
 	// this line is used by starport scaffolding # genesis/test/assert
 }

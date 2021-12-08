@@ -25,8 +25,12 @@ const _ = proto.GoGoProtoPackageIsVersion3 // please upgrade the proto package
 
 // GenesisState defines the invoice module's genesis state.
 type GenesisState struct {
-	InvoiceList  []Invoice `protobuf:"bytes,1,rep,name=invoiceList,proto3" json:"invoiceList"`
-	InvoiceCount uint64    `protobuf:"varint,2,opt,name=invoiceCount,proto3" json:"invoiceCount,omitempty"`
+	InvoiceList          []Invoice         `protobuf:"bytes,1,rep,name=invoiceList,proto3" json:"invoiceList"`
+	InvoiceCount         uint64            `protobuf:"varint,2,opt,name=invoiceCount,proto3" json:"invoiceCount,omitempty"`
+	SentInvoiceList      []SentInvoice     `protobuf:"bytes,3,rep,name=sentInvoiceList,proto3" json:"sentInvoiceList"`
+	SentInvoiceCount     uint64            `protobuf:"varint,4,opt,name=sentInvoiceCount,proto3" json:"sentInvoiceCount,omitempty"`
+	TimedoutInvoiceList  []TimedoutInvoice `protobuf:"bytes,5,rep,name=timedoutInvoiceList,proto3" json:"timedoutInvoiceList"`
+	TimedoutInvoiceCount uint64            `protobuf:"varint,6,opt,name=timedoutInvoiceCount,proto3" json:"timedoutInvoiceCount,omitempty"`
 }
 
 func (m *GenesisState) Reset()         { *m = GenesisState{} }
@@ -76,6 +80,34 @@ func (m *GenesisState) GetInvoiceCount() uint64 {
 	return 0
 }
 
+func (m *GenesisState) GetSentInvoiceList() []SentInvoice {
+	if m != nil {
+		return m.SentInvoiceList
+	}
+	return nil
+}
+
+func (m *GenesisState) GetSentInvoiceCount() uint64 {
+	if m != nil {
+		return m.SentInvoiceCount
+	}
+	return 0
+}
+
+func (m *GenesisState) GetTimedoutInvoiceList() []TimedoutInvoice {
+	if m != nil {
+		return m.TimedoutInvoiceList
+	}
+	return nil
+}
+
+func (m *GenesisState) GetTimedoutInvoiceCount() uint64 {
+	if m != nil {
+		return m.TimedoutInvoiceCount
+	}
+	return 0
+}
+
 func init() {
 	proto.RegisterType((*GenesisState)(nil), "stateset.core.invoice.GenesisState")
 }
@@ -83,20 +115,26 @@ func init() {
 func init() { proto.RegisterFile("invoice/genesis.proto", fileDescriptor_32f04c33eab0a0ed) }
 
 var fileDescriptor_32f04c33eab0a0ed = []byte{
-	// 210 bytes of a gzipped FileDescriptorProto
+	// 306 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0xcd, 0xcc, 0x2b, 0xcb,
 	0xcf, 0x4c, 0x4e, 0xd5, 0x4f, 0x4f, 0xcd, 0x4b, 0x2d, 0xce, 0x2c, 0xd6, 0x2b, 0x28, 0xca, 0x2f,
 	0xc9, 0x17, 0x12, 0x2d, 0x2e, 0x49, 0x2c, 0x49, 0x2d, 0x4e, 0x2d, 0xd1, 0x4b, 0xce, 0x2f, 0x4a,
-	0xd5, 0x83, 0x2a, 0x92, 0x82, 0xab, 0x86, 0xd2, 0x10, 0xd5, 0x52, 0x22, 0xe9, 0xf9, 0xe9, 0xf9,
-	0x60, 0xa6, 0x3e, 0x88, 0x05, 0x11, 0x55, 0xaa, 0xe2, 0xe2, 0x71, 0x87, 0x18, 0x1a, 0x0c, 0x32,
-	0x4c, 0xc8, 0x8d, 0x8b, 0x1b, 0xaa, 0xcd, 0x27, 0xb3, 0xb8, 0x44, 0x82, 0x51, 0x81, 0x59, 0x83,
-	0xdb, 0x48, 0x4e, 0x0f, 0xab, 0x4d, 0x7a, 0x9e, 0x10, 0xda, 0x89, 0xe5, 0xc4, 0x3d, 0x79, 0x86,
-	0x20, 0x64, 0x8d, 0x42, 0x4a, 0x5c, 0x3c, 0x50, 0xae, 0x73, 0x7e, 0x69, 0x5e, 0x89, 0x04, 0x93,
-	0x02, 0xa3, 0x06, 0x4b, 0x10, 0x8a, 0x98, 0x93, 0xd3, 0x89, 0x47, 0x72, 0x8c, 0x17, 0x1e, 0xc9,
-	0x31, 0x3e, 0x78, 0x24, 0xc7, 0x38, 0xe1, 0xb1, 0x1c, 0xc3, 0x85, 0xc7, 0x72, 0x0c, 0x37, 0x1e,
-	0xcb, 0x31, 0x44, 0x69, 0xa4, 0x67, 0x96, 0x64, 0x94, 0x26, 0xe9, 0x25, 0xe7, 0xe7, 0xea, 0xc3,
-	0xac, 0xd6, 0x07, 0x59, 0xad, 0x5f, 0x01, 0xf3, 0x95, 0x7e, 0x49, 0x65, 0x41, 0x6a, 0x71, 0x12,
-	0x1b, 0xd8, 0x1b, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0x65, 0xd3, 0x90, 0x53, 0x23, 0x01,
+	0xd5, 0x83, 0x2a, 0x92, 0x82, 0xab, 0x86, 0xd2, 0x10, 0xd5, 0x52, 0x52, 0x30, 0xe1, 0xe2, 0xd4,
+	0xbc, 0x92, 0x78, 0x54, 0x39, 0x39, 0x98, 0x5c, 0x49, 0x66, 0x6e, 0x6a, 0x4a, 0x7e, 0x29, 0xba,
+	0xbc, 0x48, 0x7a, 0x7e, 0x7a, 0x3e, 0x98, 0xa9, 0x0f, 0x62, 0x41, 0x44, 0x95, 0xfa, 0x98, 0xb9,
+	0x78, 0xdc, 0x21, 0x2e, 0x0a, 0x06, 0xb9, 0x44, 0xc8, 0x8d, 0x8b, 0x1b, 0xaa, 0xcf, 0x27, 0xb3,
+	0xb8, 0x44, 0x82, 0x51, 0x81, 0x59, 0x83, 0xdb, 0x48, 0x4e, 0x0f, 0xab, 0x33, 0xf5, 0x3c, 0x21,
+	0xb4, 0x13, 0xcb, 0x89, 0x7b, 0xf2, 0x0c, 0x41, 0xc8, 0x1a, 0x85, 0x94, 0xb8, 0x78, 0xa0, 0x5c,
+	0xe7, 0xfc, 0xd2, 0xbc, 0x12, 0x09, 0x26, 0x05, 0x46, 0x0d, 0x96, 0x20, 0x14, 0x31, 0xa1, 0x20,
+	0x2e, 0x7e, 0x90, 0x47, 0x3c, 0x91, 0xec, 0x63, 0x06, 0xdb, 0xa7, 0x84, 0xc3, 0xbe, 0x60, 0x84,
+	0x6a, 0xa8, 0x9d, 0xe8, 0x06, 0x08, 0x69, 0x71, 0x09, 0x20, 0x09, 0x41, 0xec, 0x66, 0x01, 0xdb,
+	0x8d, 0x21, 0x2e, 0x14, 0xc7, 0x25, 0x0c, 0x0b, 0x2c, 0x64, 0x37, 0xb0, 0x82, 0xdd, 0xa0, 0x86,
+	0xc3, 0x0d, 0x21, 0xa8, 0x3a, 0xa0, 0xee, 0xc0, 0x66, 0x90, 0x90, 0x11, 0x97, 0x08, 0x9a, 0x30,
+	0xc4, 0x3d, 0x6c, 0x60, 0xf7, 0x60, 0x95, 0x73, 0x72, 0x3a, 0xf1, 0x48, 0x8e, 0xf1, 0xc2, 0x23,
+	0x39, 0xc6, 0x07, 0x8f, 0xe4, 0x18, 0x27, 0x3c, 0x96, 0x63, 0xb8, 0xf0, 0x58, 0x8e, 0xe1, 0xc6,
+	0x63, 0x39, 0x86, 0x28, 0x8d, 0xf4, 0xcc, 0x92, 0x8c, 0xd2, 0x24, 0xbd, 0xe4, 0xfc, 0x5c, 0x7d,
+	0x98, 0xd3, 0xf4, 0x41, 0x4e, 0xd3, 0xaf, 0xd0, 0x87, 0xc7, 0x7d, 0x65, 0x41, 0x6a, 0x71, 0x12,
+	0x1b, 0x38, 0x6e, 0x8d, 0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x1c, 0x4e, 0x7f, 0xda, 0x74, 0x02,
 	0x00, 0x00,
 }
 
@@ -120,6 +158,44 @@ func (m *GenesisState) MarshalToSizedBuffer(dAtA []byte) (int, error) {
 	_ = i
 	var l int
 	_ = l
+	if m.TimedoutInvoiceCount != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.TimedoutInvoiceCount))
+		i--
+		dAtA[i] = 0x30
+	}
+	if len(m.TimedoutInvoiceList) > 0 {
+		for iNdEx := len(m.TimedoutInvoiceList) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.TimedoutInvoiceList[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x2a
+		}
+	}
+	if m.SentInvoiceCount != 0 {
+		i = encodeVarintGenesis(dAtA, i, uint64(m.SentInvoiceCount))
+		i--
+		dAtA[i] = 0x20
+	}
+	if len(m.SentInvoiceList) > 0 {
+		for iNdEx := len(m.SentInvoiceList) - 1; iNdEx >= 0; iNdEx-- {
+			{
+				size, err := m.SentInvoiceList[iNdEx].MarshalToSizedBuffer(dAtA[:i])
+				if err != nil {
+					return 0, err
+				}
+				i -= size
+				i = encodeVarintGenesis(dAtA, i, uint64(size))
+			}
+			i--
+			dAtA[i] = 0x1a
+		}
+	}
 	if m.InvoiceCount != 0 {
 		i = encodeVarintGenesis(dAtA, i, uint64(m.InvoiceCount))
 		i--
@@ -167,6 +243,24 @@ func (m *GenesisState) Size() (n int) {
 	}
 	if m.InvoiceCount != 0 {
 		n += 1 + sovGenesis(uint64(m.InvoiceCount))
+	}
+	if len(m.SentInvoiceList) > 0 {
+		for _, e := range m.SentInvoiceList {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if m.SentInvoiceCount != 0 {
+		n += 1 + sovGenesis(uint64(m.SentInvoiceCount))
+	}
+	if len(m.TimedoutInvoiceList) > 0 {
+		for _, e := range m.TimedoutInvoiceList {
+			l = e.Size()
+			n += 1 + l + sovGenesis(uint64(l))
+		}
+	}
+	if m.TimedoutInvoiceCount != 0 {
+		n += 1 + sovGenesis(uint64(m.TimedoutInvoiceCount))
 	}
 	return n
 }
@@ -255,6 +349,112 @@ func (m *GenesisState) Unmarshal(dAtA []byte) error {
 				b := dAtA[iNdEx]
 				iNdEx++
 				m.InvoiceCount |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 3:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SentInvoiceList", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.SentInvoiceList = append(m.SentInvoiceList, SentInvoice{})
+			if err := m.SentInvoiceList[len(m.SentInvoiceList)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 4:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field SentInvoiceCount", wireType)
+			}
+			m.SentInvoiceCount = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.SentInvoiceCount |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		case 5:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TimedoutInvoiceList", wireType)
+			}
+			var msglen int
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				msglen |= int(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			if msglen < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			postIndex := iNdEx + msglen
+			if postIndex < 0 {
+				return ErrInvalidLengthGenesis
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.TimedoutInvoiceList = append(m.TimedoutInvoiceList, TimedoutInvoice{})
+			if err := m.TimedoutInvoiceList[len(m.TimedoutInvoiceList)-1].Unmarshal(dAtA[iNdEx:postIndex]); err != nil {
+				return err
+			}
+			iNdEx = postIndex
+		case 6:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field TimedoutInvoiceCount", wireType)
+			}
+			m.TimedoutInvoiceCount = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowGenesis
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.TimedoutInvoiceCount |= uint64(b&0x7F) << shift
 				if b < 0x80 {
 					break
 				}

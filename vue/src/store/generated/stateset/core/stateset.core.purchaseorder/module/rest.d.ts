@@ -1,13 +1,28 @@
 export interface ProtobufAny {
     "@type"?: string;
 }
+export declare type PurchaseorderMsgCancelPurchaseorderResponse = object;
+export declare type PurchaseorderMsgCompletePurchaseorderResponse = object;
+export interface PurchaseorderMsgCreateSentPurchaseorderResponse {
+    /** @format uint64 */
+    id?: string;
+}
+export interface PurchaseorderMsgCreateTimedoutPurchaseorderResponse {
+    /** @format uint64 */
+    id?: string;
+}
+export declare type PurchaseorderMsgDeleteSentPurchaseorderResponse = object;
+export declare type PurchaseorderMsgDeleteTimedoutPurchaseorderResponse = object;
 export declare type PurchaseorderMsgFinancePurchaseorderResponse = object;
+export declare type PurchaseorderMsgUpdateSentPurchaseorderResponse = object;
+export declare type PurchaseorderMsgUpdateTimedoutPurchaseorderResponse = object;
 export interface PurchaseorderPurchaseorder {
     /** @format uint64 */
     id?: string;
     did?: string;
     uri?: string;
     amount?: string;
+    state?: string;
 }
 export interface PurchaseorderQueryAllPurchaseorderResponse {
     Purchaseorder?: PurchaseorderPurchaseorder[];
@@ -22,8 +37,54 @@ export interface PurchaseorderQueryAllPurchaseorderResponse {
      */
     pagination?: V1Beta1PageResponse;
 }
+export interface PurchaseorderQueryAllSentPurchaseorderResponse {
+    SentPurchaseorder?: PurchaseorderSentPurchaseorder[];
+    /**
+     * PageResponse is to be embedded in gRPC response messages where the
+     * corresponding request message has used PageRequest.
+     *
+     *  message SomeResponse {
+     *          repeated Bar results = 1;
+     *          PageResponse page = 2;
+     *  }
+     */
+    pagination?: V1Beta1PageResponse;
+}
+export interface PurchaseorderQueryAllTimedoutPurchaseorderResponse {
+    TimedoutPurchaseorder?: PurchaseorderTimedoutPurchaseorder[];
+    /**
+     * PageResponse is to be embedded in gRPC response messages where the
+     * corresponding request message has used PageRequest.
+     *
+     *  message SomeResponse {
+     *          repeated Bar results = 1;
+     *          PageResponse page = 2;
+     *  }
+     */
+    pagination?: V1Beta1PageResponse;
+}
 export interface PurchaseorderQueryGetPurchaseorderResponse {
     Purchaseorder?: PurchaseorderPurchaseorder;
+}
+export interface PurchaseorderQueryGetSentPurchaseorderResponse {
+    SentPurchaseorder?: PurchaseorderSentPurchaseorder;
+}
+export interface PurchaseorderQueryGetTimedoutPurchaseorderResponse {
+    TimedoutPurchaseorder?: PurchaseorderTimedoutPurchaseorder;
+}
+export interface PurchaseorderSentPurchaseorder {
+    /** @format uint64 */
+    id?: string;
+    did?: string;
+    chain?: string;
+    creator?: string;
+}
+export interface PurchaseorderTimedoutPurchaseorder {
+    /** @format uint64 */
+    id?: string;
+    did?: string;
+    chain?: string;
+    creator?: string;
 }
 export interface RpcStatus {
     /** @format int32 */
@@ -165,5 +226,53 @@ export declare class Api<SecurityDataType extends unknown> extends HttpClient<Se
      * @request GET:/stateset/core/purchaseorder/purchaseorder/{id}
      */
     queryPurchaseorder: (id: string, params?: RequestParams) => Promise<HttpResponse<PurchaseorderQueryGetPurchaseorderResponse, RpcStatus>>;
+    /**
+     * No description
+     *
+     * @tags Query
+     * @name QuerySentPurchaseorderAll
+     * @summary Queries a list of sentPurchaseorder items.
+     * @request GET:/stateset/core/purchaseorder/sentPurchaseorder
+     */
+    querySentPurchaseorderAll: (query?: {
+        "pagination.key"?: string;
+        "pagination.offset"?: string;
+        "pagination.limit"?: string;
+        "pagination.countTotal"?: boolean;
+        "pagination.reverse"?: boolean;
+    }, params?: RequestParams) => Promise<HttpResponse<PurchaseorderQueryAllSentPurchaseorderResponse, RpcStatus>>;
+    /**
+     * No description
+     *
+     * @tags Query
+     * @name QuerySentPurchaseorder
+     * @summary Queries a sentPurchaseorder by id.
+     * @request GET:/stateset/core/purchaseorder/sentPurchaseorder/{id}
+     */
+    querySentPurchaseorder: (id: string, params?: RequestParams) => Promise<HttpResponse<PurchaseorderQueryGetSentPurchaseorderResponse, RpcStatus>>;
+    /**
+     * No description
+     *
+     * @tags Query
+     * @name QueryTimedoutPurchaseorderAll
+     * @summary Queries a list of timedoutPurchaseorder items.
+     * @request GET:/stateset/core/purchaseorder/timedoutPurchaseorder
+     */
+    queryTimedoutPurchaseorderAll: (query?: {
+        "pagination.key"?: string;
+        "pagination.offset"?: string;
+        "pagination.limit"?: string;
+        "pagination.countTotal"?: boolean;
+        "pagination.reverse"?: boolean;
+    }, params?: RequestParams) => Promise<HttpResponse<PurchaseorderQueryAllTimedoutPurchaseorderResponse, RpcStatus>>;
+    /**
+     * No description
+     *
+     * @tags Query
+     * @name QueryTimedoutPurchaseorder
+     * @summary Queries a timedoutPurchaseorder by id.
+     * @request GET:/stateset/core/purchaseorder/timedoutPurchaseorder/{id}
+     */
+    queryTimedoutPurchaseorder: (id: string, params?: RequestParams) => Promise<HttpResponse<PurchaseorderQueryGetTimedoutPurchaseorderResponse, RpcStatus>>;
 }
 export {};
