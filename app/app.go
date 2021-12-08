@@ -90,6 +90,9 @@ import (
 	agreementmodule "github.com/stateset/core/x/agreement"
 	agreementmodulekeeper "github.com/stateset/core/x/agreement/keeper"
 	agreementmoduletypes "github.com/stateset/core/x/agreement/types"
+	didmodule "github.com/stateset/core/x/did"
+	didmodulekeeper "github.com/stateset/core/x/did/keeper"
+	didmoduletypes "github.com/stateset/core/x/did/types"
 	invoicemodule "github.com/stateset/core/x/invoice"
 	invoicemodulekeeper "github.com/stateset/core/x/invoice/keeper"
 	invoicemoduletypes "github.com/stateset/core/x/invoice/types"
@@ -153,6 +156,7 @@ var (
 		agreementmodule.AppModuleBasic{},
 		purchaseordermodule.AppModuleBasic{},
 		invoicemodule.AppModuleBasic{},
+		didmodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 	)
 
@@ -232,6 +236,8 @@ type App struct {
 	PurchaseorderKeeper purchaseordermodulekeeper.Keeper
 
 	InvoiceKeeper invoicemodulekeeper.Keeper
+
+	DidKeeper didmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 
 	// the module manager
@@ -269,6 +275,7 @@ func New(
 		agreementmoduletypes.StoreKey,
 		purchaseordermoduletypes.StoreKey,
 		invoicemoduletypes.StoreKey,
+		didmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
@@ -403,6 +410,13 @@ func New(
 	)
 	invoiceModule := invoicemodule.NewAppModule(appCodec, app.InvoiceKeeper)
 
+	app.DidKeeper = *didmodulekeeper.NewKeeper(
+		appCodec,
+		keys[didmoduletypes.StoreKey],
+		keys[didmoduletypes.MemStoreKey],
+	)
+	didModule := didmodule.NewAppModule(appCodec, app.DidKeeper)
+
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 
 	// Create static IBC router, add transfer route, then set and seal it
@@ -445,6 +459,7 @@ func New(
 		agreementModule,
 		purchaseorderModule,
 		invoiceModule,
+		didModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 	)
 
@@ -483,6 +498,7 @@ func New(
 		agreementmoduletypes.ModuleName,
 		purchaseordermoduletypes.ModuleName,
 		invoicemoduletypes.ModuleName,
+		didmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 	)
 
@@ -674,6 +690,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(agreementmoduletypes.ModuleName)
 	paramsKeeper.Subspace(purchaseordermoduletypes.ModuleName)
 	paramsKeeper.Subspace(invoicemoduletypes.ModuleName)
+	paramsKeeper.Subspace(didmoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 
 	return paramsKeeper
