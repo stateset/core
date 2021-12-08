@@ -2,16 +2,28 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stateset/core/x/purchaseorder/types"
 )
 
 func (k msgServer) FinancePurchaseorder(goCtx context.Context, msg *types.MsgFinancePurchaseorder) (*types.MsgFinancePurchaseorderResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// TODO: Handling the message
-	_ = ctx
+	purchaseorder, found := k.GetPurchaseorder(ctx, msg.Id)
+	if !found {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
+	}
+
+	if purchaseorder.State != "requested" {
+		return nil, sdkerrors.Wrapf(types.ErrWrongPurchaseOrderState, "%v", purchaseorder.State)
+	}
+
+	purchaseorder.State = "financed"
+
+	k.SetPurchaseorder(ctx, purchaseorder)
 
 	return &types.MsgFinancePurchaseorderResponse{}, nil
 }
