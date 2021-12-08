@@ -17,6 +17,7 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgCreateTimedoutPurchaseorder{}, "purchaseorder/CreateTimedoutPurchaseorder", nil)
 	cdc.RegisterConcrete(&MsgUpdateTimedoutPurchaseorder{}, "purchaseorder/UpdateTimedoutPurchaseorder", nil)
 	cdc.RegisterConcrete(&MsgDeleteTimedoutPurchaseorder{}, "purchaseorder/DeleteTimedoutPurchaseorder", nil)
+	cdc.RegisterConcrete(&MsgRequestPurchaseorder{}, "purchaseorder/RequestPurchaseorder", nil)
 	// this line is used by starport scaffolding # 2
 }
 
@@ -39,6 +40,9 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgCreateTimedoutPurchaseorder{},
 		&MsgUpdateTimedoutPurchaseorder{},
 		&MsgDeleteTimedoutPurchaseorder{},
+	)
+	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgRequestPurchaseorder{},
 	)
 	// this line is used by starport scaffolding # 3
 

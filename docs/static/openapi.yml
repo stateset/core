@@ -22164,6 +22164,8 @@ definitions:
     type: object
   stateset.core.purchaseorder.MsgFinancePurchaseorderResponse:
     type: object
+  stateset.core.purchaseorder.MsgRequestPurchaseorderResponse:
+    type: object
   stateset.core.purchaseorder.MsgUpdateSentPurchaseorderResponse:
     type: object
   stateset.core.purchaseorder.MsgUpdateTimedoutPurchaseorderResponse:

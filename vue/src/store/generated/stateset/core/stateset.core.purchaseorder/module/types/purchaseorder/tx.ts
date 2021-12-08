@@ -77,6 +77,16 @@ export interface MsgDeleteTimedoutPurchaseorder {
 
 export interface MsgDeleteTimedoutPurchaseorderResponse {}
 
+export interface MsgRequestPurchaseorder {
+  creator: string;
+  did: string;
+  uri: string;
+  amount: string;
+  state: string;
+}
+
+export interface MsgRequestPurchaseorderResponse {}
+
 const baseMsgFinancePurchaseorder: object = { creator: "", id: 0 };
 
 export const MsgFinancePurchaseorder = {
@@ -1461,6 +1471,198 @@ export const MsgDeleteTimedoutPurchaseorderResponse = {
   },
 };
 
+const baseMsgRequestPurchaseorder: object = {
+  creator: "",
+  did: "",
+  uri: "",
+  amount: "",
+  state: "",
+};
+
+export const MsgRequestPurchaseorder = {
+  encode(
+    message: MsgRequestPurchaseorder,
+    writer: Writer = Writer.create()
+  ): Writer {
+    if (message.creator !== "") {
+      writer.uint32(10).string(message.creator);
+    }
+    if (message.did !== "") {
+      writer.uint32(18).string(message.did);
+    }
+    if (message.uri !== "") {
+      writer.uint32(26).string(message.uri);
+    }
+    if (message.amount !== "") {
+      writer.uint32(34).string(message.amount);
+    }
+    if (message.state !== "") {
+      writer.uint32(42).string(message.state);
+    }
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): MsgRequestPurchaseorder {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = {
+      ...baseMsgRequestPurchaseorder,
+    } as MsgRequestPurchaseorder;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.creator = reader.string();
+          break;
+        case 2:
+          message.did = reader.string();
+          break;
+        case 3:
+          message.uri = reader.string();
+          break;
+        case 4:
+          message.amount = reader.string();
+          break;
+        case 5:
+          message.state = reader.string();
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgRequestPurchaseorder {
+    const message = {
+      ...baseMsgRequestPurchaseorder,
+    } as MsgRequestPurchaseorder;
+    if (object.creator !== undefined && object.creator !== null) {
+      message.creator = String(object.creator);
+    } else {
+      message.creator = "";
+    }
+    if (object.did !== undefined && object.did !== null) {
+      message.did = String(object.did);
+    } else {
+      message.did = "";
+    }
+    if (object.uri !== undefined && object.uri !== null) {
+      message.uri = String(object.uri);
+    } else {
+      message.uri = "";
+    }
+    if (object.amount !== undefined && object.amount !== null) {
+      message.amount = String(object.amount);
+    } else {
+      message.amount = "";
+    }
+    if (object.state !== undefined && object.state !== null) {
+      message.state = String(object.state);
+    } else {
+      message.state = "";
+    }
+    return message;
+  },
+
+  toJSON(message: MsgRequestPurchaseorder): unknown {
+    const obj: any = {};
+    message.creator !== undefined && (obj.creator = message.creator);
+    message.did !== undefined && (obj.did = message.did);
+    message.uri !== undefined && (obj.uri = message.uri);
+    message.amount !== undefined && (obj.amount = message.amount);
+    message.state !== undefined && (obj.state = message.state);
+    return obj;
+  },
+
+  fromPartial(
+    object: DeepPartial<MsgRequestPurchaseorder>
+  ): MsgRequestPurchaseorder {
+    const message = {
+      ...baseMsgRequestPurchaseorder,
+    } as MsgRequestPurchaseorder;
+    if (object.creator !== undefined && object.creator !== null) {
+      message.creator = object.creator;
+    } else {
+      message.creator = "";
+    }
+    if (object.did !== undefined && object.did !== null) {
+      message.did = object.did;
+    } else {
+      message.did = "";
+    }
+    if (object.uri !== undefined && object.uri !== null) {
+      message.uri = object.uri;
+    } else {
+      message.uri = "";
+    }
+    if (object.amount !== undefined && object.amount !== null) {
+      message.amount = object.amount;
+    } else {
+      message.amount = "";
+    }
+    if (object.state !== undefined && object.state !== null) {
+      message.state = object.state;
+    } else {
+      message.state = "";
+    }
+    return message;
+  },
+};
+
+const baseMsgRequestPurchaseorderResponse: object = {};
+
+export const MsgRequestPurchaseorderResponse = {
+  encode(
+    _: MsgRequestPurchaseorderResponse,
+    writer: Writer = Writer.create()
+  ): Writer {
+    return writer;
+  },
+
+  decode(
+    input: Reader | Uint8Array,
+    length?: number
+  ): MsgRequestPurchaseorderResponse {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = {
+      ...baseMsgRequestPurchaseorderResponse,
+    } as MsgRequestPurchaseorderResponse;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(_: any): MsgRequestPurchaseorderResponse {
+    const message = {
+      ...baseMsgRequestPurchaseorderResponse,
+    } as MsgRequestPurchaseorderResponse;
+    return message;
+  },
+
+  toJSON(_: MsgRequestPurchaseorderResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  fromPartial(
+    _: DeepPartial<MsgRequestPurchaseorderResponse>
+  ): MsgRequestPurchaseorderResponse {
+    const message = {
+      ...baseMsgRequestPurchaseorderResponse,
+    } as MsgRequestPurchaseorderResponse;
+    return message;
+  },
+};
+
 /** Msg defines the Msg service. */
 export interface Msg {
   FinancePurchaseorder(
@@ -1487,10 +1689,13 @@ export interface Msg {
   UpdateTimedoutPurchaseorder(
     request: MsgUpdateTimedoutPurchaseorder
   ): Promise<MsgUpdateTimedoutPurchaseorderResponse>;
-  /** this line is used by starport scaffolding # proto/tx/rpc */
   DeleteTimedoutPurchaseorder(
     request: MsgDeleteTimedoutPurchaseorder
   ): Promise<MsgDeleteTimedoutPurchaseorderResponse>;
+  /** this line is used by starport scaffolding # proto/tx/rpc */
+  RequestPurchaseorder(
+    request: MsgRequestPurchaseorder
+  ): Promise<MsgRequestPurchaseorderResponse>;
 }
 
 export class MsgClientImpl implements Msg {
@@ -1621,6 +1826,20 @@ export class MsgClientImpl implements Msg {
     );
     return promise.then((data) =>
       MsgDeleteTimedoutPurchaseorderResponse.decode(new Reader(data))
+    );
+  }
+
+  RequestPurchaseorder(
+    request: MsgRequestPurchaseorder
+  ): Promise<MsgRequestPurchaseorderResponse> {
+    const data = MsgRequestPurchaseorder.encode(request).finish();
+    const promise = this.rpc.request(
+      "stateset.core.purchaseorder.Msg",
+      "RequestPurchaseorder",
+      data
+    );
+    return promise.then((data) =>
+      MsgRequestPurchaseorderResponse.decode(new Reader(data))
     );
   }
 }

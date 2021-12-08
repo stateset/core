@@ -33,6 +33,8 @@ export type PurchaseorderMsgDeleteTimedoutPurchaseorderResponse = object;
 
 export type PurchaseorderMsgFinancePurchaseorderResponse = object;
 
+export type PurchaseorderMsgRequestPurchaseorderResponse = object;
+
 export type PurchaseorderMsgUpdateSentPurchaseorderResponse = object;
 
 export type PurchaseorderMsgUpdateTimedoutPurchaseorderResponse = object;

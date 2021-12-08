@@ -62,6 +62,15 @@ export interface MsgDeleteTimedoutPurchaseorder {
 }
 export interface MsgDeleteTimedoutPurchaseorderResponse {
 }
+export interface MsgRequestPurchaseorder {
+    creator: string;
+    did: string;
+    uri: string;
+    amount: string;
+    state: string;
+}
+export interface MsgRequestPurchaseorderResponse {
+}
 export declare const MsgFinancePurchaseorder: {
     encode(message: MsgFinancePurchaseorder, writer?: Writer): Writer;
     decode(input: Reader | Uint8Array, length?: number): MsgFinancePurchaseorder;
@@ -188,6 +197,20 @@ export declare const MsgDeleteTimedoutPurchaseorderResponse: {
     toJSON(_: MsgDeleteTimedoutPurchaseorderResponse): unknown;
     fromPartial(_: DeepPartial<MsgDeleteTimedoutPurchaseorderResponse>): MsgDeleteTimedoutPurchaseorderResponse;
 };
+export declare const MsgRequestPurchaseorder: {
+    encode(message: MsgRequestPurchaseorder, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgRequestPurchaseorder;
+    fromJSON(object: any): MsgRequestPurchaseorder;
+    toJSON(message: MsgRequestPurchaseorder): unknown;
+    fromPartial(object: DeepPartial<MsgRequestPurchaseorder>): MsgRequestPurchaseorder;
+};
+export declare const MsgRequestPurchaseorderResponse: {
+    encode(_: MsgRequestPurchaseorderResponse, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgRequestPurchaseorderResponse;
+    fromJSON(_: any): MsgRequestPurchaseorderResponse;
+    toJSON(_: MsgRequestPurchaseorderResponse): unknown;
+    fromPartial(_: DeepPartial<MsgRequestPurchaseorderResponse>): MsgRequestPurchaseorderResponse;
+};
 /** Msg defines the Msg service. */
 export interface Msg {
     FinancePurchaseorder(request: MsgFinancePurchaseorder): Promise<MsgFinancePurchaseorderResponse>;
@@ -198,8 +221,9 @@ export interface Msg {
     DeleteSentPurchaseorder(request: MsgDeleteSentPurchaseorder): Promise<MsgDeleteSentPurchaseorderResponse>;
     CreateTimedoutPurchaseorder(request: MsgCreateTimedoutPurchaseorder): Promise<MsgCreateTimedoutPurchaseorderResponse>;
     UpdateTimedoutPurchaseorder(request: MsgUpdateTimedoutPurchaseorder): Promise<MsgUpdateTimedoutPurchaseorderResponse>;
-    /** this line is used by starport scaffolding # proto/tx/rpc */
     DeleteTimedoutPurchaseorder(request: MsgDeleteTimedoutPurchaseorder): Promise<MsgDeleteTimedoutPurchaseorderResponse>;
+    /** this line is used by starport scaffolding # proto/tx/rpc */
+    RequestPurchaseorder(request: MsgRequestPurchaseorder): Promise<MsgRequestPurchaseorderResponse>;
 }
 export declare class MsgClientImpl implements Msg {
     private readonly rpc;
@@ -213,6 +237,7 @@ export declare class MsgClientImpl implements Msg {
     CreateTimedoutPurchaseorder(request: MsgCreateTimedoutPurchaseorder): Promise<MsgCreateTimedoutPurchaseorderResponse>;
     UpdateTimedoutPurchaseorder(request: MsgUpdateTimedoutPurchaseorder): Promise<MsgUpdateTimedoutPurchaseorderResponse>;
     DeleteTimedoutPurchaseorder(request: MsgDeleteTimedoutPurchaseorder): Promise<MsgDeleteTimedoutPurchaseorderResponse>;
+    RequestPurchaseorder(request: MsgRequestPurchaseorder): Promise<MsgRequestPurchaseorderResponse>;
 }
 interface Rpc {
     request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;

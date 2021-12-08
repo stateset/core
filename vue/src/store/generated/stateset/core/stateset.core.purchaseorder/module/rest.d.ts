@@ -14,6 +14,7 @@ export interface PurchaseorderMsgCreateTimedoutPurchaseorderResponse {
 export declare type PurchaseorderMsgDeleteSentPurchaseorderResponse = object;
 export declare type PurchaseorderMsgDeleteTimedoutPurchaseorderResponse = object;
 export declare type PurchaseorderMsgFinancePurchaseorderResponse = object;
+export declare type PurchaseorderMsgRequestPurchaseorderResponse = object;
 export declare type PurchaseorderMsgUpdateSentPurchaseorderResponse = object;
 export declare type PurchaseorderMsgUpdateTimedoutPurchaseorderResponse = object;
 export interface PurchaseorderPurchaseorder {
