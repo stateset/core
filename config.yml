@@ -13,8 +13,6 @@ validator:
   name: alice
   staked: "100000000stake"
 client:
-  openapi:
-    path: "docs/static/openapi.yml"
   vuex:
     path: "vue/src/store"
 faucet:
