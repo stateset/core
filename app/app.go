@@ -504,10 +504,10 @@ func New(
 	)
 
 	// register wasm gov proposal types
-	enabledProposals := GetEnabledProposals()
-	if len(enabledProposals) != 0 {
-		govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
-	}
+	//enabledProposals := GetEnabledProposals()
+	//if len(enabledProposals) != 0 {
+	//	govRouter.AddRoute(wasm.RouterKey, wasm.NewWasmProposalHandler(app.wasmKeeper, enabledProposals))
+	//}
 
 	// Create static IBC router, add transfer route, then set and seal it
 	ibcRouter := porttypes.NewRouter()
