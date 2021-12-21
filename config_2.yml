@@ -1,0 +1,14 @@
+accounts:
+  - name: alice
+    coins: ["20000state", "200000000stake"]
+  - name: bob
+    coins: ["10000state", "100000000stake"]
+validator:
+  name: alice
+  staked: "100000000stake"
+client:
+  vuex:
+    path: "vue/src/store"
+faucet:
+  name: bob
+  coins: ["80000000state", "100000stake"]
