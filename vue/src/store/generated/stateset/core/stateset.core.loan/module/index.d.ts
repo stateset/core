@@ -1,11 +1,11 @@
 import { StdFee } from "@cosmjs/launchpad";
 import { OfflineSigner, EncodeObject } from "@cosmjs/proto-signing";
 import { Api } from "./rest";
-import { MsgRequestLoan } from "./types/loan/tx";
-import { MsgCancelLoan } from "./types/loan/tx";
 import { MsgLiquidateLoan } from "./types/loan/tx";
-import { MsgApproveLoan } from "./types/loan/tx";
+import { MsgCancelLoan } from "./types/loan/tx";
 import { MsgRepayLoan } from "./types/loan/tx";
+import { MsgRequestLoan } from "./types/loan/tx";
+import { MsgApproveLoan } from "./types/loan/tx";
 export declare const MissingWalletError: Error;
 interface TxClientOptions {
     addr: string;
@@ -16,11 +16,11 @@ interface SignAndBroadcastOptions {
 }
 declare const txClient: (wallet: OfflineSigner, { addr: addr }?: TxClientOptions) => Promise<{
     signAndBroadcast: (msgs: EncodeObject[], { fee, memo }?: SignAndBroadcastOptions) => Promise<import("@cosmjs/stargate").BroadcastTxResponse>;
-    msgRequestLoan: (data: MsgRequestLoan) => EncodeObject;
-    msgCancelLoan: (data: MsgCancelLoan) => EncodeObject;
     msgLiquidateLoan: (data: MsgLiquidateLoan) => EncodeObject;
-    msgApproveLoan: (data: MsgApproveLoan) => EncodeObject;
+    msgCancelLoan: (data: MsgCancelLoan) => EncodeObject;
     msgRepayLoan: (data: MsgRepayLoan) => EncodeObject;
+    msgRequestLoan: (data: MsgRequestLoan) => EncodeObject;
+    msgApproveLoan: (data: MsgApproveLoan) => EncodeObject;
 }>;
 interface QueryClientOptions {
     addr: string;

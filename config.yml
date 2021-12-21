@@ -1,14 +1,14 @@
 accounts:
   - name: alice
-    coins: ["20000state", "200000000stake"]
+    coins: ["2000000state", "200000000stake"]
   - name: bob
-    coins: ["10000state", "100000000stake"]
+    coins: ["1000000state", "100000000stake"]
   - name: carol
-    coins: ["10000state", "100000000stake"]
+    coins: ["1000000state", "100000000stake"]
   - name: dom
-    coins: ["10000state", "100000000stake"]
+    coins: ["1000000state", "100000000stake"]
   - name: eve
-    coins: ["10000state", "100000000stake"]
+    coins: ["1000000state", "100000000stake"]
 validator:
   name: alice
   staked: "100000000stake"
