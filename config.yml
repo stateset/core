@@ -18,5 +18,3 @@ client:
 faucet:
   name: bob
   coins: ["80000000state", "100000stake"]
-build:
-  binary: "statesetd"

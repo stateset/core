@@ -5,18 +5,18 @@ import { SigningStargateClient } from "@cosmjs/stargate";
 import { Registry, OfflineSigner, EncodeObject, DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { Api } from "./rest";
 import { MsgCancelLoan } from "./types/loan/tx";
-import { MsgRepayLoan } from "./types/loan/tx";
-import { MsgLiquidateLoan } from "./types/loan/tx";
 import { MsgApproveLoan } from "./types/loan/tx";
+import { MsgRepayLoan } from "./types/loan/tx";
 import { MsgRequestLoan } from "./types/loan/tx";
+import { MsgLiquidateLoan } from "./types/loan/tx";
 
 
 const types = [
   ["/stateset.core.loan.MsgCancelLoan", MsgCancelLoan],
-  ["/stateset.core.loan.MsgRepayLoan", MsgRepayLoan],
-  ["/stateset.core.loan.MsgLiquidateLoan", MsgLiquidateLoan],
   ["/stateset.core.loan.MsgApproveLoan", MsgApproveLoan],
+  ["/stateset.core.loan.MsgRepayLoan", MsgRepayLoan],
   ["/stateset.core.loan.MsgRequestLoan", MsgRequestLoan],
+  ["/stateset.core.loan.MsgLiquidateLoan", MsgLiquidateLoan],
   
 ];
 export const MissingWalletError = new Error("wallet is required");
@@ -46,10 +46,10 @@ const txClient = async (wallet: OfflineSigner, { addr: addr }: TxClientOptions =
   return {
     signAndBroadcast: (msgs: EncodeObject[], { fee, memo }: SignAndBroadcastOptions = {fee: defaultFee, memo: ""}) => client.signAndBroadcast(address, msgs, fee,memo),
     msgCancelLoan: (data: MsgCancelLoan): EncodeObject => ({ typeUrl: "/stateset.core.loan.MsgCancelLoan", value: data }),
-    msgRepayLoan: (data: MsgRepayLoan): EncodeObject => ({ typeUrl: "/stateset.core.loan.MsgRepayLoan", value: data }),
-    msgLiquidateLoan: (data: MsgLiquidateLoan): EncodeObject => ({ typeUrl: "/stateset.core.loan.MsgLiquidateLoan", value: data }),
     msgApproveLoan: (data: MsgApproveLoan): EncodeObject => ({ typeUrl: "/stateset.core.loan.MsgApproveLoan", value: data }),
+    msgRepayLoan: (data: MsgRepayLoan): EncodeObject => ({ typeUrl: "/stateset.core.loan.MsgRepayLoan", value: data }),
     msgRequestLoan: (data: MsgRequestLoan): EncodeObject => ({ typeUrl: "/stateset.core.loan.MsgRequestLoan", value: data }),
+    msgLiquidateLoan: (data: MsgLiquidateLoan): EncodeObject => ({ typeUrl: "/stateset.core.loan.MsgLiquidateLoan", value: data }),
     
   };
 };
