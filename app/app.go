@@ -115,7 +115,7 @@ import (
 
 const (
 	AccountAddressPrefix = "stateset"
-	Name                 = "core"
+	Name                 = "stateset"
 )
 
 // this line is used by starport scaffolding # stargate/wasm/app/enabledProposals
