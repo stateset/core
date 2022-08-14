@@ -10,8 +10,17 @@ import (
 func (k msgServer) CreateInvoice(goCtx context.Context, msg *types.MsgCreateInvoice) (*types.MsgCreateInvoiceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// TODO: Handling the message
-	_ = ctx
+	var invoice = types.Invoice {
+		Did:    msg.Did,
+		Uri:    msg.Uri,
+		Amount: msg.Amount,
+		State:  "requested",
+	}
+
+	k.AppendInvoice(
+		ctx,
+		invoice,
+	)
 
 	return &types.MsgCreateInvoiceResponse{}, nil
 }
