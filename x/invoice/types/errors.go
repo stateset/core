@@ -8,5 +8,6 @@ import (
 
 // x/invoice module sentinel errors
 var (
-	ErrSample = sdkerrors.Register(ModuleName, 1100, "sample error")
+	ErrWrongPurchaseOrderState = sdkerrors.Register(ModuleName, 1, "wrong purchaseorder state")
+	ErrDeadline                = sdkerrors.Register(ModuleName, 2, "deadline")
 )
