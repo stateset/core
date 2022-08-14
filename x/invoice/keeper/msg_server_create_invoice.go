@@ -2,9 +2,13 @@ package keeper
 
 import (
 	"context"
+	"fmt"
 
+	
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/stateset/core/x/invoice/types"
+
 )
 
 func (k msgServer) CreateInvoice(goCtx context.Context, msg *types.MsgCreateInvoice) (*types.MsgCreateInvoiceResponse, error) {
@@ -12,7 +16,6 @@ func (k msgServer) CreateInvoice(goCtx context.Context, msg *types.MsgCreateInvo
 
 	var invoice = types.Invoice {
 		Did:    msg.Did,
-		Uri:    msg.Uri,
 		Amount: msg.Amount,
 		State:  "requested",
 	}
