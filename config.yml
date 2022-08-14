@@ -21,4 +21,4 @@ faucet:
 build:
   binary: "statesetd"
 genesis:
-  chain_id: "stateset"
+  chain_id: "stateset-1-testnet"

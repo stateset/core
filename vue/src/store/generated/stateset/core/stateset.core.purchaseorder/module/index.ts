@@ -4,34 +4,34 @@ import { StdFee } from "@cosmjs/launchpad";
 import { SigningStargateClient } from "@cosmjs/stargate";
 import { Registry, OfflineSigner, EncodeObject, DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { Api } from "./rest";
-import { MsgCancelPurchaseorder } from "./types/purchaseorder/tx";
 import { MsgCreateTimedoutPurchaseorder } from "./types/purchaseorder/tx";
-import { MsgUpdateTimedoutPurchaseorder } from "./types/purchaseorder/tx";
-import { MsgDeleteTimedoutPurchaseorder } from "./types/purchaseorder/tx";
-import { MsgCreateSentPurchaseorder } from "./types/purchaseorder/tx";
 import { MsgRequestPurchaseorder } from "./types/purchaseorder/tx";
-import { MsgUpdateSentPurchaseorder } from "./types/purchaseorder/tx";
 import { MsgDeleteSentPurchaseorder } from "./types/purchaseorder/tx";
-import { MsgCompletePurchaseorder } from "./types/purchaseorder/tx";
 import { MsgFinancePurchaseorder } from "./types/purchaseorder/tx";
+import { MsgCompletePurchaseorder } from "./types/purchaseorder/tx";
+import { MsgCreateSentPurchaseorder } from "./types/purchaseorder/tx";
+import { MsgDeleteTimedoutPurchaseorder } from "./types/purchaseorder/tx";
+import { MsgUpdateSentPurchaseorder } from "./types/purchaseorder/tx";
+import { MsgUpdateTimedoutPurchaseorder } from "./types/purchaseorder/tx";
+import { MsgCancelPurchaseorder } from "./types/purchaseorder/tx";
 
 
 const types = [
-  ["/stateset.core.purchaseorder.MsgCancelPurchaseorder", MsgCancelPurchaseorder],
   ["/stateset.core.purchaseorder.MsgCreateTimedoutPurchaseorder", MsgCreateTimedoutPurchaseorder],
-  ["/stateset.core.purchaseorder.MsgUpdateTimedoutPurchaseorder", MsgUpdateTimedoutPurchaseorder],
-  ["/stateset.core.purchaseorder.MsgDeleteTimedoutPurchaseorder", MsgDeleteTimedoutPurchaseorder],
-  ["/stateset.core.purchaseorder.MsgCreateSentPurchaseorder", MsgCreateSentPurchaseorder],
   ["/stateset.core.purchaseorder.MsgRequestPurchaseorder", MsgRequestPurchaseorder],
-  ["/stateset.core.purchaseorder.MsgUpdateSentPurchaseorder", MsgUpdateSentPurchaseorder],
   ["/stateset.core.purchaseorder.MsgDeleteSentPurchaseorder", MsgDeleteSentPurchaseorder],
-  ["/stateset.core.purchaseorder.MsgCompletePurchaseorder", MsgCompletePurchaseorder],
   ["/stateset.core.purchaseorder.MsgFinancePurchaseorder", MsgFinancePurchaseorder],
+  ["/stateset.core.purchaseorder.MsgCompletePurchaseorder", MsgCompletePurchaseorder],
+  ["/stateset.core.purchaseorder.MsgCreateSentPurchaseorder", MsgCreateSentPurchaseorder],
+  ["/stateset.core.purchaseorder.MsgDeleteTimedoutPurchaseorder", MsgDeleteTimedoutPurchaseorder],
+  ["/stateset.core.purchaseorder.MsgUpdateSentPurchaseorder", MsgUpdateSentPurchaseorder],
+  ["/stateset.core.purchaseorder.MsgUpdateTimedoutPurchaseorder", MsgUpdateTimedoutPurchaseorder],
+  ["/stateset.core.purchaseorder.MsgCancelPurchaseorder", MsgCancelPurchaseorder],
   
 ];
 export const MissingWalletError = new Error("wallet is required");
 
-const registry = new Registry(<any>types);
+export const registry = new Registry(<any>types);
 
 const defaultFee = {
   amount: [],
@@ -49,22 +49,26 @@ interface SignAndBroadcastOptions {
 
 const txClient = async (wallet: OfflineSigner, { addr: addr }: TxClientOptions = { addr: "http://localhost:26657" }) => {
   if (!wallet) throw MissingWalletError;
-
-  const client = await SigningStargateClient.connectWithSigner(addr, wallet, { registry });
+  let client;
+  if (addr) {
+    client = await SigningStargateClient.connectWithSigner(addr, wallet, { registry });
+  }else{
+    client = await SigningStargateClient.offline( wallet, { registry });
+  }
   const { address } = (await wallet.getAccounts())[0];
 
   return {
     signAndBroadcast: (msgs: EncodeObject[], { fee, memo }: SignAndBroadcastOptions = {fee: defaultFee, memo: ""}) => client.signAndBroadcast(address, msgs, fee,memo),
-    msgCancelPurchaseorder: (data: MsgCancelPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgCancelPurchaseorder", value: data }),
-    msgCreateTimedoutPurchaseorder: (data: MsgCreateTimedoutPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgCreateTimedoutPurchaseorder", value: data }),
-    msgUpdateTimedoutPurchaseorder: (data: MsgUpdateTimedoutPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgUpdateTimedoutPurchaseorder", value: data }),
-    msgDeleteTimedoutPurchaseorder: (data: MsgDeleteTimedoutPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgDeleteTimedoutPurchaseorder", value: data }),
-    msgCreateSentPurchaseorder: (data: MsgCreateSentPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgCreateSentPurchaseorder", value: data }),
-    msgRequestPurchaseorder: (data: MsgRequestPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgRequestPurchaseorder", value: data }),
-    msgUpdateSentPurchaseorder: (data: MsgUpdateSentPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgUpdateSentPurchaseorder", value: data }),
-    msgDeleteSentPurchaseorder: (data: MsgDeleteSentPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgDeleteSentPurchaseorder", value: data }),
-    msgCompletePurchaseorder: (data: MsgCompletePurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgCompletePurchaseorder", value: data }),
-    msgFinancePurchaseorder: (data: MsgFinancePurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgFinancePurchaseorder", value: data }),
+    msgCreateTimedoutPurchaseorder: (data: MsgCreateTimedoutPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgCreateTimedoutPurchaseorder", value: MsgCreateTimedoutPurchaseorder.fromPartial( data ) }),
+    msgRequestPurchaseorder: (data: MsgRequestPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgRequestPurchaseorder", value: MsgRequestPurchaseorder.fromPartial( data ) }),
+    msgDeleteSentPurchaseorder: (data: MsgDeleteSentPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgDeleteSentPurchaseorder", value: MsgDeleteSentPurchaseorder.fromPartial( data ) }),
+    msgFinancePurchaseorder: (data: MsgFinancePurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgFinancePurchaseorder", value: MsgFinancePurchaseorder.fromPartial( data ) }),
+    msgCompletePurchaseorder: (data: MsgCompletePurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgCompletePurchaseorder", value: MsgCompletePurchaseorder.fromPartial( data ) }),
+    msgCreateSentPurchaseorder: (data: MsgCreateSentPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgCreateSentPurchaseorder", value: MsgCreateSentPurchaseorder.fromPartial( data ) }),
+    msgDeleteTimedoutPurchaseorder: (data: MsgDeleteTimedoutPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgDeleteTimedoutPurchaseorder", value: MsgDeleteTimedoutPurchaseorder.fromPartial( data ) }),
+    msgUpdateSentPurchaseorder: (data: MsgUpdateSentPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgUpdateSentPurchaseorder", value: MsgUpdateSentPurchaseorder.fromPartial( data ) }),
+    msgUpdateTimedoutPurchaseorder: (data: MsgUpdateTimedoutPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgUpdateTimedoutPurchaseorder", value: MsgUpdateTimedoutPurchaseorder.fromPartial( data ) }),
+    msgCancelPurchaseorder: (data: MsgCancelPurchaseorder): EncodeObject => ({ typeUrl: "/stateset.core.purchaseorder.MsgCancelPurchaseorder", value: MsgCancelPurchaseorder.fromPartial( data ) }),
     
   };
 };

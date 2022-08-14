@@ -50,6 +50,15 @@ export interface MsgDeleteTimedoutInvoice {
 }
 export interface MsgDeleteTimedoutInvoiceResponse {
 }
+export interface MsgCreateInvoice {
+    creator: string;
+    id: string;
+    did: string;
+    amount: string;
+    state: string;
+}
+export interface MsgCreateInvoiceResponse {
+}
 export declare const MsgFactorInvoice: {
     encode(message: MsgFactorInvoice, writer?: Writer): Writer;
     decode(input: Reader | Uint8Array, length?: number): MsgFactorInvoice;
@@ -148,6 +157,20 @@ export declare const MsgDeleteTimedoutInvoiceResponse: {
     toJSON(_: MsgDeleteTimedoutInvoiceResponse): unknown;
     fromPartial(_: DeepPartial<MsgDeleteTimedoutInvoiceResponse>): MsgDeleteTimedoutInvoiceResponse;
 };
+export declare const MsgCreateInvoice: {
+    encode(message: MsgCreateInvoice, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgCreateInvoice;
+    fromJSON(object: any): MsgCreateInvoice;
+    toJSON(message: MsgCreateInvoice): unknown;
+    fromPartial(object: DeepPartial<MsgCreateInvoice>): MsgCreateInvoice;
+};
+export declare const MsgCreateInvoiceResponse: {
+    encode(_: MsgCreateInvoiceResponse, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): MsgCreateInvoiceResponse;
+    fromJSON(_: any): MsgCreateInvoiceResponse;
+    toJSON(_: MsgCreateInvoiceResponse): unknown;
+    fromPartial(_: DeepPartial<MsgCreateInvoiceResponse>): MsgCreateInvoiceResponse;
+};
 /** Msg defines the Msg service. */
 export interface Msg {
     FactorInvoice(request: MsgFactorInvoice): Promise<MsgFactorInvoiceResponse>;
@@ -156,8 +179,9 @@ export interface Msg {
     DeleteSentInvoice(request: MsgDeleteSentInvoice): Promise<MsgDeleteSentInvoiceResponse>;
     CreateTimedoutInvoice(request: MsgCreateTimedoutInvoice): Promise<MsgCreateTimedoutInvoiceResponse>;
     UpdateTimedoutInvoice(request: MsgUpdateTimedoutInvoice): Promise<MsgUpdateTimedoutInvoiceResponse>;
-    /** this line is used by starport scaffolding # proto/tx/rpc */
     DeleteTimedoutInvoice(request: MsgDeleteTimedoutInvoice): Promise<MsgDeleteTimedoutInvoiceResponse>;
+    /** this line is used by starport scaffolding # proto/tx/rpc */
+    CreateInvoice(request: MsgCreateInvoice): Promise<MsgCreateInvoiceResponse>;
 }
 export declare class MsgClientImpl implements Msg {
     private readonly rpc;
@@ -169,6 +193,7 @@ export declare class MsgClientImpl implements Msg {
     CreateTimedoutInvoice(request: MsgCreateTimedoutInvoice): Promise<MsgCreateTimedoutInvoiceResponse>;
     UpdateTimedoutInvoice(request: MsgUpdateTimedoutInvoice): Promise<MsgUpdateTimedoutInvoiceResponse>;
     DeleteTimedoutInvoice(request: MsgDeleteTimedoutInvoice): Promise<MsgDeleteTimedoutInvoiceResponse>;
+    CreateInvoice(request: MsgCreateInvoice): Promise<MsgCreateInvoiceResponse>;
 }
 interface Rpc {
     request(service: string, method: string, data: Uint8Array): Promise<Uint8Array>;

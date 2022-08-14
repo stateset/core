@@ -17,6 +17,8 @@ export interface InvoiceInvoice {
   amount?: string;
 }
 
+export type InvoiceMsgCreateInvoiceResponse = object;
+
 export interface InvoiceMsgCreateSentInvoiceResponse {
   /** @format uint64 */
   id?: string;
