@@ -2,7 +2,7 @@
 import * as Long from "long";
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
 export const protobufPackage = "stateset.core.invoice";
-const baseInvoice = { id: 0, did: "", uri: "", amount: "" };
+const baseInvoice = { id: 0, did: "", uri: "", amount: "", state: "" };
 export const Invoice = {
     encode(message, writer = Writer.create()) {
         if (message.id !== 0) {
@@ -16,6 +16,9 @@ export const Invoice = {
         }
         if (message.amount !== "") {
             writer.uint32(34).string(message.amount);
+        }
+        if (message.state !== "") {
+            writer.uint32(42).string(message.state);
         }
         return writer;
     },
@@ -37,6 +40,9 @@ export const Invoice = {
                     break;
                 case 4:
                     message.amount = reader.string();
+                    break;
+                case 5:
+                    message.state = reader.string();
                     break;
                 default:
                     reader.skipType(tag & 7);
@@ -71,6 +77,12 @@ export const Invoice = {
         else {
             message.amount = "";
         }
+        if (object.state !== undefined && object.state !== null) {
+            message.state = String(object.state);
+        }
+        else {
+            message.state = "";
+        }
         return message;
     },
     toJSON(message) {
@@ -79,6 +91,7 @@ export const Invoice = {
         message.did !== undefined && (obj.did = message.did);
         message.uri !== undefined && (obj.uri = message.uri);
         message.amount !== undefined && (obj.amount = message.amount);
+        message.state !== undefined && (obj.state = message.state);
         return obj;
     },
     fromPartial(object) {
@@ -106,6 +119,12 @@ export const Invoice = {
         }
         else {
             message.amount = "";
+        }
+        if (object.state !== undefined && object.state !== null) {
+            message.state = object.state;
+        }
+        else {
+            message.state = "";
         }
         return message;
     },

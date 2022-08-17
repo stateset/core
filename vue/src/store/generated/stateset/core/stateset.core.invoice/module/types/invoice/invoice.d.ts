@@ -5,6 +5,7 @@ export interface Invoice {
     did: string;
     uri: string;
     amount: string;
+    state: string;
 }
 export declare const Invoice: {
     encode(message: Invoice, writer?: Writer): Writer;

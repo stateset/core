@@ -4,6 +4,7 @@ export interface InvoiceInvoice {
     did?: string;
     uri?: string;
     amount?: string;
+    state?: string;
 }
 export declare type InvoiceMsgCreateInvoiceResponse = object;
 export interface InvoiceMsgCreateSentInvoiceResponse {

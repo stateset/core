@@ -15,6 +15,7 @@ export interface InvoiceInvoice {
   did?: string;
   uri?: string;
   amount?: string;
+  state?: string;
 }
 
 export type InvoiceMsgCreateInvoiceResponse = object;
