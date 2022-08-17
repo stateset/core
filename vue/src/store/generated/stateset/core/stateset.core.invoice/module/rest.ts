@@ -15,6 +15,7 @@ export interface InvoiceInvoice {
   did?: string;
   uri?: string;
   amount?: string;
+  state?: string;
 }
 
 export type InvoiceMsgCreateInvoiceResponse = object;
@@ -159,7 +160,7 @@ export interface V1Beta1PageRequest {
    * count_total is only respected when offset is used. It is ignored when key
    * is set.
    */
-  countTotal?: boolean;
+  count_total?: boolean;
 
   /**
    * reverse is set to true if results are to be returned in the descending order.
@@ -180,7 +181,7 @@ corresponding request message has used PageRequest.
 */
 export interface V1Beta1PageResponse {
   /** @format byte */
-  nextKey?: string;
+  next_key?: string;
 
   /** @format uint64 */
   total?: string;
@@ -395,7 +396,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       "pagination.key"?: string;
       "pagination.offset"?: string;
       "pagination.limit"?: string;
-      "pagination.countTotal"?: boolean;
+      "pagination.count_total"?: boolean;
       "pagination.reverse"?: boolean;
     },
     params: RequestParams = {},
@@ -437,7 +438,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       "pagination.key"?: string;
       "pagination.offset"?: string;
       "pagination.limit"?: string;
-      "pagination.countTotal"?: boolean;
+      "pagination.count_total"?: boolean;
       "pagination.reverse"?: boolean;
     },
     params: RequestParams = {},
@@ -479,7 +480,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       "pagination.key"?: string;
       "pagination.offset"?: string;
       "pagination.limit"?: string;
-      "pagination.countTotal"?: boolean;
+      "pagination.count_total"?: boolean;
       "pagination.reverse"?: boolean;
     },
     params: RequestParams = {},

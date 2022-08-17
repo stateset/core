@@ -2,6 +2,7 @@
   <div>
     <div class="container">
       <!-- this line is used by starport scaffolding # 4 -->
+		<SpType modulePath="stateset.core.refund" moduleType="Refund"  />
 		<SpType modulePath="stateset.core.agreement" moduleType="Agreement"  />
 		<SpType modulePath="stateset.core.agreement" moduleType="TimedoutAgreement"  />
 		<SpType modulePath="stateset.core.agreement" moduleType="SentAgreement"  />
