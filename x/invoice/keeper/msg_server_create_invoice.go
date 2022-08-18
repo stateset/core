@@ -14,7 +14,7 @@ func (k msgServer) CreateInvoice(goCtx context.Context, msg *types.MsgCreateInvo
 		Did:    msg.Did,
 		Amount: msg.Amount,
 		State:  "requested",
-		Purchaser: msg.Purchaser
+		Purchaser: msg.Purchaser,
 	}
 
 	k.AppendInvoice(
