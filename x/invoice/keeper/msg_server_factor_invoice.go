@@ -22,8 +22,8 @@ func (k msgServer) FactorInvoice(goCtx context.Context, msg *types.MsgFactorInvo
 	}
 
 	factor, _ := sdk.AccAddressFromBech32(msg.Creator)
-	seller, _ := sdk.AccAddressFromBech32(invoice.Creator)
-	amount, _ := sdk.ParseCoinsNormalized(invoice.Amount)
+	seller, _ := sdk.AccAddressFromBech32(invoice.Seller)
+	amount, _ := sdk.ParseCoinsNormalized(invoice.Amount * 0.9)
 
 	k.bankKeeper.SendCoins(ctx, factor, seller, amount)
 

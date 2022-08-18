@@ -16,6 +16,7 @@ func NewMsgCreateInvoice(creator string, id string, did string, amount string, s
 		Did:     did,
 		Amount:  amount,
 		State:   state,
+		Seller: creator,
 		Purchaser: purchaser,
 	}
 }
