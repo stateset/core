@@ -30,10 +30,7 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 
 	amount, _ := sdk.ParseCoinsNormalized(invoice.Amount)
 
-	err := k.bankKeeper.SendCoins(ctx, purchaser, factor, amount)
-	if err != nil {
-		return nil, sdkerrors.Wrap(types.ErrWrongInvoiceState, "Cannot send payment")
-	}
+	k.bankKeeper.SendCoins(ctx, purchaser, factor, amount)
 
 	invoice.State = "paid"
 
