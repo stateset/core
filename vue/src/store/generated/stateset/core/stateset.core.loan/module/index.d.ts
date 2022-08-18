@@ -2,8 +2,8 @@ import { StdFee } from "@cosmjs/launchpad";
 import { Registry, OfflineSigner, EncodeObject } from "@cosmjs/proto-signing";
 import { Api } from "./rest";
 import { MsgRepayLoan } from "./types/loan/tx";
-import { MsgApproveLoan } from "./types/loan/tx";
 import { MsgCancelLoan } from "./types/loan/tx";
+import { MsgApproveLoan } from "./types/loan/tx";
 import { MsgRequestLoan } from "./types/loan/tx";
 import { MsgLiquidateLoan } from "./types/loan/tx";
 export declare const MissingWalletError: Error;
@@ -18,8 +18,8 @@ interface SignAndBroadcastOptions {
 declare const txClient: (wallet: OfflineSigner, { addr: addr }?: TxClientOptions) => Promise<{
     signAndBroadcast: (msgs: EncodeObject[], { fee, memo }?: SignAndBroadcastOptions) => any;
     msgRepayLoan: (data: MsgRepayLoan) => EncodeObject;
-    msgApproveLoan: (data: MsgApproveLoan) => EncodeObject;
     msgCancelLoan: (data: MsgCancelLoan) => EncodeObject;
+    msgApproveLoan: (data: MsgApproveLoan) => EncodeObject;
     msgRequestLoan: (data: MsgRequestLoan) => EncodeObject;
     msgLiquidateLoan: (data: MsgLiquidateLoan) => EncodeObject;
 }>;

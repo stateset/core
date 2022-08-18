@@ -4,25 +4,25 @@ import { StdFee } from "@cosmjs/launchpad";
 import { SigningStargateClient } from "@cosmjs/stargate";
 import { Registry, OfflineSigner, EncodeObject, DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
 import { Api } from "./rest";
+import { MsgDeleteTimedoutInvoice } from "./types/invoice/tx";
+import { MsgUpdateSentInvoice } from "./types/invoice/tx";
 import { MsgCreateInvoice } from "./types/invoice/tx";
-import { MsgDeleteSentInvoice } from "./types/invoice/tx";
+import { MsgFactorInvoice } from "./types/invoice/tx";
+import { MsgUpdateTimedoutInvoice } from "./types/invoice/tx";
 import { MsgCreateTimedoutInvoice } from "./types/invoice/tx";
 import { MsgCreateSentInvoice } from "./types/invoice/tx";
-import { MsgUpdateTimedoutInvoice } from "./types/invoice/tx";
-import { MsgUpdateSentInvoice } from "./types/invoice/tx";
-import { MsgDeleteTimedoutInvoice } from "./types/invoice/tx";
-import { MsgFactorInvoice } from "./types/invoice/tx";
+import { MsgDeleteSentInvoice } from "./types/invoice/tx";
 
 
 const types = [
+  ["/stateset.core.invoice.MsgDeleteTimedoutInvoice", MsgDeleteTimedoutInvoice],
+  ["/stateset.core.invoice.MsgUpdateSentInvoice", MsgUpdateSentInvoice],
   ["/stateset.core.invoice.MsgCreateInvoice", MsgCreateInvoice],
-  ["/stateset.core.invoice.MsgDeleteSentInvoice", MsgDeleteSentInvoice],
+  ["/stateset.core.invoice.MsgFactorInvoice", MsgFactorInvoice],
+  ["/stateset.core.invoice.MsgUpdateTimedoutInvoice", MsgUpdateTimedoutInvoice],
   ["/stateset.core.invoice.MsgCreateTimedoutInvoice", MsgCreateTimedoutInvoice],
   ["/stateset.core.invoice.MsgCreateSentInvoice", MsgCreateSentInvoice],
-  ["/stateset.core.invoice.MsgUpdateTimedoutInvoice", MsgUpdateTimedoutInvoice],
-  ["/stateset.core.invoice.MsgUpdateSentInvoice", MsgUpdateSentInvoice],
-  ["/stateset.core.invoice.MsgDeleteTimedoutInvoice", MsgDeleteTimedoutInvoice],
-  ["/stateset.core.invoice.MsgFactorInvoice", MsgFactorInvoice],
+  ["/stateset.core.invoice.MsgDeleteSentInvoice", MsgDeleteSentInvoice],
   
 ];
 export const MissingWalletError = new Error("wallet is required");
@@ -55,14 +55,14 @@ const txClient = async (wallet: OfflineSigner, { addr: addr }: TxClientOptions =
 
   return {
     signAndBroadcast: (msgs: EncodeObject[], { fee, memo }: SignAndBroadcastOptions = {fee: defaultFee, memo: ""}) => client.signAndBroadcast(address, msgs, fee,memo),
+    msgDeleteTimedoutInvoice: (data: MsgDeleteTimedoutInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgDeleteTimedoutInvoice", value: MsgDeleteTimedoutInvoice.fromPartial( data ) }),
+    msgUpdateSentInvoice: (data: MsgUpdateSentInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgUpdateSentInvoice", value: MsgUpdateSentInvoice.fromPartial( data ) }),
     msgCreateInvoice: (data: MsgCreateInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgCreateInvoice", value: MsgCreateInvoice.fromPartial( data ) }),
-    msgDeleteSentInvoice: (data: MsgDeleteSentInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgDeleteSentInvoice", value: MsgDeleteSentInvoice.fromPartial( data ) }),
+    msgFactorInvoice: (data: MsgFactorInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgFactorInvoice", value: MsgFactorInvoice.fromPartial( data ) }),
+    msgUpdateTimedoutInvoice: (data: MsgUpdateTimedoutInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgUpdateTimedoutInvoice", value: MsgUpdateTimedoutInvoice.fromPartial( data ) }),
     msgCreateTimedoutInvoice: (data: MsgCreateTimedoutInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgCreateTimedoutInvoice", value: MsgCreateTimedoutInvoice.fromPartial( data ) }),
     msgCreateSentInvoice: (data: MsgCreateSentInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgCreateSentInvoice", value: MsgCreateSentInvoice.fromPartial( data ) }),
-    msgUpdateTimedoutInvoice: (data: MsgUpdateTimedoutInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgUpdateTimedoutInvoice", value: MsgUpdateTimedoutInvoice.fromPartial( data ) }),
-    msgUpdateSentInvoice: (data: MsgUpdateSentInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgUpdateSentInvoice", value: MsgUpdateSentInvoice.fromPartial( data ) }),
-    msgDeleteTimedoutInvoice: (data: MsgDeleteTimedoutInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgDeleteTimedoutInvoice", value: MsgDeleteTimedoutInvoice.fromPartial( data ) }),
-    msgFactorInvoice: (data: MsgFactorInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgFactorInvoice", value: MsgFactorInvoice.fromPartial( data ) }),
+    msgDeleteSentInvoice: (data: MsgDeleteSentInvoice): EncodeObject => ({ typeUrl: "/stateset.core.invoice.MsgDeleteSentInvoice", value: MsgDeleteSentInvoice.fromPartial( data ) }),
     
   };
 };

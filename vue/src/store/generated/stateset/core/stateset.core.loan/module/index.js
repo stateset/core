@@ -3,14 +3,14 @@ import { SigningStargateClient } from "@cosmjs/stargate";
 import { Registry } from "@cosmjs/proto-signing";
 import { Api } from "./rest";
 import { MsgRepayLoan } from "./types/loan/tx";
-import { MsgApproveLoan } from "./types/loan/tx";
 import { MsgCancelLoan } from "./types/loan/tx";
+import { MsgApproveLoan } from "./types/loan/tx";
 import { MsgRequestLoan } from "./types/loan/tx";
 import { MsgLiquidateLoan } from "./types/loan/tx";
 const types = [
     ["/stateset.core.loan.MsgRepayLoan", MsgRepayLoan],
-    ["/stateset.core.loan.MsgApproveLoan", MsgApproveLoan],
     ["/stateset.core.loan.MsgCancelLoan", MsgCancelLoan],
+    ["/stateset.core.loan.MsgApproveLoan", MsgApproveLoan],
     ["/stateset.core.loan.MsgRequestLoan", MsgRequestLoan],
     ["/stateset.core.loan.MsgLiquidateLoan", MsgLiquidateLoan],
 ];
@@ -34,8 +34,8 @@ const txClient = async (wallet, { addr: addr } = { addr: "http://localhost:26657
     return {
         signAndBroadcast: (msgs, { fee, memo } = { fee: defaultFee, memo: "" }) => client.signAndBroadcast(address, msgs, fee, memo),
         msgRepayLoan: (data) => ({ typeUrl: "/stateset.core.loan.MsgRepayLoan", value: MsgRepayLoan.fromPartial(data) }),
-        msgApproveLoan: (data) => ({ typeUrl: "/stateset.core.loan.MsgApproveLoan", value: MsgApproveLoan.fromPartial(data) }),
         msgCancelLoan: (data) => ({ typeUrl: "/stateset.core.loan.MsgCancelLoan", value: MsgCancelLoan.fromPartial(data) }),
+        msgApproveLoan: (data) => ({ typeUrl: "/stateset.core.loan.MsgApproveLoan", value: MsgApproveLoan.fromPartial(data) }),
         msgRequestLoan: (data) => ({ typeUrl: "/stateset.core.loan.MsgRequestLoan", value: MsgRequestLoan.fromPartial(data) }),
         msgLiquidateLoan: (data) => ({ typeUrl: "/stateset.core.loan.MsgLiquidateLoan", value: MsgLiquidateLoan.fromPartial(data) }),
     };

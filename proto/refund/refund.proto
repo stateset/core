@@ -1,0 +1,15 @@
+syntax = "proto3";
+package stateset.core.refund;
+
+option go_package = "github.com/stateset/core/x/refund/types";
+
+message Refund {
+  uint64 id = 1;
+  string creator = 2; 
+  string did = 3; 
+  string amount = 4; 
+  string fee = 5; 
+  string deadline = 6; 
+  string state = 7; 
+  
+}

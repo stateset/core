@@ -15639,6 +15639,8 @@ paths:
                       type: string
                     amount:
                       type: string
+                    state:
+                      type: string
               pagination:
                 type: object
                 properties:
@@ -15764,6 +15766,8 @@ paths:
                   uri:
                     type: string
                   amount:
+                    type: string
+                  state:
                     type: string
         default:
           description: An unexpected error response.
@@ -25314,6 +25318,10 @@ definitions:
         type: string
       amount:
         type: string
+      state:
+        type: string
+  stateset.core.invoice.MsgCreateInvoiceResponse:
+    type: object
   stateset.core.invoice.MsgCreateSentInvoiceResponse:
     type: object
     properties:
@@ -25352,6 +25360,8 @@ definitions:
             uri:
               type: string
             amount:
+              type: string
+            state:
               type: string
       pagination:
         type: object
@@ -25476,6 +25486,8 @@ definitions:
           uri:
             type: string
           amount:
+            type: string
+          state:
             type: string
   stateset.core.invoice.QueryGetSentInvoiceResponse:
     type: object

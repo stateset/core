@@ -1,0 +1,43 @@
+syntax = "proto3";
+package stateset.core.refund;
+
+// this line is used by starport scaffolding # proto/tx/import
+
+option go_package = "github.com/stateset/core/x/refund/types";
+
+// Msg defines the Msg service.
+service Msg {
+      rpc RequestRefund(MsgRequestRefund) returns (MsgRequestRefundResponse);
+  rpc ApproveRefund(MsgApproveRefund) returns (MsgApproveRefundResponse);
+  rpc RejectRefund(MsgRejectRefund) returns (MsgRejectRefundResponse);
+// this line is used by starport scaffolding # proto/tx/rpc
+}
+
+message MsgRequestRefund {
+  string creator = 1;
+  string did = 2;
+  string amount = 3;
+  string fee = 4;
+  string deadline = 5;
+}
+
+message MsgRequestRefundResponse {
+}
+
+message MsgApproveRefund {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgApproveRefundResponse {
+}
+
+message MsgRejectRefund {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgRejectRefundResponse {
+}
+
+// this line is used by starport scaffolding # proto/tx/message

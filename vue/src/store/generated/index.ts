@@ -12,9 +12,11 @@ import CosmosCosmosSdkCosmosStakingV1Beta1 from './cosmos/cosmos-sdk/cosmos.stak
 import CosmosCosmosSdkCosmosVestingV1Beta1 from './cosmos/cosmos-sdk/cosmos.vesting.v1beta1'
 import CosmosIbcGoIbcApplicationsTransferV1 from './cosmos/ibc-go/ibc.applications.transfer.v1'
 import StatesetCoreStatesetCoreAgreement from './stateset/core/stateset.core.agreement'
+import StatesetCoreStatesetCoreDid from './stateset/core/stateset.core.did'
 import StatesetCoreStatesetCoreInvoice from './stateset/core/stateset.core.invoice'
 import StatesetCoreStatesetCoreLoan from './stateset/core/stateset.core.loan'
 import StatesetCoreStatesetCorePurchaseorder from './stateset/core/stateset.core.purchaseorder'
+import StatesetCoreStatesetCoreRefund from './stateset/core/stateset.core.refund'
 
 
 export default { 
@@ -30,9 +32,11 @@ export default {
   CosmosCosmosSdkCosmosVestingV1Beta1: load(CosmosCosmosSdkCosmosVestingV1Beta1, 'cosmos.vesting.v1beta1'),
   CosmosIbcGoIbcApplicationsTransferV1: load(CosmosIbcGoIbcApplicationsTransferV1, 'ibc.applications.transfer.v1'),
   StatesetCoreStatesetCoreAgreement: load(StatesetCoreStatesetCoreAgreement, 'stateset.core.agreement'),
+  StatesetCoreStatesetCoreDid: load(StatesetCoreStatesetCoreDid, 'stateset.core.did'),
   StatesetCoreStatesetCoreInvoice: load(StatesetCoreStatesetCoreInvoice, 'stateset.core.invoice'),
   StatesetCoreStatesetCoreLoan: load(StatesetCoreStatesetCoreLoan, 'stateset.core.loan'),
   StatesetCoreStatesetCorePurchaseorder: load(StatesetCoreStatesetCorePurchaseorder, 'stateset.core.purchaseorder'),
+  StatesetCoreStatesetCoreRefund: load(StatesetCoreStatesetCoreRefund, 'stateset.core.refund'),
   
 }
 
