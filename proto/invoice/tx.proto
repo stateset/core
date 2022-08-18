@@ -88,7 +88,8 @@ message MsgCreateInvoice {
   string did = 3;
   string amount = 4;
   string state = 5;
-  string purchaser = 6;
+  string seller = 6;
+  string purchaser = 7;
 }
 
 message MsgCreateInvoiceResponse {
