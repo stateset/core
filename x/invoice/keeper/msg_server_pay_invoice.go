@@ -37,7 +37,7 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 
 	}
 
-	if invoice.Factor = nil {
+	if invoice.Factor == nil {
 	
 		k.bankKeeper.SendCoins(ctx, purchaser, seller, amount)
 
