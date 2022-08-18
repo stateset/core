@@ -17,11 +17,8 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
 	}
 
-	if (invoice.State != "open" || invoice.State != "factored") {
-		return nil, sdkerrors.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
-	}
-
 	factor, _ := sdk.AccAddressFromBech32(invoice.Factor)
+	seller, _ := sdk.AccAddressFromBech32(invoice.Seller)
 	purchaser, _ := sdk.AccAddressFromBech32(invoice.Purchaser)
 
 	if msg.Creator != invoice.Purchaser {
@@ -30,7 +27,21 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 
 	amount, _ := sdk.ParseCoinsNormalized(invoice.Amount)
 
-	k.bankKeeper.SendCoins(ctx, purchaser, factor, amount)
+	if invoice.Factor != nil {
+
+		if invoice.State != "factored" {
+			return nil, sdkerrors.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
+		}
+
+		k.bankKeeper.SendCoins(ctx, purchaser, factor, amount)
+
+	}
+
+	if invoice.Factor = nil {
+	
+		k.bankKeeper.SendCoins(ctx, purchaser, seller, amount)
+
+	}
 
 	invoice.State = "paid"
 
