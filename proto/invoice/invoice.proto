@@ -12,5 +12,7 @@ message Invoice {
   string uri = 3; 
   string amount = 4;
   string state = 5;
+  string factor = 6;
+  string purchaser = 7;  
   
 }
