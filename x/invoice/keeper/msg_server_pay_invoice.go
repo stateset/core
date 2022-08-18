@@ -17,7 +17,7 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
 	}
 
-	if (invoice.State != "open" || "factored") {
+	if (invoice.State != "open" || invoice.State != "factored") {
 		return nil, sdkerrors.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
 	}
 
@@ -37,7 +37,7 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 
 	invoice.State = "paid"
 
-	k.SetLoan(ctx, loan)
+	k.SetInvoice(ctx, invoice)
 
 	return &types.MsgPayInvoiceResponse{}, nil
 }

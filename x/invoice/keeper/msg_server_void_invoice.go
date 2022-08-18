@@ -17,7 +17,7 @@ func (k msgServer) VoidInvoice(goCtx context.Context, msg *types.MsgVoidInvoice)
 		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
 	}
 
-	if (invoice.State != "open" || "requested") {
+	if (invoice.State != "open" || invoice.State != "requested") {
 		return nil, sdkerrors.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
 	}
 
