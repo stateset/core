@@ -15,14 +15,14 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
 	}
 
-	if invoice.State != "open" || "factored" {
+	if (invoice.State != "open" || "factored") {
 		return nil, sdkerrors.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
 	}
 
 	factor, _ := sdk.AccAddressFromBech32(invoice.Factor)
 	purchaser, _ := sdk.AccAddressFromBech32(invoice.Purchaser)
 
-	if msg.Creator != invoice.Purhcaser {
+	if msg.Creator != invoice.Purchaser {
 		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "Cannot repay: not the purchaser")
 	}
 
