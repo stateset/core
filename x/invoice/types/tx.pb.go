@@ -819,6 +819,182 @@ func (m *MsgCreateInvoiceResponse) XXX_DiscardUnknown() {
 
 var xxx_messageInfo_MsgCreateInvoiceResponse proto.InternalMessageInfo
 
+type MsgPayInvoice struct {
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Id      uint64 `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (m *MsgPayInvoice) Reset()         { *m = MsgPayInvoice{} }
+func (m *MsgPayInvoice) String() string { return proto.CompactTextString(m) }
+func (*MsgPayInvoice) ProtoMessage()    {}
+func (*MsgPayInvoice) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d445ebf9790a2691, []int{16}
+}
+func (m *MsgPayInvoice) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgPayInvoice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgPayInvoice.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgPayInvoice) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgPayInvoice.Merge(m, src)
+}
+func (m *MsgPayInvoice) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgPayInvoice) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgPayInvoice.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgPayInvoice proto.InternalMessageInfo
+
+func (m *MsgPayInvoice) GetCreator() string {
+	if m != nil {
+		return m.Creator
+	}
+	return ""
+}
+
+func (m *MsgPayInvoice) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+type MsgPayInvoiceResponse struct {
+}
+
+func (m *MsgPayInvoiceResponse) Reset()         { *m = MsgPayInvoiceResponse{} }
+func (m *MsgPayInvoiceResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgPayInvoiceResponse) ProtoMessage()    {}
+func (*MsgPayInvoiceResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d445ebf9790a2691, []int{17}
+}
+func (m *MsgPayInvoiceResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgPayInvoiceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgPayInvoiceResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgPayInvoiceResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgPayInvoiceResponse.Merge(m, src)
+}
+func (m *MsgPayInvoiceResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgPayInvoiceResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgPayInvoiceResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgPayInvoiceResponse proto.InternalMessageInfo
+
+type MsgVoidInvoice struct {
+	Creator string `protobuf:"bytes,1,opt,name=creator,proto3" json:"creator,omitempty"`
+	Id      uint64 `protobuf:"varint,2,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (m *MsgVoidInvoice) Reset()         { *m = MsgVoidInvoice{} }
+func (m *MsgVoidInvoice) String() string { return proto.CompactTextString(m) }
+func (*MsgVoidInvoice) ProtoMessage()    {}
+func (*MsgVoidInvoice) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d445ebf9790a2691, []int{18}
+}
+func (m *MsgVoidInvoice) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgVoidInvoice) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgVoidInvoice.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgVoidInvoice) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgVoidInvoice.Merge(m, src)
+}
+func (m *MsgVoidInvoice) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgVoidInvoice) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgVoidInvoice.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgVoidInvoice proto.InternalMessageInfo
+
+func (m *MsgVoidInvoice) GetCreator() string {
+	if m != nil {
+		return m.Creator
+	}
+	return ""
+}
+
+func (m *MsgVoidInvoice) GetId() uint64 {
+	if m != nil {
+		return m.Id
+	}
+	return 0
+}
+
+type MsgVoidInvoiceResponse struct {
+}
+
+func (m *MsgVoidInvoiceResponse) Reset()         { *m = MsgVoidInvoiceResponse{} }
+func (m *MsgVoidInvoiceResponse) String() string { return proto.CompactTextString(m) }
+func (*MsgVoidInvoiceResponse) ProtoMessage()    {}
+func (*MsgVoidInvoiceResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_d445ebf9790a2691, []int{19}
+}
+func (m *MsgVoidInvoiceResponse) XXX_Unmarshal(b []byte) error {
+	return m.Unmarshal(b)
+}
+func (m *MsgVoidInvoiceResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	if deterministic {
+		return xxx_messageInfo_MsgVoidInvoiceResponse.Marshal(b, m, deterministic)
+	} else {
+		b = b[:cap(b)]
+		n, err := m.MarshalToSizedBuffer(b)
+		if err != nil {
+			return nil, err
+		}
+		return b[:n], nil
+	}
+}
+func (m *MsgVoidInvoiceResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_MsgVoidInvoiceResponse.Merge(m, src)
+}
+func (m *MsgVoidInvoiceResponse) XXX_Size() int {
+	return m.Size()
+}
+func (m *MsgVoidInvoiceResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_MsgVoidInvoiceResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_MsgVoidInvoiceResponse proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*MsgFactorInvoice)(nil), "stateset.core.invoice.MsgFactorInvoice")
 	proto.RegisterType((*MsgFactorInvoiceResponse)(nil), "stateset.core.invoice.MsgFactorInvoiceResponse")
@@ -836,46 +1012,54 @@ func init() {
 	proto.RegisterType((*MsgDeleteTimedoutInvoiceResponse)(nil), "stateset.core.invoice.MsgDeleteTimedoutInvoiceResponse")
 	proto.RegisterType((*MsgCreateInvoice)(nil), "stateset.core.invoice.MsgCreateInvoice")
 	proto.RegisterType((*MsgCreateInvoiceResponse)(nil), "stateset.core.invoice.MsgCreateInvoiceResponse")
+	proto.RegisterType((*MsgPayInvoice)(nil), "stateset.core.invoice.MsgPayInvoice")
+	proto.RegisterType((*MsgPayInvoiceResponse)(nil), "stateset.core.invoice.MsgPayInvoiceResponse")
+	proto.RegisterType((*MsgVoidInvoice)(nil), "stateset.core.invoice.MsgVoidInvoice")
+	proto.RegisterType((*MsgVoidInvoiceResponse)(nil), "stateset.core.invoice.MsgVoidInvoiceResponse")
 }
 
 func init() { proto.RegisterFile("invoice/tx.proto", fileDescriptor_d445ebf9790a2691) }
 
 var fileDescriptor_d445ebf9790a2691 = []byte{
-	// 530 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x96, 0x4f, 0x8b, 0x13, 0x31,
-	0x18, 0xc6, 0x3b, 0xed, 0xfe, 0xa1, 0x01, 0xa5, 0x0e, 0xbb, 0x32, 0x0c, 0x12, 0xca, 0x5c, 0xb6,
-	0x20, 0x4c, 0x60, 0xf7, 0xe0, 0xc5, 0x83, 0xac, 0x8b, 0xe0, 0xa1, 0x97, 0xaa, 0x20, 0x22, 0xc8,
-	0xec, 0x4c, 0x68, 0x03, 0xdb, 0x49, 0x99, 0xa4, 0xb2, 0x82, 0x17, 0xbf, 0x81, 0x1f, 0xcb, 0x83,
-	0x87, 0x3d, 0x7a, 0x94, 0xf6, 0x8b, 0xc8, 0x24, 0x99, 0xd0, 0x4e, 0x32, 0xff, 0x8a, 0xb7, 0xcd,
-	0xe6, 0x7d, 0xdf, 0xe7, 0x97, 0x27, 0x7d, 0xc2, 0x80, 0x11, 0x49, 0xbf, 0x52, 0x12, 0x63, 0xc4,
-	0xef, 0xc3, 0x55, 0x46, 0x39, 0x75, 0xcf, 0x19, 0x8f, 0x38, 0x66, 0x98, 0x87, 0x31, 0xcd, 0x70,
-	0xa8, 0xf6, 0x7d, 0xbf, 0x28, 0x64, 0x38, 0xe5, 0x5f, 0xd4, 0x42, 0xb6, 0xf8, 0x50, 0x0f, 0x21,
-	0x4b, 0x9c, 0xd0, 0x75, 0x69, 0x3f, 0x78, 0x09, 0x46, 0x53, 0x36, 0x7f, 0x13, 0xc5, 0x9c, 0x66,
-	0x6f, 0xe5, 0x8e, 0xeb, 0x81, 0xd3, 0x38, 0xc3, 0x11, 0xa7, 0x99, 0xe7, 0x8c, 0x9d, 0xc9, 0x70,
-	0x56, 0x2c, 0xdd, 0xc7, 0xa0, 0x4f, 0x12, 0xaf, 0x3f, 0x76, 0x26, 0x47, 0xb3, 0x3e, 0x49, 0x02,
-	0x1f, 0x78, 0xe5, 0xee, 0x19, 0x66, 0x2b, 0x9a, 0x32, 0x1c, 0x7c, 0x04, 0x67, 0x53, 0x36, 0x7f,
-	0x9d, 0x77, 0xe2, 0x77, 0x38, 0xe5, 0xcd, 0xd3, 0x47, 0x60, 0x90, 0xa8, 0xf1, 0xc3, 0x59, 0xfe,
-	0xa7, 0x7b, 0x06, 0x8e, 0xe3, 0x45, 0x44, 0x52, 0x6f, 0x20, 0xfe, 0x27, 0x17, 0x41, 0x08, 0x9e,
-	0xd9, 0x26, 0x17, 0xca, 0x8a, 0xd2, 0xd1, 0x94, 0x0b, 0x41, 0xf2, 0x61, 0x95, 0xb4, 0x26, 0x29,
-	0x9d, 0xb3, 0x20, 0x1b, 0x58, 0xc8, 0x8e, 0x76, 0xc9, 0xa0, 0x20, 0x33, 0x94, 0xb4, 0x27, 0xaf,
-	0x04, 0xc9, 0x0d, 0xbe, 0xc3, 0x07, 0x92, 0x28, 0x05, 0x63, 0x82, 0x56, 0xf8, 0x2c, 0x6e, 0x44,
-	0x7a, 0xf3, 0x5e, 0x5d, 0xf9, 0xff, 0x73, 0xfe, 0x12, 0x8c, 0xab, 0xa6, 0x57, 0xba, 0x7f, 0x27,
-	0x88, 0xa4, 0x27, 0xed, 0x89, 0x0e, 0xbd, 0x81, 0x40, 0x10, 0x5a, 0xd5, 0xb4, 0x47, 0x37, 0x82,
-	0x48, 0x7a, 0x78, 0x30, 0x91, 0x52, 0xb2, 0x4e, 0xd1, 0x4a, 0xdf, 0x45, 0xba, 0xa4, 0x5f, 0x5d,
-	0x14, 0x86, 0x15, 0x67, 0x7e, 0x0a, 0x4e, 0xa2, 0x25, 0x5d, 0xa7, 0x5c, 0x1d, 0x5a, 0xad, 0x72,
-	0x2f, 0xc4, 0xd3, 0xe0, 0x1d, 0x4b, 0x2f, 0xc4, 0x42, 0xa5, 0x73, 0x4f, 0xbd, 0x20, 0xbb, 0xfc,
-	0x7d, 0x0a, 0x06, 0x53, 0x36, 0x77, 0x09, 0x78, 0xb4, 0x1f, 0xfe, 0x8b, 0xd0, 0xfa, 0xc8, 0x84,
-	0xe5, 0x9c, 0xfb, 0xa8, 0x65, 0xa1, 0xfe, 0x61, 0xac, 0xc1, 0x13, 0xf3, 0x35, 0x78, 0x5e, 0x3d,
-	0xc5, 0x28, 0xf6, 0xaf, 0x3a, 0x14, 0xef, 0xca, 0x9a, 0xd1, 0xaf, 0x91, 0x35, 0x8a, 0xeb, 0x64,
-	0x2b, 0xa3, 0x9e, 0xcb, 0x9a, 0x39, 0xaf, 0x91, 0x35, 0x8a, 0xeb, 0x64, 0x2b, 0xf3, 0xef, 0xfe,
-	0x70, 0xc0, 0xb9, 0x3d, 0xfd, 0xa8, 0xc9, 0xbc, 0x52, 0x83, 0xff, 0xa2, 0x63, 0xc3, 0x1e, 0x83,
-	0x3d, 0xef, 0xa8, 0xc9, 0xc9, 0x0e, 0x0c, 0xb5, 0x19, 0x17, 0x0c, 0xf6, 0x84, 0xa3, 0x26, 0x5b,
-	0x3b, 0x30, 0xd4, 0xa6, 0x3f, 0xcf, 0xd6, 0x7e, 0xf4, 0x2f, 0x9a, 0x1c, 0x6d, 0x91, 0x2d, 0x6b,
-	0x9c, 0xaf, 0xaf, 0x7f, 0x6d, 0xa0, 0xf3, 0xb0, 0x81, 0xce, 0xdf, 0x0d, 0x74, 0x7e, 0x6e, 0x61,
-	0xef, 0x61, 0x0b, 0x7b, 0x7f, 0xb6, 0xb0, 0xf7, 0x69, 0x32, 0x27, 0x7c, 0xb1, 0xbe, 0x0d, 0x63,
-	0xba, 0x44, 0xc5, 0x50, 0x94, 0x0f, 0x45, 0xf7, 0x48, 0x7f, 0x1b, 0x7c, 0x5b, 0x61, 0x76, 0x7b,
-	0x22, 0xbe, 0x08, 0xae, 0xfe, 0x05, 0x00, 0x00, 0xff, 0xff, 0x45, 0x40, 0x25, 0x39, 0x78, 0x08,
-	0x00, 0x00,
+	// 598 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x56, 0x5d, 0x6b, 0xd4, 0x4c,
+	0x18, 0xdd, 0xec, 0xb6, 0x7d, 0xd9, 0xe7, 0xa5, 0x65, 0x0d, 0xdd, 0x1a, 0x82, 0x84, 0x25, 0x28,
+	0x5d, 0x50, 0x13, 0x68, 0x2f, 0x44, 0xf1, 0x42, 0x6a, 0x11, 0xbc, 0x08, 0xc8, 0xfa, 0x81, 0x88,
+	0xa0, 0x69, 0x32, 0x64, 0x03, 0xdd, 0xcc, 0x92, 0x99, 0x95, 0x16, 0xbc, 0xf1, 0x1f, 0x08, 0xfe,
+	0x29, 0x2f, 0x7b, 0xe9, 0xa5, 0xec, 0xfe, 0x11, 0xc9, 0x64, 0x32, 0xe6, 0xfb, 0x63, 0xf1, 0xae,
+	0xd3, 0x39, 0xcf, 0x39, 0x67, 0xce, 0xec, 0x1c, 0x02, 0x23, 0x3f, 0xf8, 0x82, 0x7d, 0x07, 0x99,
+	0xf4, 0xca, 0x58, 0x86, 0x98, 0x62, 0x79, 0x4c, 0xa8, 0x4d, 0x11, 0x41, 0xd4, 0x70, 0x70, 0x88,
+	0x0c, 0xbe, 0xaf, 0xaa, 0x09, 0x90, 0xa0, 0x80, 0x7e, 0xe2, 0x8b, 0x78, 0x44, 0xd5, 0x04, 0x89,
+	0xbf, 0x40, 0x2e, 0x5e, 0xe5, 0xf6, 0xf5, 0xa7, 0x30, 0xb2, 0x88, 0xf7, 0xc2, 0x76, 0x28, 0x0e,
+	0x5f, 0xc6, 0x3b, 0xb2, 0x02, 0xff, 0x39, 0x21, 0xb2, 0x29, 0x0e, 0x15, 0x69, 0x22, 0x4d, 0x87,
+	0xb3, 0x64, 0x29, 0x1f, 0x40, 0xdf, 0x77, 0x95, 0xfe, 0x44, 0x9a, 0xee, 0xcc, 0xfa, 0xbe, 0xab,
+	0xab, 0xa0, 0xe4, 0xa7, 0x67, 0x88, 0x2c, 0x71, 0x40, 0x90, 0xfe, 0x1e, 0x0e, 0x2d, 0xe2, 0x3d,
+	0x8f, 0x26, 0xd1, 0x6b, 0x14, 0xd0, 0x66, 0xf6, 0x11, 0x0c, 0x5c, 0x4e, 0x3f, 0x9c, 0x45, 0x7f,
+	0xca, 0x87, 0xb0, 0xeb, 0xcc, 0x6d, 0x3f, 0x50, 0x06, 0xec, 0x7f, 0xf1, 0x42, 0x37, 0xe0, 0x4e,
+	0x19, 0x73, 0xa2, 0xcc, 0x5d, 0x4a, 0xc2, 0xe5, 0x9c, 0x39, 0x79, 0xbb, 0x74, 0x5b, 0x3b, 0xc9,
+	0x9d, 0x33, 0x71, 0x36, 0x28, 0x71, 0xb6, 0x93, 0x76, 0xa6, 0x31, 0x67, 0x05, 0x25, 0x91, 0xc9,
+	0x33, 0xe6, 0xe4, 0x1c, 0x5d, 0xa2, 0x2d, 0x9d, 0x70, 0x85, 0x02, 0x83, 0x50, 0xf8, 0xc8, 0x6e,
+	0x24, 0xce, 0xe6, 0x0d, 0xbf, 0xf2, 0x7f, 0x97, 0xfc, 0x09, 0x4c, 0xaa, 0xd8, 0x2b, 0xd3, 0xbf,
+	0x64, 0x8e, 0xe2, 0x4c, 0xda, 0x3b, 0xda, 0xf6, 0x06, 0x74, 0xe6, 0xb0, 0x54, 0x4d, 0x64, 0x74,
+	0xce, 0x1c, 0xc5, 0x19, 0x6e, 0xed, 0x88, 0x2b, 0x95, 0xb2, 0x08, 0xa5, 0xaf, 0xec, 0x75, 0xc5,
+	0x79, 0x75, 0x51, 0x18, 0x56, 0x9c, 0xf9, 0x08, 0xf6, 0xec, 0x05, 0x5e, 0x05, 0x94, 0x1f, 0x9a,
+	0xaf, 0xa2, 0x2c, 0x58, 0x35, 0x28, 0xbb, 0x71, 0x16, 0x6c, 0xc1, 0x5f, 0x67, 0x46, 0x5d, 0x38,
+	0x7b, 0x0c, 0xfb, 0x16, 0xf1, 0x5e, 0xd9, 0xd7, 0xdd, 0x0f, 0x7e, 0x1b, 0xc6, 0x99, 0x51, 0xc1,
+	0xf9, 0x04, 0x0e, 0x2c, 0xe2, 0xbd, 0xc3, 0xbe, 0xdb, 0x9d, 0x54, 0x81, 0xa3, 0xec, 0x6c, 0xc2,
+	0x7a, 0xf2, 0x63, 0x08, 0x03, 0x8b, 0x78, 0xb2, 0x0f, 0xfb, 0xd9, 0x9a, 0x3a, 0x36, 0x4a, 0xeb,
+	0xd0, 0xc8, 0x37, 0x92, 0x6a, 0xb6, 0x04, 0x8a, 0x9f, 0xf0, 0x0a, 0x6e, 0x15, 0x7b, 0xeb, 0x7e,
+	0x35, 0x4b, 0x01, 0xac, 0x9e, 0x76, 0x00, 0xa7, 0x65, 0x8b, 0x25, 0x55, 0x23, 0x5b, 0x00, 0xd7,
+	0xc9, 0x56, 0x96, 0x52, 0x24, 0x5b, 0x6c, 0xa4, 0x1a, 0xd9, 0x02, 0xb8, 0x4e, 0xb6, 0xb2, 0xa9,
+	0xe4, 0x6f, 0x12, 0x8c, 0xcb, 0x7b, 0xca, 0x6c, 0x0a, 0x2f, 0x37, 0xa0, 0x3e, 0xea, 0x38, 0x90,
+	0xf1, 0x50, 0xde, 0x4c, 0x66, 0x53, 0x92, 0x1d, 0x3c, 0xd4, 0xb6, 0x11, 0xf3, 0x50, 0xde, 0x45,
+	0x66, 0x53, 0xac, 0x1d, 0x3c, 0xd4, 0xf6, 0x54, 0xf4, 0xb6, 0xb2, 0x25, 0x75, 0xdc, 0x94, 0x68,
+	0x8b, 0xb7, 0x55, 0x5a, 0x3c, 0xf2, 0x67, 0x80, 0x54, 0xeb, 0xdc, 0xad, 0x1e, 0xff, 0x8b, 0x52,
+	0x1f, 0xb4, 0x41, 0x09, 0x05, 0x07, 0xfe, 0x4f, 0x77, 0xd0, 0xbd, 0xea, 0xe1, 0x14, 0x4c, 0x7d,
+	0xd8, 0x0a, 0x96, 0x88, 0x9c, 0x9d, 0xfd, 0x5c, 0x6b, 0xd2, 0xcd, 0x5a, 0x93, 0x7e, 0xaf, 0x35,
+	0xe9, 0xfb, 0x46, 0xeb, 0xdd, 0x6c, 0xb4, 0xde, 0xaf, 0x8d, 0xd6, 0xfb, 0x30, 0xf5, 0x7c, 0x3a,
+	0x5f, 0x5d, 0x18, 0x0e, 0x5e, 0x98, 0x09, 0xa5, 0x19, 0x51, 0x9a, 0x57, 0xa6, 0xf8, 0x18, 0xbb,
+	0x5e, 0x22, 0x72, 0xb1, 0xc7, 0x3e, 0xc1, 0x4e, 0xff, 0x04, 0x00, 0x00, 0xff, 0xff, 0x39, 0x9d,
+	0xfe, 0xd5, 0xe9, 0x09, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -898,6 +1082,8 @@ type MsgClient interface {
 	UpdateTimedoutInvoice(ctx context.Context, in *MsgUpdateTimedoutInvoice, opts ...grpc.CallOption) (*MsgUpdateTimedoutInvoiceResponse, error)
 	DeleteTimedoutInvoice(ctx context.Context, in *MsgDeleteTimedoutInvoice, opts ...grpc.CallOption) (*MsgDeleteTimedoutInvoiceResponse, error)
 	CreateInvoice(ctx context.Context, in *MsgCreateInvoice, opts ...grpc.CallOption) (*MsgCreateInvoiceResponse, error)
+	PayInvoice(ctx context.Context, in *MsgPayInvoice, opts ...grpc.CallOption) (*MsgPayInvoiceResponse, error)
+	VoidInvoice(ctx context.Context, in *MsgVoidInvoice, opts ...grpc.CallOption) (*MsgVoidInvoiceResponse, error)
 }
 
 type msgClient struct {
@@ -980,6 +1166,24 @@ func (c *msgClient) CreateInvoice(ctx context.Context, in *MsgCreateInvoice, opt
 	return out, nil
 }
 
+func (c *msgClient) PayInvoice(ctx context.Context, in *MsgPayInvoice, opts ...grpc.CallOption) (*MsgPayInvoiceResponse, error) {
+	out := new(MsgPayInvoiceResponse)
+	err := c.cc.Invoke(ctx, "/stateset.core.invoice.Msg/PayInvoice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *msgClient) VoidInvoice(ctx context.Context, in *MsgVoidInvoice, opts ...grpc.CallOption) (*MsgVoidInvoiceResponse, error) {
+	out := new(MsgVoidInvoiceResponse)
+	err := c.cc.Invoke(ctx, "/stateset.core.invoice.Msg/VoidInvoice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // MsgServer is the server API for Msg service.
 type MsgServer interface {
 	FactorInvoice(context.Context, *MsgFactorInvoice) (*MsgFactorInvoiceResponse, error)
@@ -990,6 +1194,8 @@ type MsgServer interface {
 	UpdateTimedoutInvoice(context.Context, *MsgUpdateTimedoutInvoice) (*MsgUpdateTimedoutInvoiceResponse, error)
 	DeleteTimedoutInvoice(context.Context, *MsgDeleteTimedoutInvoice) (*MsgDeleteTimedoutInvoiceResponse, error)
 	CreateInvoice(context.Context, *MsgCreateInvoice) (*MsgCreateInvoiceResponse, error)
+	PayInvoice(context.Context, *MsgPayInvoice) (*MsgPayInvoiceResponse, error)
+	VoidInvoice(context.Context, *MsgVoidInvoice) (*MsgVoidInvoiceResponse, error)
 }
 
 // UnimplementedMsgServer can be embedded to have forward compatible implementations.
@@ -1019,6 +1225,12 @@ func (*UnimplementedMsgServer) DeleteTimedoutInvoice(ctx context.Context, req *M
 }
 func (*UnimplementedMsgServer) CreateInvoice(ctx context.Context, req *MsgCreateInvoice) (*MsgCreateInvoiceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateInvoice not implemented")
+}
+func (*UnimplementedMsgServer) PayInvoice(ctx context.Context, req *MsgPayInvoice) (*MsgPayInvoiceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PayInvoice not implemented")
+}
+func (*UnimplementedMsgServer) VoidInvoice(ctx context.Context, req *MsgVoidInvoice) (*MsgVoidInvoiceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method VoidInvoice not implemented")
 }
 
 func RegisterMsgServer(s grpc1.Server, srv MsgServer) {
@@ -1169,6 +1381,42 @@ func _Msg_CreateInvoice_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Msg_PayInvoice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgPayInvoice)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).PayInvoice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/stateset.core.invoice.Msg/PayInvoice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).PayInvoice(ctx, req.(*MsgPayInvoice))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Msg_VoidInvoice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(MsgVoidInvoice)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MsgServer).VoidInvoice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/stateset.core.invoice.Msg/VoidInvoice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MsgServer).VoidInvoice(ctx, req.(*MsgVoidInvoice))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Msg_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "stateset.core.invoice.Msg",
 	HandlerType: (*MsgServer)(nil),
@@ -1204,6 +1452,14 @@ var _Msg_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateInvoice",
 			Handler:    _Msg_CreateInvoice_Handler,
+		},
+		{
+			MethodName: "PayInvoice",
+			Handler:    _Msg_PayInvoice_Handler,
+		},
+		{
+			MethodName: "VoidInvoice",
+			Handler:    _Msg_VoidInvoice_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -1753,6 +2009,122 @@ func (m *MsgCreateInvoiceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error
 	return len(dAtA) - i, nil
 }
 
+func (m *MsgPayInvoice) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgPayInvoice) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgPayInvoice) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Id != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Creator) > 0 {
+		i -= len(m.Creator)
+		copy(dAtA[i:], m.Creator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Creator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgPayInvoiceResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgPayInvoiceResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgPayInvoiceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgVoidInvoice) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgVoidInvoice) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgVoidInvoice) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	if m.Id != 0 {
+		i = encodeVarintTx(dAtA, i, uint64(m.Id))
+		i--
+		dAtA[i] = 0x10
+	}
+	if len(m.Creator) > 0 {
+		i -= len(m.Creator)
+		copy(dAtA[i:], m.Creator)
+		i = encodeVarintTx(dAtA, i, uint64(len(m.Creator)))
+		i--
+		dAtA[i] = 0xa
+	}
+	return len(dAtA) - i, nil
+}
+
+func (m *MsgVoidInvoiceResponse) Marshal() (dAtA []byte, err error) {
+	size := m.Size()
+	dAtA = make([]byte, size)
+	n, err := m.MarshalToSizedBuffer(dAtA[:size])
+	if err != nil {
+		return nil, err
+	}
+	return dAtA[:n], nil
+}
+
+func (m *MsgVoidInvoiceResponse) MarshalTo(dAtA []byte) (int, error) {
+	size := m.Size()
+	return m.MarshalToSizedBuffer(dAtA[:size])
+}
+
+func (m *MsgVoidInvoiceResponse) MarshalToSizedBuffer(dAtA []byte) (int, error) {
+	i := len(dAtA)
+	_ = i
+	var l int
+	_ = l
+	return len(dAtA) - i, nil
+}
+
 func encodeVarintTx(dAtA []byte, offset int, v uint64) int {
 	offset -= sovTx(v)
 	base := offset
@@ -2001,6 +2373,56 @@ func (m *MsgCreateInvoice) Size() (n int) {
 }
 
 func (m *MsgCreateInvoiceResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgPayInvoice) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Creator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Id != 0 {
+		n += 1 + sovTx(uint64(m.Id))
+	}
+	return n
+}
+
+func (m *MsgPayInvoiceResponse) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	return n
+}
+
+func (m *MsgVoidInvoice) Size() (n int) {
+	if m == nil {
+		return 0
+	}
+	var l int
+	_ = l
+	l = len(m.Creator)
+	if l > 0 {
+		n += 1 + l + sovTx(uint64(l))
+	}
+	if m.Id != 0 {
+		n += 1 + sovTx(uint64(m.Id))
+	}
+	return n
+}
+
+func (m *MsgVoidInvoiceResponse) Size() (n int) {
 	if m == nil {
 		return 0
 	}
@@ -3565,6 +3987,308 @@ func (m *MsgCreateInvoiceResponse) Unmarshal(dAtA []byte) error {
 		}
 		if fieldNum <= 0 {
 			return fmt.Errorf("proto: MsgCreateInvoiceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgPayInvoice) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgPayInvoice: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgPayInvoice: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Creator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgPayInvoiceResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgPayInvoiceResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgPayInvoiceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgVoidInvoice) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgVoidInvoice: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgVoidInvoice: illegal tag %d (wire type %d)", fieldNum, wire)
+		}
+		switch fieldNum {
+		case 1:
+			if wireType != 2 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Creator", wireType)
+			}
+			var stringLen uint64
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				stringLen |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+			intStringLen := int(stringLen)
+			if intStringLen < 0 {
+				return ErrInvalidLengthTx
+			}
+			postIndex := iNdEx + intStringLen
+			if postIndex < 0 {
+				return ErrInvalidLengthTx
+			}
+			if postIndex > l {
+				return io.ErrUnexpectedEOF
+			}
+			m.Creator = string(dAtA[iNdEx:postIndex])
+			iNdEx = postIndex
+		case 2:
+			if wireType != 0 {
+				return fmt.Errorf("proto: wrong wireType = %d for field Id", wireType)
+			}
+			m.Id = 0
+			for shift := uint(0); ; shift += 7 {
+				if shift >= 64 {
+					return ErrIntOverflowTx
+				}
+				if iNdEx >= l {
+					return io.ErrUnexpectedEOF
+				}
+				b := dAtA[iNdEx]
+				iNdEx++
+				m.Id |= uint64(b&0x7F) << shift
+				if b < 0x80 {
+					break
+				}
+			}
+		default:
+			iNdEx = preIndex
+			skippy, err := skipTx(dAtA[iNdEx:])
+			if err != nil {
+				return err
+			}
+			if (skippy < 0) || (iNdEx+skippy) < 0 {
+				return ErrInvalidLengthTx
+			}
+			if (iNdEx + skippy) > l {
+				return io.ErrUnexpectedEOF
+			}
+			iNdEx += skippy
+		}
+	}
+
+	if iNdEx > l {
+		return io.ErrUnexpectedEOF
+	}
+	return nil
+}
+func (m *MsgVoidInvoiceResponse) Unmarshal(dAtA []byte) error {
+	l := len(dAtA)
+	iNdEx := 0
+	for iNdEx < l {
+		preIndex := iNdEx
+		var wire uint64
+		for shift := uint(0); ; shift += 7 {
+			if shift >= 64 {
+				return ErrIntOverflowTx
+			}
+			if iNdEx >= l {
+				return io.ErrUnexpectedEOF
+			}
+			b := dAtA[iNdEx]
+			iNdEx++
+			wire |= uint64(b&0x7F) << shift
+			if b < 0x80 {
+				break
+			}
+		}
+		fieldNum := int32(wire >> 3)
+		wireType := int(wire & 0x7)
+		if wireType == 4 {
+			return fmt.Errorf("proto: MsgVoidInvoiceResponse: wiretype end group for non-group")
+		}
+		if fieldNum <= 0 {
+			return fmt.Errorf("proto: MsgVoidInvoiceResponse: illegal tag %d (wire type %d)", fieldNum, wire)
 		}
 		switch fieldNum {
 		default:
