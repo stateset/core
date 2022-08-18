@@ -27,7 +27,7 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 
 	amount, _ := sdk.ParseCoinsNormalized(invoice.Amount)
 
-	if invoice.Factor != nil {
+	if factor {
 
 		if invoice.State != "factored" {
 			return nil, sdkerrors.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
@@ -37,7 +37,7 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 
 	}
 
-	if invoice.Factor == nil {
+	if !factor {
 	
 		k.bankKeeper.SendCoins(ctx, purchaser, seller, amount)
 
