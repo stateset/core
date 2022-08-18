@@ -21,6 +21,14 @@ func (k msgServer) FactorInvoice(goCtx context.Context, msg *types.MsgFactorInvo
 		return nil, sdkerrors.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
 	}
 
+	factor, _ := sdk.AccAddressFromBech32(msg.Creator)
+	seller, _ := sdk.AccAddressFromBech32(invoice.Creator)
+	amount, _ := sdk.ParseCoinsNormalized(invoice.Amount)
+
+	k.bankKeeper.SendCoins(ctx, factor, seller, amount)
+
+
+	invoice.Factor = msg.Creator
 	invoice.State = "factored"
 
 	k.SetInvoice(ctx, invoice)

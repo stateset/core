@@ -9,13 +9,14 @@ const TypeMsgCreateInvoice = "create_invoice"
 
 var _ sdk.Msg = &MsgCreateInvoice{}
 
-func NewMsgCreateInvoice(creator string, id string, did string, amount string, state string) *MsgCreateInvoice {
+func NewMsgCreateInvoice(creator string, id string, did string, amount string, state string, purchaser string) *MsgCreateInvoice {
 	return &MsgCreateInvoice{
 		Creator: creator,
 		Id:      id,
 		Did:     did,
 		Amount:  amount,
 		State:   state,
+		Purchaser: purchaser,
 	}
 }
 
