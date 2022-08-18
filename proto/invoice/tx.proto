@@ -17,6 +17,8 @@ rpc CreateTimedoutInvoice(MsgCreateTimedoutInvoice) returns (MsgCreateTimedoutIn
   rpc UpdateTimedoutInvoice(MsgUpdateTimedoutInvoice) returns (MsgUpdateTimedoutInvoiceResponse);
   rpc DeleteTimedoutInvoice(MsgDeleteTimedoutInvoice) returns (MsgDeleteTimedoutInvoiceResponse);
   rpc CreateInvoice(MsgCreateInvoice) returns (MsgCreateInvoiceResponse);
+  rpc PayInvoice(MsgPayInvoice) returns (MsgPayInvoiceResponse);
+  rpc VoidInvoice(MsgVoidInvoice) returns (MsgVoidInvoiceResponse);
 // this line is used by starport scaffolding # proto/tx/rpc
 }
 
@@ -89,6 +91,22 @@ message MsgCreateInvoice {
 }
 
 message MsgCreateInvoiceResponse {
+}
+
+message MsgPayInvoice {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgPayInvoiceResponse {
+}
+
+message MsgVoidInvoice {
+  string creator = 1;
+  uint64 id = 2;
+}
+
+message MsgVoidInvoiceResponse {
 }
 
 // this line is used by starport scaffolding # proto/tx/message

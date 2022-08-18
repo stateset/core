@@ -73,6 +73,20 @@ export interface MsgCreateInvoice {
 
 export interface MsgCreateInvoiceResponse {}
 
+export interface MsgPayInvoice {
+  creator: string;
+  id: number;
+}
+
+export interface MsgPayInvoiceResponse {}
+
+export interface MsgVoidInvoice {
+  creator: string;
+  id: number;
+}
+
+export interface MsgVoidInvoiceResponse {}
+
 const baseMsgFactorInvoice: object = { creator: "", id: 0 };
 
 export const MsgFactorInvoice = {
@@ -1323,6 +1337,226 @@ export const MsgCreateInvoiceResponse = {
   },
 };
 
+const baseMsgPayInvoice: object = { creator: "", id: 0 };
+
+export const MsgPayInvoice = {
+  encode(message: MsgPayInvoice, writer: Writer = Writer.create()): Writer {
+    if (message.creator !== "") {
+      writer.uint32(10).string(message.creator);
+    }
+    if (message.id !== 0) {
+      writer.uint32(16).uint64(message.id);
+    }
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): MsgPayInvoice {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseMsgPayInvoice } as MsgPayInvoice;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.creator = reader.string();
+          break;
+        case 2:
+          message.id = longToNumber(reader.uint64() as Long);
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgPayInvoice {
+    const message = { ...baseMsgPayInvoice } as MsgPayInvoice;
+    if (object.creator !== undefined && object.creator !== null) {
+      message.creator = String(object.creator);
+    } else {
+      message.creator = "";
+    }
+    if (object.id !== undefined && object.id !== null) {
+      message.id = Number(object.id);
+    } else {
+      message.id = 0;
+    }
+    return message;
+  },
+
+  toJSON(message: MsgPayInvoice): unknown {
+    const obj: any = {};
+    message.creator !== undefined && (obj.creator = message.creator);
+    message.id !== undefined && (obj.id = message.id);
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<MsgPayInvoice>): MsgPayInvoice {
+    const message = { ...baseMsgPayInvoice } as MsgPayInvoice;
+    if (object.creator !== undefined && object.creator !== null) {
+      message.creator = object.creator;
+    } else {
+      message.creator = "";
+    }
+    if (object.id !== undefined && object.id !== null) {
+      message.id = object.id;
+    } else {
+      message.id = 0;
+    }
+    return message;
+  },
+};
+
+const baseMsgPayInvoiceResponse: object = {};
+
+export const MsgPayInvoiceResponse = {
+  encode(_: MsgPayInvoiceResponse, writer: Writer = Writer.create()): Writer {
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): MsgPayInvoiceResponse {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseMsgPayInvoiceResponse } as MsgPayInvoiceResponse;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(_: any): MsgPayInvoiceResponse {
+    const message = { ...baseMsgPayInvoiceResponse } as MsgPayInvoiceResponse;
+    return message;
+  },
+
+  toJSON(_: MsgPayInvoiceResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  fromPartial(_: DeepPartial<MsgPayInvoiceResponse>): MsgPayInvoiceResponse {
+    const message = { ...baseMsgPayInvoiceResponse } as MsgPayInvoiceResponse;
+    return message;
+  },
+};
+
+const baseMsgVoidInvoice: object = { creator: "", id: 0 };
+
+export const MsgVoidInvoice = {
+  encode(message: MsgVoidInvoice, writer: Writer = Writer.create()): Writer {
+    if (message.creator !== "") {
+      writer.uint32(10).string(message.creator);
+    }
+    if (message.id !== 0) {
+      writer.uint32(16).uint64(message.id);
+    }
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): MsgVoidInvoice {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseMsgVoidInvoice } as MsgVoidInvoice;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.creator = reader.string();
+          break;
+        case 2:
+          message.id = longToNumber(reader.uint64() as Long);
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgVoidInvoice {
+    const message = { ...baseMsgVoidInvoice } as MsgVoidInvoice;
+    if (object.creator !== undefined && object.creator !== null) {
+      message.creator = String(object.creator);
+    } else {
+      message.creator = "";
+    }
+    if (object.id !== undefined && object.id !== null) {
+      message.id = Number(object.id);
+    } else {
+      message.id = 0;
+    }
+    return message;
+  },
+
+  toJSON(message: MsgVoidInvoice): unknown {
+    const obj: any = {};
+    message.creator !== undefined && (obj.creator = message.creator);
+    message.id !== undefined && (obj.id = message.id);
+    return obj;
+  },
+
+  fromPartial(object: DeepPartial<MsgVoidInvoice>): MsgVoidInvoice {
+    const message = { ...baseMsgVoidInvoice } as MsgVoidInvoice;
+    if (object.creator !== undefined && object.creator !== null) {
+      message.creator = object.creator;
+    } else {
+      message.creator = "";
+    }
+    if (object.id !== undefined && object.id !== null) {
+      message.id = object.id;
+    } else {
+      message.id = 0;
+    }
+    return message;
+  },
+};
+
+const baseMsgVoidInvoiceResponse: object = {};
+
+export const MsgVoidInvoiceResponse = {
+  encode(_: MsgVoidInvoiceResponse, writer: Writer = Writer.create()): Writer {
+    return writer;
+  },
+
+  decode(input: Reader | Uint8Array, length?: number): MsgVoidInvoiceResponse {
+    const reader = input instanceof Uint8Array ? new Reader(input) : input;
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = { ...baseMsgVoidInvoiceResponse } as MsgVoidInvoiceResponse;
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(_: any): MsgVoidInvoiceResponse {
+    const message = { ...baseMsgVoidInvoiceResponse } as MsgVoidInvoiceResponse;
+    return message;
+  },
+
+  toJSON(_: MsgVoidInvoiceResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  fromPartial(_: DeepPartial<MsgVoidInvoiceResponse>): MsgVoidInvoiceResponse {
+    const message = { ...baseMsgVoidInvoiceResponse } as MsgVoidInvoiceResponse;
+    return message;
+  },
+};
+
 /** Msg defines the Msg service. */
 export interface Msg {
   FactorInvoice(request: MsgFactorInvoice): Promise<MsgFactorInvoiceResponse>;
@@ -1344,8 +1578,10 @@ export interface Msg {
   DeleteTimedoutInvoice(
     request: MsgDeleteTimedoutInvoice
   ): Promise<MsgDeleteTimedoutInvoiceResponse>;
-  /** this line is used by starport scaffolding # proto/tx/rpc */
   CreateInvoice(request: MsgCreateInvoice): Promise<MsgCreateInvoiceResponse>;
+  PayInvoice(request: MsgPayInvoice): Promise<MsgPayInvoiceResponse>;
+  /** this line is used by starport scaffolding # proto/tx/rpc */
+  VoidInvoice(request: MsgVoidInvoice): Promise<MsgVoidInvoiceResponse>;
 }
 
 export class MsgClientImpl implements Msg {
@@ -1458,6 +1694,30 @@ export class MsgClientImpl implements Msg {
     );
     return promise.then((data) =>
       MsgCreateInvoiceResponse.decode(new Reader(data))
+    );
+  }
+
+  PayInvoice(request: MsgPayInvoice): Promise<MsgPayInvoiceResponse> {
+    const data = MsgPayInvoice.encode(request).finish();
+    const promise = this.rpc.request(
+      "stateset.core.invoice.Msg",
+      "PayInvoice",
+      data
+    );
+    return promise.then((data) =>
+      MsgPayInvoiceResponse.decode(new Reader(data))
+    );
+  }
+
+  VoidInvoice(request: MsgVoidInvoice): Promise<MsgVoidInvoiceResponse> {
+    const data = MsgVoidInvoice.encode(request).finish();
+    const promise = this.rpc.request(
+      "stateset.core.invoice.Msg",
+      "VoidInvoice",
+      data
+    );
+    return promise.then((data) =>
+      MsgVoidInvoiceResponse.decode(new Reader(data))
     );
   }
 }

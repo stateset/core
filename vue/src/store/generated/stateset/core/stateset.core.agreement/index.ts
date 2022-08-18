@@ -296,21 +296,6 @@ export default {
 		},
 		
 		
-		async sendMsgUpdateTimedoutAgreement({ rootGetters }, { value, fee = [], memo = '' }) {
-			try {
-				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgUpdateTimedoutAgreement(value)
-				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
-	gas: "200000" }, memo})
-				return result
-			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgUpdateTimedoutAgreement:Init Could not initialize signing client. Wallet is required.')
-				}else{
-					throw new Error('TxClient:MsgUpdateTimedoutAgreement:Send Could not broadcast Tx: '+ e.message)
-				}
-			}
-		},
 		async sendMsgRenewAgreement({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -326,6 +311,21 @@ export default {
 				}
 			}
 		},
+		async sendMsgDeleteTimedoutAgreement({ rootGetters }, { value, fee = [], memo = '' }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgDeleteTimedoutAgreement(value)
+				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
+	gas: "200000" }, memo})
+				return result
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgDeleteTimedoutAgreement:Init Could not initialize signing client. Wallet is required.')
+				}else{
+					throw new Error('TxClient:MsgDeleteTimedoutAgreement:Send Could not broadcast Tx: '+ e.message)
+				}
+			}
+		},
 		async sendMsgTerminateAgreement({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -338,6 +338,36 @@ export default {
 					throw new Error('TxClient:MsgTerminateAgreement:Init Could not initialize signing client. Wallet is required.')
 				}else{
 					throw new Error('TxClient:MsgTerminateAgreement:Send Could not broadcast Tx: '+ e.message)
+				}
+			}
+		},
+		async sendMsgActivateAgreement({ rootGetters }, { value, fee = [], memo = '' }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgActivateAgreement(value)
+				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
+	gas: "200000" }, memo})
+				return result
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgActivateAgreement:Init Could not initialize signing client. Wallet is required.')
+				}else{
+					throw new Error('TxClient:MsgActivateAgreement:Send Could not broadcast Tx: '+ e.message)
+				}
+			}
+		},
+		async sendMsgCreateTimedoutAgreement({ rootGetters }, { value, fee = [], memo = '' }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgCreateTimedoutAgreement(value)
+				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
+	gas: "200000" }, memo})
+				return result
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgCreateTimedoutAgreement:Init Could not initialize signing client. Wallet is required.')
+				}else{
+					throw new Error('TxClient:MsgCreateTimedoutAgreement:Send Could not broadcast Tx: '+ e.message)
 				}
 			}
 		},
@@ -371,21 +401,6 @@ export default {
 				}
 			}
 		},
-		async sendMsgCreateTimedoutAgreement({ rootGetters }, { value, fee = [], memo = '' }) {
-			try {
-				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgCreateTimedoutAgreement(value)
-				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
-	gas: "200000" }, memo})
-				return result
-			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgCreateTimedoutAgreement:Init Could not initialize signing client. Wallet is required.')
-				}else{
-					throw new Error('TxClient:MsgCreateTimedoutAgreement:Send Could not broadcast Tx: '+ e.message)
-				}
-			}
-		},
 		async sendMsgExpireAgreement({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -401,18 +416,18 @@ export default {
 				}
 			}
 		},
-		async sendMsgDeleteTimedoutAgreement({ rootGetters }, { value, fee = [], memo = '' }) {
+		async sendMsgUpdateTimedoutAgreement({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgDeleteTimedoutAgreement(value)
+				const msg = await txClient.msgUpdateTimedoutAgreement(value)
 				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
 	gas: "200000" }, memo})
 				return result
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgDeleteTimedoutAgreement:Init Could not initialize signing client. Wallet is required.')
+					throw new Error('TxClient:MsgUpdateTimedoutAgreement:Init Could not initialize signing client. Wallet is required.')
 				}else{
-					throw new Error('TxClient:MsgDeleteTimedoutAgreement:Send Could not broadcast Tx: '+ e.message)
+					throw new Error('TxClient:MsgUpdateTimedoutAgreement:Send Could not broadcast Tx: '+ e.message)
 				}
 			}
 		},
@@ -431,35 +446,7 @@ export default {
 				}
 			}
 		},
-		async sendMsgActivateAgreement({ rootGetters }, { value, fee = [], memo = '' }) {
-			try {
-				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgActivateAgreement(value)
-				const result = await txClient.signAndBroadcast([msg], {fee: { amount: fee, 
-	gas: "200000" }, memo})
-				return result
-			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgActivateAgreement:Init Could not initialize signing client. Wallet is required.')
-				}else{
-					throw new Error('TxClient:MsgActivateAgreement:Send Could not broadcast Tx: '+ e.message)
-				}
-			}
-		},
 		
-		async MsgUpdateTimedoutAgreement({ rootGetters }, { value }) {
-			try {
-				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgUpdateTimedoutAgreement(value)
-				return msg
-			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgUpdateTimedoutAgreement:Init Could not initialize signing client. Wallet is required.')
-				} else{
-					throw new Error('TxClient:MsgUpdateTimedoutAgreement:Create Could not create message: ' + e.message)
-				}
-			}
-		},
 		async MsgRenewAgreement({ rootGetters }, { value }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -473,6 +460,19 @@ export default {
 				}
 			}
 		},
+		async MsgDeleteTimedoutAgreement({ rootGetters }, { value }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgDeleteTimedoutAgreement(value)
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgDeleteTimedoutAgreement:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgDeleteTimedoutAgreement:Create Could not create message: ' + e.message)
+				}
+			}
+		},
 		async MsgTerminateAgreement({ rootGetters }, { value }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -483,6 +483,32 @@ export default {
 					throw new Error('TxClient:MsgTerminateAgreement:Init Could not initialize signing client. Wallet is required.')
 				} else{
 					throw new Error('TxClient:MsgTerminateAgreement:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgActivateAgreement({ rootGetters }, { value }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgActivateAgreement(value)
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgActivateAgreement:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgActivateAgreement:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgCreateTimedoutAgreement({ rootGetters }, { value }) {
+			try {
+				const txClient=await initTxClient(rootGetters)
+				const msg = await txClient.msgCreateTimedoutAgreement(value)
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgCreateTimedoutAgreement:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgCreateTimedoutAgreement:Create Could not create message: ' + e.message)
 				}
 			}
 		},
@@ -512,19 +538,6 @@ export default {
 				}
 			}
 		},
-		async MsgCreateTimedoutAgreement({ rootGetters }, { value }) {
-			try {
-				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgCreateTimedoutAgreement(value)
-				return msg
-			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgCreateTimedoutAgreement:Init Could not initialize signing client. Wallet is required.')
-				} else{
-					throw new Error('TxClient:MsgCreateTimedoutAgreement:Create Could not create message: ' + e.message)
-				}
-			}
-		},
 		async MsgExpireAgreement({ rootGetters }, { value }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
@@ -538,16 +551,16 @@ export default {
 				}
 			}
 		},
-		async MsgDeleteTimedoutAgreement({ rootGetters }, { value }) {
+		async MsgUpdateTimedoutAgreement({ rootGetters }, { value }) {
 			try {
 				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgDeleteTimedoutAgreement(value)
+				const msg = await txClient.msgUpdateTimedoutAgreement(value)
 				return msg
 			} catch (e) {
 				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgDeleteTimedoutAgreement:Init Could not initialize signing client. Wallet is required.')
+					throw new Error('TxClient:MsgUpdateTimedoutAgreement:Init Could not initialize signing client. Wallet is required.')
 				} else{
-					throw new Error('TxClient:MsgDeleteTimedoutAgreement:Create Could not create message: ' + e.message)
+					throw new Error('TxClient:MsgUpdateTimedoutAgreement:Create Could not create message: ' + e.message)
 				}
 			}
 		},
@@ -561,19 +574,6 @@ export default {
 					throw new Error('TxClient:MsgCreateSentAgreement:Init Could not initialize signing client. Wallet is required.')
 				} else{
 					throw new Error('TxClient:MsgCreateSentAgreement:Create Could not create message: ' + e.message)
-				}
-			}
-		},
-		async MsgActivateAgreement({ rootGetters }, { value }) {
-			try {
-				const txClient=await initTxClient(rootGetters)
-				const msg = await txClient.msgActivateAgreement(value)
-				return msg
-			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgActivateAgreement:Init Could not initialize signing client. Wallet is required.')
-				} else{
-					throw new Error('TxClient:MsgActivateAgreement:Create Could not create message: ' + e.message)
 				}
 			}
 		},

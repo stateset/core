@@ -16,6 +16,8 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgUpdateTimedoutInvoice{}, "invoice/UpdateTimedoutInvoice", nil)
 	cdc.RegisterConcrete(&MsgDeleteTimedoutInvoice{}, "invoice/DeleteTimedoutInvoice", nil)
 	cdc.RegisterConcrete(&MsgCreateInvoice{}, "invoice/CreateInvoice", nil)
+	cdc.RegisterConcrete(&MsgPayInvoice{}, "invoice/PayInvoice", nil)
+	cdc.RegisterConcrete(&MsgVoidInvoice{}, "invoice/VoidInvoice", nil)
 	// this line is used by starport scaffolding # 2
 }
 
@@ -35,6 +37,12 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 	)
 	registry.RegisterImplementations((*sdk.Msg)(nil),
 		&MsgCreateInvoice{},
+	)
+	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgPayInvoice{},
+	)
+	registry.RegisterImplementations((*sdk.Msg)(nil),
+		&MsgVoidInvoice{},
 	)
 	// this line is used by starport scaffolding # 3
 

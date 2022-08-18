@@ -37,6 +37,8 @@ func GetTxCmd() *cobra.Command {
 	cmd.AddCommand(CmdUpdateTimedoutInvoice())
 	cmd.AddCommand(CmdDeleteTimedoutInvoice())
 	cmd.AddCommand(CmdCreateInvoice())
+	cmd.AddCommand(CmdPayInvoice())
+	cmd.AddCommand(CmdVoidInvoice())
 	// this line is used by starport scaffolding # 1
 
 	return cmd

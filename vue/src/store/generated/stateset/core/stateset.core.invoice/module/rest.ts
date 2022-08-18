@@ -36,9 +36,13 @@ export type InvoiceMsgDeleteTimedoutInvoiceResponse = object;
 
 export type InvoiceMsgFactorInvoiceResponse = object;
 
+export type InvoiceMsgPayInvoiceResponse = object;
+
 export type InvoiceMsgUpdateSentInvoiceResponse = object;
 
 export type InvoiceMsgUpdateTimedoutInvoiceResponse = object;
+
+export type InvoiceMsgVoidInvoiceResponse = object;
 
 export interface InvoiceQueryAllInvoiceResponse {
   Invoice?: InvoiceInvoice[];
