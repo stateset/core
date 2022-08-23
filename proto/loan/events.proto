@@ -4,7 +4,7 @@ package stateset.core.loan;
 
 import "gogoproto/gogo.proto";
 
-option go_package = "github.com/stateset/core/x/loan";
+option go_package = "github.com/stateset/core/x/loan/types";
 
 // EventCreateLoan is an event emitted when an loan is created.
 message EventCreateLoan {
