@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package stateset.core.loan;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/stateset/core/x/loan";
+
+// EventCreateLoan is an event emitted when an loan is created.
+message EventCreateLoan {
+
+    // loan_id is the unique ID of loan
+    string loan_id = 1 [ (gogoproto.moretags) = "yaml:\"loan_id\"" ];
+
+    // creator is the creator of the loan
+    string creator = 2;
+}
+
+
+// EventLoanRequested is an event emitted when an loan is requested.
+message EventLoanRequested {
+
+    // loan_id is the unique ID of loan
+    string loan_id = 1 [ (gogoproto.moretags) = "yaml:\"loan_id\"" ];
+
+    // creator is the creator of the loan
+    string creator = 2;
+    
+}
+
+// EventApproved is an event emitted when an loan is approved.
+message EventApproved {
+
+    // loan_id is the unique ID of loan
+    string loan_id = 1 [ (gogoproto.moretags) = "yaml:\"loan_id\"" ];
+
+    // creator is the creator of the loan
+    string creator = 2;
+
+}
+
+// EventRepaid is an event emitted when an loan is repaid.
+message EventRepaid {
+
+    // loan_id is the unique ID of loan
+    string loan_id = 1 [ (gogoproto.moretags) = "yaml:\"loan_id\"" ];
+
+    // creator is the creator of the loan
+    string creator = 2;
+}
+
+
+// EventLiquidated is an event emitted when an loan is liquidated.
+message EventLiquidated {
+
+    // loan_id is the unique ID of loan
+    string loan_id = 1 [ (gogoproto.moretags) = "yaml:\"loan_id\"" ];
+
+    // creator is the creator of the loan
+    string creator = 2;
+}
+
+
+// EventCancelled is an event emitted when an loan is cancelled.
+message EventCancelled {
+
+    // loan_id is the unique ID of loan
+    string loan_id = 1 [ (gogoproto.moretags) = "yaml:\"loan_id\"" ];
+
+    // creator is the creator of the loan
+    string creator = 2;
+}
