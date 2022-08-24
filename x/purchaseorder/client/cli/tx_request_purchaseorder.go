@@ -15,7 +15,7 @@ var _ = strconv.Itoa(0)
 
 func CmdRequestPurchaseorder() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "request-purchaseorder [did] [uri] [amount] [state]",
+		Use:   "request-purchaseorder [did] [uri] [amount] [state] [seller]",
 		Short: "Broadcast message request-purchaseorder",
 		Args:  cobra.ExactArgs(4),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
@@ -23,6 +23,7 @@ func CmdRequestPurchaseorder() *cobra.Command {
 			argUri := args[1]
 			argAmount := args[2]
 			argState := args[3]
+			argSeller :=  args[4]
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -35,6 +36,7 @@ func CmdRequestPurchaseorder() *cobra.Command {
 				argUri,
 				argAmount,
 				argState,
+				argSeller,
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err
