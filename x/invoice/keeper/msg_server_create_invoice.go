@@ -19,7 +19,7 @@ func (k msgServer) CreateInvoice(goCtx context.Context, msg *types.MsgCreateInvo
 	}
 
 	creator, _ := sdk.AccAddressFromBech32(msg.Creator)
-	
+
 	k.AppendInvoice(
 		ctx,
 		invoice,
@@ -29,7 +29,7 @@ func (k msgServer) CreateInvoice(goCtx context.Context, msg *types.MsgCreateInvo
 		sdk.NewEvent(
 			types.TypeEvtInvoiceCreated,
 			sdk.NewAttribute(types.AttributeKeyInvoiceId, strconv.FormatUint(invoiceId, 10)),
-		)
+		),
 	})
 
 	return &types.MsgCreateInvoiceResponse{}, nil

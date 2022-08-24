@@ -53,7 +53,7 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 		sdk.NewEvent(
 			types.TypeEvtInvoicePaid,
 			sdk.NewAttribute(types.AttributeKeyInvoiceId, strconv.FormatUint(msg.InvoiceId, 10)),
-		)
+		),
 	})
 
 	return &types.MsgPayInvoiceResponse{}, nil

@@ -29,7 +29,7 @@ func (k msgServer) VoidInvoice(goCtx context.Context, msg *types.MsgVoidInvoice)
 		sdk.NewEvent(
 			types.TypeEvtInvoiceVoided,
 			sdk.NewAttribute(types.AttributeKeyInvoiceId, strconv.FormatUint(msg.InvoiceId, 10)),
-		)
+		),
 	})
 
 	return &types.MsgVoidInvoiceResponse{}, nil
