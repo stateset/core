@@ -32,12 +32,5 @@ func (k msgServer) FactorInvoice(goCtx context.Context, msg *types.MsgFactorInvo
 
 	k.SetInvoice(ctx, invoice)
 
-	ctx.EventManager().EmitEvents(sdk.Events{
-		sdk.NewEvent(
-			types.TypeEvtInvoiceFactored,
-			sdk.NewAttribute(types.AttributeKeyInvoiceId, strconv.FormatUint(msg.InvoiceId, 10)),
-		),
-	})
-
 	return &types.MsgFactorInvoiceResponse{}, nil
 }
