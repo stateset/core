@@ -49,5 +49,12 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 
 	k.SetInvoice(ctx, invoice)
 
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.TypeEvtInvoicePaid,
+			sdk.NewAttribute(types.AttributeKeyInvoiceId, strconv.FormatUint(msg.InvoiceId, 10)),
+		)
+	})
+
 	return &types.MsgPayInvoiceResponse{}, nil
 }

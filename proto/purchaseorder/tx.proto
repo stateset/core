@@ -106,6 +106,8 @@ message MsgRequestPurchaseorder {
   string uri = 3;
   string amount = 4;
   string state = 5;
+  string purchaser = 6;
+  string seller = 7;
 }
 
 message MsgRequestPurchaseorderResponse {

@@ -27,11 +27,17 @@ func (k msgServer) FactorInvoice(goCtx context.Context, msg *types.MsgFactorInvo
 
 	k.bankKeeper.SendCoins(ctx, factor, seller, amount)
 
-
 	invoice.Factor = msg.Creator
 	invoice.State = "factored"
 
 	k.SetInvoice(ctx, invoice)
+
+	ctx.EventManager().EmitEvents(sdk.Events{
+		sdk.NewEvent(
+			types.TypeEvtInvoiceFactored,
+			sdk.NewAttribute(types.AttributeKeyInvoiceId, strconv.FormatUint(msg.InvoiceId, 10)),
+		)
+	})
 
 	return &types.MsgFactorInvoiceResponse{}, nil
 }

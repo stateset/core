@@ -21,6 +21,13 @@ func (k msgServer) FinancePurchaseorder(goCtx context.Context, msg *types.MsgFin
 		return nil, sdkerrors.Wrapf(types.ErrWrongPurchaseOrderState, "%v", purchaseorder.State)
 	}
 
+	financer, _ := sdk.AccAddressFromBech32(msg.Creator)
+	seller, _ := sdk.AccAddressFromBech32(purchaseorder.Seller)
+	amount, _ := sdk.ParseCoinsNormalized(purchaseorder.Amount)
+
+	k.bankKeeper.SendCoins(ctx, financer, seller, amount)
+
+	purchaseorder.Financer = msg.Creator
 	purchaseorder.State = "financed"
 
 	k.SetPurchaseorder(ctx, purchaseorder)
