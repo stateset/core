@@ -1,0 +1,24 @@
+import { Writer, Reader } from "protobufjs/minimal";
+export declare const protobufPackage = "stateset.core.purchaseorder";
+export interface Purchaseorder {
+    id: number;
+    did: string;
+    uri: string;
+    amount: string;
+    state: string;
+    purchaser: string;
+    seller: string;
+    financer: string;
+}
+export declare const Purchaseorder: {
+    encode(message: Purchaseorder, writer?: Writer): Writer;
+    decode(input: Reader | Uint8Array, length?: number): Purchaseorder;
+    fromJSON(object: any): Purchaseorder;
+    toJSON(message: Purchaseorder): unknown;
+    fromPartial(object: DeepPartial<Purchaseorder>): Purchaseorder;
+};
+declare type Builtin = Date | Function | Uint8Array | string | number | undefined;
+export declare type DeepPartial<T> = T extends Builtin ? T : T extends Array<infer U> ? Array<DeepPartial<U>> : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>> : T extends {} ? {
+    [K in keyof T]?: DeepPartial<T[K]>;
+} : Partial<T>;
+export {};
