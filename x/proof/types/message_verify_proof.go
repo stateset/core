@@ -9,11 +9,11 @@ const TypeMsgVerifyProof = "verify_proof"
 
 var _ sdk.Msg = &MsgVerifyProof{}
 
-func NewMsgVerifyProof(creator string, proof string, publicSignals string) *MsgVerifyProof {
+func NewMsgVerifyProof(creator string, proof string, publicWitness string) *MsgVerifyProof {
 	return &MsgVerifyProof{
 		Creator:       creator,
 		Proof:         proof,
-		PublicSignals: publicSignals,
+		publicWitness: publicWitness,
 	}
 }
 

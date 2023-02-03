@@ -19,7 +19,7 @@ func CmdVerifyProof() *cobra.Command {
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
 			argProof := args[0]
-			argPublicSignals := args[1]
+			argpublicWitness := args[1]
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -29,7 +29,7 @@ func CmdVerifyProof() *cobra.Command {
 			msg := types.NewMsgVerifyProof(
 				clientCtx.GetFromAddress().String(),
 				argProof,
-				argPublicSignals,
+				argpublicWitness,
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err

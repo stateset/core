@@ -27,7 +27,7 @@ message MsgCreateProofResponse {
 message MsgVerifyProof {
   string creator = 1;
   string proof = 2;
-  string publicSignals = 3;
+  string publicWitness = 3;
 }
 
 message MsgVerifyProofResponse {
