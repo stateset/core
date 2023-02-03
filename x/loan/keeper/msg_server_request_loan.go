@@ -20,11 +20,11 @@ func (k msgServer) RequestLoan(goCtx context.Context, msg *types.MsgRequestLoan)
 		Borrower:   msg.Creator,
 	}
 
-	// TODO: collateral has to be more than the amount (+fee?)
-
 	// moduleAcc := sdk.AccAddress(crypto.AddressHash([]byte(types.ModuleName)))
-	borrower, _ := sdk.AccAddressFromBech32(msg.Creator)
-
+	borrower, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+        panic(err)
+    }
 	collateral, err := sdk.ParseCoinsNormalized(loan.Collateral)
 	if err != nil {
 		panic(err)
@@ -35,10 +35,7 @@ func (k msgServer) RequestLoan(goCtx context.Context, msg *types.MsgRequestLoan)
 		return nil, sdkError
 	}
 
-	k.AppendLoan(
-		ctx,
-		loan,
-	)
+	k.AppendLoan(ctx, loan)
 
 	return &types.MsgRequestLoanResponse{}, nil
 }

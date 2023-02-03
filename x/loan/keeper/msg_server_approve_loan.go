@@ -24,10 +24,16 @@ func (k msgServer) ApproveLoan(goCtx context.Context, msg *types.MsgApproveLoan)
 
 	lender, _ := sdk.AccAddressFromBech32(msg.Creator)
 	borrower, _ := sdk.AccAddressFromBech32(loan.Borrower)
-	amount, _ := sdk.ParseCoinsNormalized(loan.Amount)
+	amount, err := sdk.ParseCoinsNormalized(loan.Amount)
 
-	k.bankKeeper.SendCoins(ctx, lender, borrower, amount)
+	if err != nil {
+        return nil, sdkerrors.Wrap(types.ErrWrongLoanState, "Cannot parse coins in loan amount")
+    }
 
+	err = k.bankKeeper.SendCoins(ctx, lender, borrower, amount)
+	if err != nil {
+        return nil, err
+    }
 	loan.Lender = msg.Creator
 	loan.State = "approved"
 

@@ -10,8 +10,15 @@ import (
 func (k msgServer) CreateProof(goCtx context.Context, msg *types.MsgCreateProof) (*types.MsgCreateProofResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	// TODO: Handling the message
-	_ = ctx
+	var proof = types.Proof{
+		Id:     	msg.Id,
+		DID:        msg.Did,
+		URI: 		msg.Uri,
+		Hash:       msg.Hash,
+		State:      "created",
+	}
+
+	k.AppendProof(ctx, proof)
 
 	return &types.MsgCreateProofResponse{}, nil
 }
