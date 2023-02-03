@@ -9,13 +9,13 @@ var _ sdk.Msg = &MsgRequestPurchaseorder{}
 
 func NewMsgRequestPurchaseorder(creator string, did string, uri string, amount string, state string, seller string) *MsgRequestPurchaseorder {
 	return &MsgRequestPurchaseorder{
-		Creator: creator,
-		Did:     did,
-		Uri:     uri,
-		Amount:  amount,
-		State:   state,
+		Creator:   creator,
+		Did:       did,
+		Uri:       uri,
+		Amount:    amount,
+		State:     state,
 		Purchaser: creator,
-		Seller: seller,
+		Seller:    seller,
 	}
 }
 

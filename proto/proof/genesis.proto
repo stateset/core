@@ -1,0 +1,14 @@
+syntax = "proto3";
+package stateset.core.proof;
+
+import "gogoproto/gogo.proto";
+import "proof/params.proto";
+// this line is used by starport scaffolding # genesis/proto/import
+
+option go_package = "github.com/stateset/core/x/proof/types";
+
+// GenesisState defines the proof module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+  // this line is used by starport scaffolding # genesis/proto/state
+}

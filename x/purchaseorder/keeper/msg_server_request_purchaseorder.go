@@ -12,12 +12,12 @@ func (k msgServer) RequestPurchaseorder(goCtx context.Context, msg *types.MsgReq
 
 	// TODO: Handling the message
 	var purchaseorder = types.Purchaseorder{
-		Did:    msg.Did,
-		Uri:    msg.Uri,
-		Amount: msg.Amount,
-		State:  "requested",
+		Did:       msg.Did,
+		Uri:       msg.Uri,
+		Amount:    msg.Amount,
+		State:     "requested",
 		Purchaser: msg.Creator,
-		Seller: msg.Seller,
+		Seller:    msg.Seller,
 	}
 
 	// Create NFT for the Purchase Order

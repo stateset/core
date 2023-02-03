@@ -24,6 +24,6 @@ func (k msgServer) VoidInvoice(goCtx context.Context, msg *types.MsgVoidInvoice)
 	invoice.State = "void"
 
 	k.SetInvoice(ctx, invoice)
-	
+
 	return &types.MsgVoidInvoiceResponse{}, nil
 }

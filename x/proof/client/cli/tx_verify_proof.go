@@ -3,40 +3,33 @@ package cli
 import (
 	"strconv"
 
-	"github.com/spf13/cobra"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/stateset/core/x/purchaseorder/types"
+	"github.com/spf13/cobra"
+	"github.com/stateset/core/x/proof/types"
 )
 
 var _ = strconv.Itoa(0)
 
-func CmdRequestPurchaseorder() *cobra.Command {
+func CmdVerifyProof() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "request-purchaseorder [did] [uri] [amount] [state] [seller]",
-		Short: "Broadcast message request-purchaseorder",
-		Args:  cobra.ExactArgs(4),
+		Use:   "verify-proof [proof] [public-signals]",
+		Short: "Broadcast message verify-proof",
+		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			argDid := args[0]
-			argUri := args[1]
-			argAmount := args[2]
-			argState := args[3]
-			argSeller := args[4]
+			argProof := args[0]
+			argPublicSignals := args[1]
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
 
-			msg := types.NewMsgRequestPurchaseorder(
+			msg := types.NewMsgVerifyProof(
 				clientCtx.GetFromAddress().String(),
-				argDid,
-				argUri,
-				argAmount,
-				argState,
-				argSeller,
+				argProof,
+				argPublicSignals,
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err

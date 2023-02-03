@@ -106,6 +106,9 @@ import (
 	purchaseordermodulekeeper "github.com/stateset/core/x/purchaseorder/keeper"
 	purchaseordermoduletypes "github.com/stateset/core/x/purchaseorder/types"
 
+	proofmodule "github.com/stateset/core/x/proof"
+	proofmodulekeeper "github.com/stateset/core/x/proof/keeper"
+	proofmoduletypes "github.com/stateset/core/x/proof/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
 	"github.com/CosmWasm/wasmd/x/wasm"
@@ -204,6 +207,7 @@ var (
 		purchaseordermodule.AppModuleBasic{},
 		invoicemodule.AppModuleBasic{},
 		didmodule.AppModuleBasic{},
+		proofmodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 		wasm.AppModuleBasic{},
 	)
@@ -287,6 +291,8 @@ type App struct {
 	InvoiceKeeper invoicemodulekeeper.Keeper
 
 	DidKeeper didmodulekeeper.Keeper
+
+	ProofKeeper proofmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
 	wasmKeeper       wasm.Keeper
 	scopedWasmKeeper capabilitykeeper.ScopedKeeper
@@ -327,6 +333,7 @@ func New(
 		purchaseordermoduletypes.StoreKey,
 		invoicemoduletypes.StoreKey,
 		didmoduletypes.StoreKey,
+		proofmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 		wasm.StoreKey,
 	)
@@ -470,6 +477,14 @@ func New(
 	)
 	didModule := didmodule.NewAppModule(appCodec, app.DidKeeper)
 
+	app.ProofKeeper = *proofmodulekeeper.NewKeeper(
+		appCodec,
+		keys[proofmoduletypes.StoreKey],
+		keys[proofmoduletypes.MemStoreKey],
+		app.GetSubspace(proofmoduletypes.ModuleName),
+	)
+	proofModule := proofmodule.NewAppModule(appCodec, app.ProofKeeper, app.AccountKeeper, app.BankKeeper)
+
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	wasmDir := filepath.Join(homePath, "data")
 
@@ -551,6 +566,7 @@ func New(
 		purchaseorderModule,
 		invoiceModule,
 		didModule,
+		proofModule,
 		// this line is used by starport scaffolding # stargate/app/appModule
 		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper),
 	)
@@ -591,6 +607,7 @@ func New(
 		purchaseordermoduletypes.ModuleName,
 		invoicemoduletypes.ModuleName,
 		didmoduletypes.ModuleName,
+		proofmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 		wasm.ModuleName,
 	)
@@ -793,6 +810,7 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(purchaseordermoduletypes.ModuleName)
 	paramsKeeper.Subspace(invoicemoduletypes.ModuleName)
 	paramsKeeper.Subspace(didmoduletypes.ModuleName)
+	paramsKeeper.Subspace(proofmoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 	paramsKeeper.Subspace(wasm.ModuleName)
 

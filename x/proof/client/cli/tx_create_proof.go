@@ -3,40 +3,43 @@ package cli
 import (
 	"strconv"
 
-	"github.com/spf13/cobra"
-
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/tx"
-	"github.com/stateset/core/x/purchaseorder/types"
+	"github.com/spf13/cast"
+	"github.com/spf13/cobra"
+	"github.com/stateset/core/x/proof/types"
 )
 
 var _ = strconv.Itoa(0)
 
-func CmdRequestPurchaseorder() *cobra.Command {
+func CmdCreateProof() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "request-purchaseorder [did] [uri] [amount] [state] [seller]",
-		Short: "Broadcast message request-purchaseorder",
-		Args:  cobra.ExactArgs(4),
+		Use:   "create-proof [id] [did] [uri] [hash] [state]",
+		Short: "Broadcast message create-proof",
+		Args:  cobra.ExactArgs(5),
 		RunE: func(cmd *cobra.Command, args []string) (err error) {
-			argDid := args[0]
-			argUri := args[1]
-			argAmount := args[2]
-			argState := args[3]
-			argSeller := args[4]
+			argId, err := cast.ToUint64E(args[0])
+			if err != nil {
+				return err
+			}
+			argDid := args[1]
+			argUri := args[2]
+			argHash := args[3]
+			argState := args[4]
 
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
 				return err
 			}
 
-			msg := types.NewMsgRequestPurchaseorder(
+			msg := types.NewMsgCreateProof(
 				clientCtx.GetFromAddress().String(),
+				argId,
 				argDid,
 				argUri,
-				argAmount,
+				argHash,
 				argState,
-				argSeller,
 			)
 			if err := msg.ValidateBasic(); err != nil {
 				return err

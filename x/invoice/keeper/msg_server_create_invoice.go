@@ -11,10 +11,10 @@ func (k msgServer) CreateInvoice(goCtx context.Context, msg *types.MsgCreateInvo
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	var invoice = types.Invoice{
-		Did:    msg.Did,
-		Amount: msg.Amount,
-		State:  "requested",
-		Seller: msg.Creator,
+		Did:       msg.Did,
+		Amount:    msg.Amount,
+		State:     "requested",
+		Seller:    msg.Creator,
 		Purchaser: msg.Purchaser,
 	}
 

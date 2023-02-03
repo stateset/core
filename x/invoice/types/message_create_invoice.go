@@ -11,12 +11,12 @@ var _ sdk.Msg = &MsgCreateInvoice{}
 
 func NewMsgCreateInvoice(creator string, id string, did string, amount string, state string, purchaser string) *MsgCreateInvoice {
 	return &MsgCreateInvoice{
-		Creator: creator,
-		Id:      id,
-		Did:     did,
-		Amount:  amount,
-		State:   state,
-		Seller: creator,
+		Creator:   creator,
+		Id:        id,
+		Did:       did,
+		Amount:    amount,
+		State:     state,
+		Seller:    creator,
 		Purchaser: purchaser,
 	}
 }
