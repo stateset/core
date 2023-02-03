@@ -13,7 +13,7 @@ func (k msgServer) VerifyProof(goCtx context.Context, msg *types.MsgVerifyProof)
 	publicWitness := msg.PublicWitness
 	
 	// Set the curve to use.
-	curve := ecc.BN254.init();
+	curve := ecc.BN254
 
 	// Create a new verifying key.
 	vk, err := groth16.NewVerifyingKey(curve)
