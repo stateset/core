@@ -2,8 +2,8 @@ package keeper
 
 import (
 	"context"
-
-	groth16 "github.com/consensys/gnark/std/groth16_bls12377"
+	ecc "github.com/consensys/gnark-crypto/ecc"
+	groth16 "github.com/consensys/gnark/backend/groth16"
 	"github.com/stateset/core/x/proof/types"
 )
 
@@ -11,8 +11,12 @@ func (k msgServer) VerifyProof(goCtx context.Context, msg *types.MsgVerifyProof)
 
 	proof := msg.Proof
 	publicWitness := msg.PublicWitness
+	
+	// Set the curve to use.
+	curve := ecc.BN254.init();
 
-	vk, err := groth16.VerifierKeyFromPkFile("path/to/verifier_key.pk")
+	// Create a new verifying key.
+	vk, err := groth16.NewVerifyingKey(curve)
 	if err != nil {
 		return nil, err
 	}
