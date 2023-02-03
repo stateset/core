@@ -13,7 +13,7 @@ func NewMsgVerifyProof(creator string, proof string, publicWitness string) *MsgV
 	return &MsgVerifyProof{
 		Creator:       creator,
 		Proof:         proof,
-		publicWitness: publicWitness,
+		PublicWitness: publicWitness,
 	}
 }
 

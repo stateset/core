@@ -1,0 +1,16 @@
+syntax = "proto3";
+package stateset.core.proof;
+
+option go_package = "github.com/stateset/core/x/proof/types";
+
+import "gogoproto/gogo.proto";
+
+
+message Proof {
+  uint64 id = 1;
+  string did = 2; 
+  string uri = 3; 
+  string hash = 4; 
+  string state = 5; 
+  
+}

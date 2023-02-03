@@ -3,13 +3,11 @@ package keeper
 import (
 	"context"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	groth16 "github.com/consensys/gnark/std/groth16_bls12377"
 	"github.com/stateset/core/x/proof/types"
-	groth16 "github.com/Consensys/gnark"
 )
 
 func (k msgServer) VerifyProof(goCtx context.Context, msg *types.MsgVerifyProof) (*types.MsgVerifyProofResponse, error) {
-	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	proof := msg.Proof
 	publicWitness := msg.PublicWitness

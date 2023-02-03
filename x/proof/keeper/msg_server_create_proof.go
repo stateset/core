@@ -12,8 +12,8 @@ func (k msgServer) CreateProof(goCtx context.Context, msg *types.MsgCreateProof)
 
 	var proof = types.Proof{
 		Id:     	msg.Id,
-		DID:        msg.Did,
-		URI: 		msg.Uri,
+		Did:        msg.Did,
+		Uri: 		msg.Uri,
 		Hash:       msg.Hash,
 		State:      "created",
 	}
