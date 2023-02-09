@@ -51,3 +51,20 @@ Available Commands:
 ### CosmWasm
 
 CosmWasm is used for deploying smart contracts on the Stateset Network.
+
+```
+Wasm transaction subcommands
+
+Usage:
+  statesetd tx wasm [flags]
+  statesetd tx wasm [command]
+
+Available Commands:
+  clear-contract-admin Clears admin for a contract to prevent further migrations
+  execute              Execute a command on a wasm contract
+  instantiate          Instantiate a wasm contract
+  migrate              Migrate a wasm contract to a new code version
+  set-contract-admin   Set new admin for a contract
+  store                Upload a wasm binary
+
+  ```
