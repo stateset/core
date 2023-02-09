@@ -7,7 +7,7 @@ option go_package = "github.com/stateset/core/x/loan/types";
 
 // Msg defines the Msg service.
 service Msg {
-      rpc RequestLoan(MsgRequestLoan) returns (MsgRequestLoanResponse);
+  rpc RequestLoan(MsgRequestLoan) returns (MsgRequestLoanResponse);
   rpc ApproveLoan(MsgApproveLoan) returns (MsgApproveLoanResponse);
   rpc RepayLoan(MsgRepayLoan) returns (MsgRepayLoanResponse);
   rpc LiquidateLoan(MsgLiquidateLoan) returns (MsgLiquidateLoanResponse);
