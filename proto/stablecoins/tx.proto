@@ -1,0 +1,189 @@
+syntax = "proto3";
+package stateset.core.stablecoins;
+
+option go_package = "github.com/stateset/core/x/stablecoins/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "google/protobuf/timestamp.proto";
+import "stablecoins/stablecoins.proto";
+
+// Msg defines the stablecoins Msg service.
+service Msg {
+  // CreateStablecoin creates a new stablecoin
+  rpc CreateStablecoin(MsgCreateStablecoin) returns (MsgCreateStablecoinResponse);
+  
+  // UpdateStablecoin updates an existing stablecoin configuration
+  rpc UpdateStablecoin(MsgUpdateStablecoin) returns (MsgUpdateStablecoinResponse);
+  
+  // MintStablecoin mints new stablecoin tokens
+  rpc MintStablecoin(MsgMintStablecoin) returns (MsgMintStablecoinResponse);
+  
+  // BurnStablecoin burns stablecoin tokens
+  rpc BurnStablecoin(MsgBurnStablecoin) returns (MsgBurnStablecoinResponse);
+  
+  // PauseStablecoin pauses operations for a stablecoin
+  rpc PauseStablecoin(MsgPauseStablecoin) returns (MsgPauseStablecoinResponse);
+  
+  // UnpauseStablecoin unpauses operations for a stablecoin
+  rpc UnpauseStablecoin(MsgUnpauseStablecoin) returns (MsgUnpauseStablecoinResponse);
+  
+  // UpdatePriceData updates price data for stablecoin pegging
+  rpc UpdatePriceData(MsgUpdatePriceData) returns (MsgUpdatePriceDataResponse);
+  
+  // UpdateReserves updates reserve information
+  rpc UpdateReserves(MsgUpdateReserves) returns (MsgUpdateReservesResponse);
+  
+  // WhitelistAddress adds an address to whitelist
+  rpc WhitelistAddress(MsgWhitelistAddress) returns (MsgWhitelistAddressResponse);
+  
+  // BlacklistAddress adds an address to blacklist
+  rpc BlacklistAddress(MsgBlacklistAddress) returns (MsgBlacklistAddressResponse);
+  
+  // RemoveFromWhitelist removes an address from whitelist
+  rpc RemoveFromWhitelist(MsgRemoveFromWhitelist) returns (MsgRemoveFromWhitelistResponse);
+  
+  // RemoveFromBlacklist removes an address from blacklist
+  rpc RemoveFromBlacklist(MsgRemoveFromBlacklist) returns (MsgRemoveFromBlacklistResponse);
+}
+
+// MsgCreateStablecoin defines the message for creating a new stablecoin
+message MsgCreateStablecoin {
+  string creator = 1;
+  string denom = 2;
+  string name = 3;
+  string symbol = 4;
+  uint32 decimals = 5;
+  string description = 6;
+  string max_supply = 7 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  PegInfo peg_info = 8;
+  ReserveInfo reserve_info = 9;
+  string stability_mechanism = 10;
+  FeeInfo fee_info = 11;
+  AccessControlInfo access_control = 12;
+  string metadata = 13;
+}
+
+message MsgCreateStablecoinResponse {
+  string denom = 1;
+}
+
+// MsgUpdateStablecoin defines the message for updating a stablecoin
+message MsgUpdateStablecoin {
+  string creator = 1;
+  string denom = 2;
+  string name = 3;
+  string description = 4;
+  PegInfo peg_info = 5;
+  FeeInfo fee_info = 6;
+  AccessControlInfo access_control = 7;
+  string metadata = 8;
+}
+
+message MsgUpdateStablecoinResponse {}
+
+// MsgMintStablecoin defines the message for minting stablecoins
+message MsgMintStablecoin {
+  string creator = 1;
+  string denom = 2;
+  string amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string recipient = 4;
+}
+
+message MsgMintStablecoinResponse {}
+
+// MsgBurnStablecoin defines the message for burning stablecoins
+message MsgBurnStablecoin {
+  string creator = 1;
+  string denom = 2;
+  string amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message MsgBurnStablecoinResponse {}
+
+// MsgPauseStablecoin defines the message for pausing stablecoin operations
+message MsgPauseStablecoin {
+  string creator = 1;
+  string denom = 2;
+  string operation = 3; // mint, burn, transfer, all
+  string reason = 4;
+}
+
+message MsgPauseStablecoinResponse {}
+
+// MsgUnpauseStablecoin defines the message for unpausing stablecoin operations
+message MsgUnpauseStablecoin {
+  string creator = 1;
+  string denom = 2;
+  string operation = 3; // mint, burn, transfer, all
+}
+
+message MsgUnpauseStablecoinResponse {}
+
+// MsgUpdatePriceData defines the message for updating price data
+message MsgUpdatePriceData {
+  string creator = 1;
+  string denom = 2;
+  string price = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string source = 4;
+}
+
+message MsgUpdatePriceDataResponse {}
+
+// MsgUpdateReserves defines the message for updating reserve information
+message MsgUpdateReserves {
+  string creator = 1;
+  string denom = 2;
+  repeated ReserveAsset reserve_assets = 3;
+}
+
+message MsgUpdateReservesResponse {}
+
+// MsgWhitelistAddress defines the message for adding an address to whitelist
+message MsgWhitelistAddress {
+  string creator = 1;
+  string denom = 2;
+  string address = 3;
+}
+
+message MsgWhitelistAddressResponse {}
+
+// MsgBlacklistAddress defines the message for adding an address to blacklist
+message MsgBlacklistAddress {
+  string creator = 1;
+  string denom = 2;
+  string address = 3;
+  string reason = 4;
+}
+
+message MsgBlacklistAddressResponse {}
+
+// MsgRemoveFromWhitelist defines the message for removing an address from whitelist
+message MsgRemoveFromWhitelist {
+  string creator = 1;
+  string denom = 2;
+  string address = 3;
+}
+
+message MsgRemoveFromWhitelistResponse {}
+
+// MsgRemoveFromBlacklist defines the message for removing an address from blacklist
+message MsgRemoveFromBlacklist {
+  string creator = 1;
+  string denom = 2;
+  string address = 3;
+}
+
+message MsgRemoveFromBlacklistResponse {}

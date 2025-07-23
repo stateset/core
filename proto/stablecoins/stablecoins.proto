@@ -1,0 +1,268 @@
+syntax = "proto3";
+package stateset.core.stablecoins;
+
+option go_package = "github.com/stateset/core/x/stablecoins/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "google/protobuf/timestamp.proto";
+
+// Stablecoin represents a stablecoin configuration on the Stateset network
+message Stablecoin {
+  // Unique identifier for the stablecoin (typically the denom)
+  string denom = 1;
+  
+  // Display name of the stablecoin
+  string name = 2;
+  
+  // Symbol/ticker of the stablecoin
+  string symbol = 3;
+  
+  // Number of decimal places
+  uint32 decimals = 4;
+  
+  // Description of the stablecoin
+  string description = 5;
+  
+  // Issuer address who can mint/burn this stablecoin
+  string issuer = 6;
+  
+  // Admin address who can update stablecoin parameters
+  string admin = 7;
+  
+  // Total supply currently in circulation
+  string total_supply = 8 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Maximum supply allowed
+  string max_supply = 9 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Peg information (what asset it's pegged to)
+  PegInfo peg_info = 10;
+  
+  // Reserve backing information
+  ReserveInfo reserve_info = 11;
+  
+  // Whether the stablecoin is currently active
+  bool active = 12;
+  
+  // Whether minting is paused
+  bool mint_paused = 13;
+  
+  // Whether burning is paused
+  bool burn_paused = 14;
+  
+  // Whether transfers are paused
+  bool transfer_paused = 15;
+  
+  // Metadata for additional information
+  string metadata = 16;
+  
+  // Creation timestamp
+  google.protobuf.Timestamp created_at = 17 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  
+  // Last updated timestamp
+  google.protobuf.Timestamp updated_at = 18 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  
+  // Collateralization ratio (if applicable)
+  string collateralization_ratio = 19;
+  
+  // Stability mechanism (algorithmic, collateralized, hybrid)
+  string stability_mechanism = 20;
+  
+  // Fee information for operations
+  FeeInfo fee_info = 21;
+  
+  // Whitelist/blacklist information
+  AccessControlInfo access_control = 22;
+}
+
+// PegInfo contains information about what the stablecoin is pegged to
+message PegInfo {
+  // Target asset (USD, EUR, BTC, etc.)
+  string target_asset = 1;
+  
+  // Target price in the smallest unit
+  string target_price = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Price tolerance (allowed deviation)
+  string price_tolerance = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Oracle sources for price feeds
+  repeated string oracle_sources = 4;
+  
+  // Rebalancing frequency
+  string rebalancing_frequency = 5;
+}
+
+// ReserveInfo contains information about reserves backing the stablecoin
+message ReserveInfo {
+  // Reserve assets backing this stablecoin
+  repeated ReserveAsset reserve_assets = 1;
+  
+  // Total reserve value
+  string total_reserve_value = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Reserve ratio (total reserves / total supply)
+  string reserve_ratio = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Minimum reserve ratio required
+  string min_reserve_ratio = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// ReserveAsset represents a single asset in the reserve
+message ReserveAsset {
+  // Asset denom
+  string denom = 1;
+  
+  // Amount held in reserve
+  string amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Weight/allocation percentage in the reserve
+  string weight = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Price per unit
+  string price = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// FeeInfo contains fee information for stablecoin operations
+message FeeInfo {
+  // Minting fee (percentage)
+  string mint_fee = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Burning fee (percentage)
+  string burn_fee = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Transfer fee (percentage)
+  string transfer_fee = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Redemption fee (percentage)
+  string redemption_fee = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Fee recipient address
+  string fee_recipient = 5;
+}
+
+// AccessControlInfo contains access control information
+message AccessControlInfo {
+  // Whether whitelist is enabled
+  bool whitelist_enabled = 1;
+  
+  // Whether blacklist is enabled
+  bool blacklist_enabled = 2;
+  
+  // Whitelisted addresses
+  repeated string whitelist = 3;
+  
+  // Blacklisted addresses
+  repeated string blacklist = 4;
+  
+  // KYC requirement level
+  string kyc_requirement = 5;
+}
+
+// MintRequest represents a request to mint stablecoins
+message MintRequest {
+  string id = 1;
+  string denom = 2;
+  string recipient = 3;
+  string amount = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string requester = 5;
+  string status = 6; // pending, approved, rejected, executed
+  string reason = 7;
+  google.protobuf.Timestamp created_at = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp updated_at = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// BurnRequest represents a request to burn stablecoins
+message BurnRequest {
+  string id = 1;
+  string denom = 2;
+  string holder = 3;
+  string amount = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string requester = 5;
+  string status = 6; // pending, approved, rejected, executed
+  string reason = 7;
+  google.protobuf.Timestamp created_at = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp updated_at = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// PriceData represents price data for stablecoin pegging
+message PriceData {
+  string denom = 1;
+  string price = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string source = 3;
+  google.protobuf.Timestamp timestamp = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  uint64 block_height = 5;
+}

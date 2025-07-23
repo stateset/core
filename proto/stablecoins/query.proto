@@ -1,0 +1,230 @@
+syntax = "proto3";
+package stateset.core.stablecoins;
+
+option go_package = "github.com/stateset/core/x/stablecoins/types";
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "stablecoins/stablecoins.proto";
+
+// Query defines the gRPC querier service.
+service Query {
+  // Stablecoin queries a stablecoin by denom
+  rpc Stablecoin(QueryStablecoinRequest) returns (QueryStablecoinResponse) {
+    option (google.api.http).get = "/stateset/stablecoins/v1/stablecoin/{denom}";
+  }
+
+  // Stablecoins queries all stablecoins with optional pagination
+  rpc Stablecoins(QueryStablecoinsRequest) returns (QueryStablecoinsResponse) {
+    option (google.api.http).get = "/stateset/stablecoins/v1/stablecoins";
+  }
+
+  // StablecoinsByIssuer queries stablecoins by issuer address
+  rpc StablecoinsByIssuer(QueryStablecoinsByIssuerRequest) returns (QueryStablecoinsByIssuerResponse) {
+    option (google.api.http).get = "/stateset/stablecoins/v1/stablecoins/issuer/{issuer}";
+  }
+
+  // StablecoinSupply queries total supply of a stablecoin
+  rpc StablecoinSupply(QueryStablecoinSupplyRequest) returns (QueryStablecoinSupplyResponse) {
+    option (google.api.http).get = "/stateset/stablecoins/v1/supply/{denom}";
+  }
+
+  // PriceData queries price data for a stablecoin
+  rpc PriceData(QueryPriceDataRequest) returns (QueryPriceDataResponse) {
+    option (google.api.http).get = "/stateset/stablecoins/v1/price/{denom}";
+  }
+
+  // ReserveInfo queries reserve information for a stablecoin
+  rpc ReserveInfo(QueryReserveInfoRequest) returns (QueryReserveInfoResponse) {
+    option (google.api.http).get = "/stateset/stablecoins/v1/reserves/{denom}";
+  }
+
+  // IsWhitelisted checks if an address is whitelisted for a stablecoin
+  rpc IsWhitelisted(QueryIsWhitelistedRequest) returns (QueryIsWhitelistedResponse) {
+    option (google.api.http).get = "/stateset/stablecoins/v1/whitelist/{denom}/{address}";
+  }
+
+  // IsBlacklisted checks if an address is blacklisted for a stablecoin
+  rpc IsBlacklisted(QueryIsBlacklistedRequest) returns (QueryIsBlacklistedResponse) {
+    option (google.api.http).get = "/stateset/stablecoins/v1/blacklist/{denom}/{address}";
+  }
+
+  // StablecoinStats queries statistics for stablecoins
+  rpc StablecoinStats(QueryStablecoinStatsRequest) returns (QueryStablecoinStatsResponse) {
+    option (google.api.http).get = "/stateset/stablecoins/v1/stats";
+  }
+
+  // MintRequests queries pending mint requests
+  rpc MintRequests(QueryMintRequestsRequest) returns (QueryMintRequestsResponse) {
+    option (google.api.http).get = "/stateset/stablecoins/v1/mint-requests";
+  }
+
+  // BurnRequests queries pending burn requests
+  rpc BurnRequests(QueryBurnRequestsRequest) returns (QueryBurnRequestsResponse) {
+    option (google.api.http).get = "/stateset/stablecoins/v1/burn-requests";
+  }
+}
+
+// QueryStablecoinRequest is the request type for the Query/Stablecoin RPC method
+message QueryStablecoinRequest {
+  string denom = 1;
+}
+
+// QueryStablecoinResponse is the response type for the Query/Stablecoin RPC method
+message QueryStablecoinResponse {
+  Stablecoin stablecoin = 1;
+}
+
+// QueryStablecoinsRequest is the request type for the Query/Stablecoins RPC method
+message QueryStablecoinsRequest {
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryStablecoinsResponse is the response type for the Query/Stablecoins RPC method
+message QueryStablecoinsResponse {
+  repeated Stablecoin stablecoins = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryStablecoinsByIssuerRequest is the request type for the Query/StablecoinsByIssuer RPC method
+message QueryStablecoinsByIssuerRequest {
+  string issuer = 1;
+  cosmos.base.query.v1beta1.PageRequest pagination = 2;
+}
+
+// QueryStablecoinsByIssuerResponse is the response type for the Query/StablecoinsByIssuer RPC method
+message QueryStablecoinsByIssuerResponse {
+  repeated Stablecoin stablecoins = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryStablecoinSupplyRequest is the request type for the Query/StablecoinSupply RPC method
+message QueryStablecoinSupplyRequest {
+  string denom = 1;
+}
+
+// QueryStablecoinSupplyResponse is the response type for the Query/StablecoinSupply RPC method
+message QueryStablecoinSupplyResponse {
+  string total_supply = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string max_supply = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string circulating_supply = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// QueryPriceDataRequest is the request type for the Query/PriceData RPC method
+message QueryPriceDataRequest {
+  string denom = 1;
+}
+
+// QueryPriceDataResponse is the response type for the Query/PriceData RPC method
+message QueryPriceDataResponse {
+  repeated PriceData price_data = 1;
+}
+
+// QueryReserveInfoRequest is the request type for the Query/ReserveInfo RPC method
+message QueryReserveInfoRequest {
+  string denom = 1;
+}
+
+// QueryReserveInfoResponse is the response type for the Query/ReserveInfo RPC method
+message QueryReserveInfoResponse {
+  ReserveInfo reserve_info = 1;
+}
+
+// QueryIsWhitelistedRequest is the request type for the Query/IsWhitelisted RPC method
+message QueryIsWhitelistedRequest {
+  string denom = 1;
+  string address = 2;
+}
+
+// QueryIsWhitelistedResponse is the response type for the Query/IsWhitelisted RPC method
+message QueryIsWhitelistedResponse {
+  bool whitelisted = 1;
+}
+
+// QueryIsBlacklistedRequest is the request type for the Query/IsBlacklisted RPC method
+message QueryIsBlacklistedRequest {
+  string denom = 1;
+  string address = 2;
+}
+
+// QueryIsBlacklistedResponse is the response type for the Query/IsBlacklisted RPC method
+message QueryIsBlacklistedResponse {
+  bool blacklisted = 1;
+}
+
+// QueryStablecoinStatsRequest is the request type for the Query/StablecoinStats RPC method
+message QueryStablecoinStatsRequest {
+  string time_range = 1; // day, week, month, year
+}
+
+// QueryStablecoinStatsResponse is the response type for the Query/StablecoinStats RPC method
+message QueryStablecoinStatsResponse {
+  uint64 total_stablecoins = 1;
+  uint64 active_stablecoins = 2;
+  string total_market_cap = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string total_volume_24h = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  repeated StablecoinStat stablecoin_stats = 5;
+}
+
+// StablecoinStat represents statistics for an individual stablecoin
+message StablecoinStat {
+  string denom = 1;
+  string market_cap = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string volume_24h = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string price = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  string price_change_24h = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// QueryMintRequestsRequest is the request type for the Query/MintRequests RPC method
+message QueryMintRequestsRequest {
+  string denom = 1; // optional filter by denom
+  string status = 2; // optional filter by status
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
+}
+
+// QueryMintRequestsResponse is the response type for the Query/MintRequests RPC method
+message QueryMintRequestsResponse {
+  repeated MintRequest mint_requests = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryBurnRequestsRequest is the request type for the Query/BurnRequests RPC method
+message QueryBurnRequestsRequest {
+  string denom = 1; // optional filter by denom
+  string status = 2; // optional filter by status
+  cosmos.base.query.v1beta1.PageRequest pagination = 3;
+}
+
+// QueryBurnRequestsResponse is the response type for the Query/BurnRequests RPC method
+message QueryBurnRequestsResponse {
+  repeated BurnRequest burn_requests = 1;
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
