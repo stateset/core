@@ -1,0 +1,621 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stateset Core Blockchain API - API Documentation</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .info-box {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .endpoint {
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .endpoint-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+            margin-right: 10px;
+        }
+        .method.GET { background: #d4edda; color: #155724; }
+        .method.POST { background: #cce5ff; color: #004085; }
+        .method.PUT { background: #fff3cd; color: #856404; }
+        .method.DELETE { background: #f8d7da; color: #721c24; }
+        .path {
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 1.1em;
+        }
+        .endpoint-body {
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h4 {
+            margin-top: 0;
+            color: #495057;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 5px;
+        }
+        .parameter {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .parameter-name {
+            font-weight: bold;
+            color: #495057;
+        }
+        .parameter-type {
+            color: #6c757d;
+            font-style: italic;
+        }
+        .required {
+            color: #dc3545;
+            font-size: 0.8em;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .example {
+            background: #f0f7ff;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 10px 0;
+        }
+        .toc {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .toc li {
+            margin: 8px 0;
+        }
+        .toc a {
+            text-decoration: none;
+            color: #007bff;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        .module-badge {
+            background: #6c757d;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Stateset Core Blockchain API</h1>
+        <p>Enhanced blockchain API with security, analytics, and business functionality</p>
+        <p><strong>Base URL:</strong> https://api.stateset.io | <strong>Version:</strong> v1.0.0</p>
+        <p><em>Generated on July 23, 2025 at 11:19 PM</em></p>
+    </div>
+
+    <div class="info-box">
+        <h3>📚 Quick Start Guide</h3>
+        <p>This documentation covers all available API endpoints for the Stateset Core blockchain. 
+        The blockchain provides enhanced security, analytics, and business functionality for supply chain finance.</p>
+        
+        <h4>🔑 Key Features:</h4>
+        <ul>
+            <li><strong>Security Module:</strong> Real-time fraud detection and compliance monitoring</li>
+            <li><strong>Analytics Module:</strong> Performance metrics and business intelligence</li>
+            <li><strong>Enhanced Invoicing:</strong> Multi-currency support and automated payment scheduling</li>
+            <li><strong>Agreement Management:</strong> Smart contract-based business agreements</li>
+        </ul>
+    </div>
+
+    <div class="toc">
+        <h3>📋 Table of Contents</h3>
+        <ul>
+            
+            <li>
+                <a href="#GET-/{/}/{/">
+                    <span class="method GET">GET</span>
+                    /cosmos/bank/v1beta1/balances/{address}
+                    <span class="module-badge">bank</span>
+                </a>
+            </li>
+            
+            <li>
+                <a href="#POST-/{/}/{/">
+                    <span class="method POST">POST</span>
+                    /stateset/security/v1/rules
+                    <span class="module-badge">security</span>
+                </a>
+            </li>
+            
+            <li>
+                <a href="#GET-/{/}/{/">
+                    <span class="method GET">GET</span>
+                    /stateset/analytics/v1/metrics
+                    <span class="module-badge">analytics</span>
+                </a>
+            </li>
+            
+            <li>
+                <a href="#POST-/{/}/{/">
+                    <span class="method POST">POST</span>
+                    /stateset/invoice/v1/invoices
+                    <span class="module-badge">invoice</span>
+                </a>
+            </li>
+            
+            <li>
+                <a href="#GET-/{/}/{/">
+                    <span class="method GET">GET</span>
+                    /stateset/agreement/v1/agreements/{id}
+                    <span class="module-badge">agreement</span>
+                </a>
+            </li>
+            
+        </ul>
+    </div>
+
+    
+    <div class="endpoint" id="GET-/{/}/{/">
+        <div class="endpoint-header">
+            <span class="method GET">GET</span>
+            <span class="path">/cosmos/bank/v1beta1/balances/{address}</span>
+            <span class="module-badge">bank</span>
+            <h3 style="margin: 10px 0 0 0;">Query account balances</h3>
+        </div>
+        
+        <div class="endpoint-body">
+            
+            <div class="section">
+                <h4>📝 Parameters</h4>
+                
+                <div class="parameter">
+                    <div class="parameter-name">
+                        address 
+                        <span class="parameter-type">(string)</span>
+                        <span class="required">*required</span>
+                    </div>
+                    <div>Account address to query</div>
+                    <div><strong>Example:</strong> <code>stateset1abc123def456ghi789</code></div>
+                </div>
+                
+            </div>
+            
+
+            <div class="section">
+                <h4>📤 Response</h4>
+                <p><strong>Type:</strong> object</p>
+                <p>Account balance information</p>
+                
+                <div class="code-block">
+                    
+                    balances: array of coin objects<br>
+                    
+                    pagination: pagination info<br>
+                    
+                </div>
+                
+            </div>
+
+            
+            <div class="section">
+                <h4>💡 Examples</h4>
+                
+                <div class="example">
+                    <h5>Get account balance</h5>
+                    <p><strong>Request:</strong></p>
+                    <div class="code-block">GET /cosmos/bank/v1beta1/balances/stateset1abc123def456ghi789</div>
+                    <p><strong>Response:</strong></p>
+                    <div class="code-block">{
+  "balances": [
+    {
+      "denom": "ustate",
+      "amount": "1000000"
+    }
+  ],
+  "pagination": {
+    "next_key": null,
+    "total": "1"
+  }
+}</div>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+    <div class="endpoint" id="POST-/{/}/{/">
+        <div class="endpoint-header">
+            <span class="method POST">POST</span>
+            <span class="path">/stateset/security/v1/rules</span>
+            <span class="module-badge">security</span>
+            <h3 style="margin: 10px 0 0 0;">Create a new security rule</h3>
+        </div>
+        
+        <div class="endpoint-body">
+            
+            <div class="section">
+                <h4>📝 Parameters</h4>
+                
+                <div class="parameter">
+                    <div class="parameter-name">
+                        rule 
+                        <span class="parameter-type">(object)</span>
+                        <span class="required">*required</span>
+                    </div>
+                    <div>Security rule configuration</div>
+                    <div><strong>Example:</strong> <code>{"name": "velocity_rule", "type": "velocity", "threshold": 10}</code></div>
+                </div>
+                
+            </div>
+            
+
+            <div class="section">
+                <h4>📤 Response</h4>
+                <p><strong>Type:</strong> object</p>
+                <p>Created security rule</p>
+                
+                <div class="code-block">
+                    
+                    id: string - Rule ID<br>
+                    
+                    is_active: boolean - Rule status<br>
+                    
+                    name: string - Rule name<br>
+                    
+                </div>
+                
+            </div>
+
+            
+            <div class="section">
+                <h4>💡 Examples</h4>
+                
+                <div class="example">
+                    <h5>Create velocity rule</h5>
+                    <p><strong>Request:</strong></p>
+                    <div class="code-block">POST /stateset/security/v1/rules
+{
+  "name": "High Velocity Detection",
+  "type": "velocity",
+  "threshold": 10.0,
+  "time_window": 60,
+  "action": "alert"
+}</div>
+                    <p><strong>Response:</strong></p>
+                    <div class="code-block">{
+  "id": "rule_001",
+  "name": "High Velocity Detection",
+  "type": "velocity",
+  "threshold": 10.0,
+  "is_active": true
+}</div>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+    <div class="endpoint" id="GET-/{/}/{/">
+        <div class="endpoint-header">
+            <span class="method GET">GET</span>
+            <span class="path">/stateset/analytics/v1/metrics</span>
+            <span class="module-badge">analytics</span>
+            <h3 style="margin: 10px 0 0 0;">Query blockchain performance metrics</h3>
+        </div>
+        
+        <div class="endpoint-body">
+            
+            <div class="section">
+                <h4>📝 Parameters</h4>
+                
+                <div class="parameter">
+                    <div class="parameter-name">
+                        start_time 
+                        <span class="parameter-type">(string)</span>
+                        
+                    </div>
+                    <div>Start time for metrics query (RFC3339 format)</div>
+                    <div><strong>Example:</strong> <code>2024-01-01T00:00:00Z</code></div>
+                </div>
+                
+                <div class="parameter">
+                    <div class="parameter-name">
+                        end_time 
+                        <span class="parameter-type">(string)</span>
+                        
+                    </div>
+                    <div>End time for metrics query (RFC3339 format)</div>
+                    <div><strong>Example:</strong> <code>2024-01-02T00:00:00Z</code></div>
+                </div>
+                
+                <div class="parameter">
+                    <div class="parameter-name">
+                        metric_type 
+                        <span class="parameter-type">(string)</span>
+                        
+                    </div>
+                    <div>Type of metrics to retrieve</div>
+                    <div><strong>Example:</strong> <code>block_time</code></div>
+                </div>
+                
+            </div>
+            
+
+            <div class="section">
+                <h4>📤 Response</h4>
+                <p><strong>Type:</strong> object</p>
+                <p>Performance metrics data</p>
+                
+                <div class="code-block">
+                    
+                    count: number of metrics returned<br>
+                    
+                    metrics: array of metric objects<br>
+                    
+                </div>
+                
+            </div>
+
+            
+            <div class="section">
+                <h4>💡 Examples</h4>
+                
+                <div class="example">
+                    <h5>Get block time metrics</h5>
+                    <p><strong>Request:</strong></p>
+                    <div class="code-block">GET /stateset/analytics/v1/metrics?metric_type=block_time</div>
+                    <p><strong>Response:</strong></p>
+                    <div class="code-block">{
+  "metrics": [
+    {
+      "name": "block_time",
+      "value": 2.5,
+      "timestamp": "2024-01-01T12:00:00Z",
+      "block_height": 12345
+    }
+  ],
+  "count": 1
+}</div>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+    <div class="endpoint" id="POST-/{/}/{/">
+        <div class="endpoint-header">
+            <span class="method POST">POST</span>
+            <span class="path">/stateset/invoice/v1/invoices</span>
+            <span class="module-badge">invoice</span>
+            <h3 style="margin: 10px 0 0 0;">Create a new enhanced invoice</h3>
+        </div>
+        
+        <div class="endpoint-body">
+            
+            <div class="section">
+                <h4>📝 Parameters</h4>
+                
+                <div class="parameter">
+                    <div class="parameter-name">
+                        invoice 
+                        <span class="parameter-type">(object)</span>
+                        <span class="required">*required</span>
+                    </div>
+                    <div>Enhanced invoice data</div>
+                    <div><strong>Example:</strong> <code>{"amount": "50000", "due_date": "2024-02-01T00:00:00Z"}</code></div>
+                </div>
+                
+            </div>
+            
+
+            <div class="section">
+                <h4>📤 Response</h4>
+                <p><strong>Type:</strong> object</p>
+                <p>Created invoice information</p>
+                
+                <div class="code-block">
+                    
+                    id: string - Invoice ID<br>
+                    
+                    payment_schedule: array - Payment schedule<br>
+                    
+                    status: string - Invoice status<br>
+                    
+                </div>
+                
+            </div>
+
+            
+            <div class="section">
+                <h4>💡 Examples</h4>
+                
+                <div class="example">
+                    <h5>Create invoice with payment terms</h5>
+                    <p><strong>Request:</strong></p>
+                    <div class="code-block">POST /stateset/invoice/v1/invoices
+{
+  "amount": {
+    "denom": "ustate",
+    "amount": "50000"
+  },
+  "due_date": "2024-02-01T00:00:00Z",
+  "payment_terms": {
+    "due_days": 30,
+    "early_pay_discount": 0.02,
+    "late_fee_percentage": 0.015
+  }
+}</div>
+                    <p><strong>Response:</strong></p>
+                    <div class="code-block">{
+  "id": "INV-2024-001",
+  "status": "pending",
+  "amount": {
+    "denom": "ustate",
+    "amount": "50000"
+  },
+  "payment_schedule": [
+    {
+      "due_date": "2024-02-01T00:00:00Z",
+      "amount": "50000",
+      "type": "full"
+    }
+  ]
+}</div>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+    <div class="endpoint" id="GET-/{/}/{/">
+        <div class="endpoint-header">
+            <span class="method GET">GET</span>
+            <span class="path">/stateset/agreement/v1/agreements/{id}</span>
+            <span class="module-badge">agreement</span>
+            <h3 style="margin: 10px 0 0 0;">Get agreement details by ID</h3>
+        </div>
+        
+        <div class="endpoint-body">
+            
+            <div class="section">
+                <h4>📝 Parameters</h4>
+                
+                <div class="parameter">
+                    <div class="parameter-name">
+                        id 
+                        <span class="parameter-type">(string)</span>
+                        <span class="required">*required</span>
+                    </div>
+                    <div>Agreement ID</div>
+                    <div><strong>Example:</strong> <code>AGR-2024-001</code></div>
+                </div>
+                
+            </div>
+            
+
+            <div class="section">
+                <h4>📤 Response</h4>
+                <p><strong>Type:</strong> object</p>
+                <p>Agreement details</p>
+                
+                <div class="code-block">
+                    
+                    id: string - Agreement ID<br>
+                    
+                    parties: array - Agreement parties<br>
+                    
+                    status: string - Agreement status<br>
+                    
+                    terms: object - Agreement terms<br>
+                    
+                </div>
+                
+            </div>
+
+            
+            <div class="section">
+                <h4>💡 Examples</h4>
+                
+                <div class="example">
+                    <h5>Get agreement details</h5>
+                    <p><strong>Request:</strong></p>
+                    <div class="code-block">GET /stateset/agreement/v1/agreements/AGR-2024-001</div>
+                    <p><strong>Response:</strong></p>
+                    <div class="code-block">{
+  "id": "AGR-2024-001",
+  "parties": [
+    "stateset1party1...",
+    "stateset1party2..."
+  ],
+  "status": "active",
+  "terms": {
+    "duration": "12 months",
+    "value": "100000"
+  }
+}</div>
+                </div>
+                
+            </div>
+            
+        </div>
+    </div>
+    
+
+    <div class="footer">
+        <p>🚀 Stateset Core Blockchain API Documentation</p>
+        <p>For more information, visit our <a href="https://github.com/stateset/core">GitHub repository</a></p>
+    </div>
+</body>
+</html>
