@@ -1,0 +1,177 @@
+{
+  "version": "v1.0.0",
+  "title": "Stateset Core Blockchain API",
+  "description": "Enhanced blockchain API with security, analytics, and business functionality",
+  "base_url": "https://api.stateset.io",
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/cosmos/bank/v1beta1/balances/{address}",
+      "description": "Query account balances",
+      "parameters": [
+        {
+          "name": "address",
+          "type": "string",
+          "required": true,
+          "description": "Account address to query",
+          "example": "stateset1abc123def456ghi789"
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Account balance information",
+        "properties": {
+          "balances": "array of coin objects",
+          "pagination": "pagination info"
+        }
+      },
+      "examples": [
+        {
+          "title": "Get account balance",
+          "request": "GET /cosmos/bank/v1beta1/balances/stateset1abc123def456ghi789",
+          "response": "{\n  \"balances\": [\n    {\n      \"denom\": \"ustate\",\n      \"amount\": \"1000000\"\n    }\n  ],\n  \"pagination\": {\n    \"next_key\": null,\n    \"total\": \"1\"\n  }\n}"
+        }
+      ],
+      "module": "bank"
+    },
+    {
+      "method": "POST",
+      "path": "/stateset/security/v1/rules",
+      "description": "Create a new security rule",
+      "parameters": [
+        {
+          "name": "rule",
+          "type": "object",
+          "required": true,
+          "description": "Security rule configuration",
+          "example": "{\"name\": \"velocity_rule\", \"type\": \"velocity\", \"threshold\": 10}"
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Created security rule",
+        "properties": {
+          "id": "string - Rule ID",
+          "is_active": "boolean - Rule status",
+          "name": "string - Rule name"
+        }
+      },
+      "examples": [
+        {
+          "title": "Create velocity rule",
+          "request": "POST /stateset/security/v1/rules\n{\n  \"name\": \"High Velocity Detection\",\n  \"type\": \"velocity\",\n  \"threshold\": 10.0,\n  \"time_window\": 60,\n  \"action\": \"alert\"\n}",
+          "response": "{\n  \"id\": \"rule_001\",\n  \"name\": \"High Velocity Detection\",\n  \"type\": \"velocity\",\n  \"threshold\": 10.0,\n  \"is_active\": true\n}"
+        }
+      ],
+      "module": "security"
+    },
+    {
+      "method": "GET",
+      "path": "/stateset/analytics/v1/metrics",
+      "description": "Query blockchain performance metrics",
+      "parameters": [
+        {
+          "name": "start_time",
+          "type": "string",
+          "required": false,
+          "description": "Start time for metrics query (RFC3339 format)",
+          "example": "2024-01-01T00:00:00Z"
+        },
+        {
+          "name": "end_time",
+          "type": "string",
+          "required": false,
+          "description": "End time for metrics query (RFC3339 format)",
+          "example": "2024-01-02T00:00:00Z"
+        },
+        {
+          "name": "metric_type",
+          "type": "string",
+          "required": false,
+          "description": "Type of metrics to retrieve",
+          "example": "block_time"
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Performance metrics data",
+        "properties": {
+          "count": "number of metrics returned",
+          "metrics": "array of metric objects"
+        }
+      },
+      "examples": [
+        {
+          "title": "Get block time metrics",
+          "request": "GET /stateset/analytics/v1/metrics?metric_type=block_time",
+          "response": "{\n  \"metrics\": [\n    {\n      \"name\": \"block_time\",\n      \"value\": 2.5,\n      \"timestamp\": \"2024-01-01T12:00:00Z\",\n      \"block_height\": 12345\n    }\n  ],\n  \"count\": 1\n}"
+        }
+      ],
+      "module": "analytics"
+    },
+    {
+      "method": "POST",
+      "path": "/stateset/invoice/v1/invoices",
+      "description": "Create a new enhanced invoice",
+      "parameters": [
+        {
+          "name": "invoice",
+          "type": "object",
+          "required": true,
+          "description": "Enhanced invoice data",
+          "example": "{\"amount\": \"50000\", \"due_date\": \"2024-02-01T00:00:00Z\"}"
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Created invoice information",
+        "properties": {
+          "id": "string - Invoice ID",
+          "payment_schedule": "array - Payment schedule",
+          "status": "string - Invoice status"
+        }
+      },
+      "examples": [
+        {
+          "title": "Create invoice with payment terms",
+          "request": "POST /stateset/invoice/v1/invoices\n{\n  \"amount\": {\n    \"denom\": \"ustate\",\n    \"amount\": \"50000\"\n  },\n  \"due_date\": \"2024-02-01T00:00:00Z\",\n  \"payment_terms\": {\n    \"due_days\": 30,\n    \"early_pay_discount\": 0.02,\n    \"late_fee_percentage\": 0.015\n  }\n}",
+          "response": "{\n  \"id\": \"INV-2024-001\",\n  \"status\": \"pending\",\n  \"amount\": {\n    \"denom\": \"ustate\",\n    \"amount\": \"50000\"\n  },\n  \"payment_schedule\": [\n    {\n      \"due_date\": \"2024-02-01T00:00:00Z\",\n      \"amount\": \"50000\",\n      \"type\": \"full\"\n    }\n  ]\n}"
+        }
+      ],
+      "module": "invoice"
+    },
+    {
+      "method": "GET",
+      "path": "/stateset/agreement/v1/agreements/{id}",
+      "description": "Get agreement details by ID",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "Agreement ID",
+          "example": "AGR-2024-001"
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Agreement details",
+        "properties": {
+          "id": "string - Agreement ID",
+          "parties": "array - Agreement parties",
+          "status": "string - Agreement status",
+          "terms": "object - Agreement terms"
+        }
+      },
+      "examples": [
+        {
+          "title": "Get agreement details",
+          "request": "GET /stateset/agreement/v1/agreements/AGR-2024-001",
+          "response": "{\n  \"id\": \"AGR-2024-001\",\n  \"parties\": [\n    \"stateset1party1...\",\n    \"stateset1party2...\"\n  ],\n  \"status\": \"active\",\n  \"terms\": {\n    \"duration\": \"12 months\",\n    \"value\": \"100000\"\n  }\n}"
+        }
+      ],
+      "module": "agreement"
+    }
+  ],
+  "generated_at": "2025-07-23T23:19:51.545029662Z"
+}

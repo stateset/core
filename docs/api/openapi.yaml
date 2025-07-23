@@ -1,0 +1,124 @@
+openapi: 3.0.3
+info:
+  title: Stateset Core Blockchain API
+  description: Enhanced blockchain API with security, analytics, and business functionality
+  version: v1.0.0
+servers:
+  - url: https://api.stateset.io
+    description: Production server
+  - url: http://localhost:1317
+    description: Local development server
+
+paths:
+  /cosmos/bank/v1beta1/balances/{address}:
+    get:
+      summary: Query account balances
+      tags:
+        - bank
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Account address to query
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Account balance information
+  /stateset/security/v1/rules:
+    post:
+      summary: Create a new security rule
+      tags:
+        - security
+      parameters:
+        - name: rule
+          in: query
+          required: true
+          schema:
+            type: object
+          description: Security rule configuration
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Created security rule
+  /stateset/analytics/v1/metrics:
+    get:
+      summary: Query blockchain performance metrics
+      tags:
+        - analytics
+      parameters:
+        - name: start_time
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Start time for metrics query (RFC3339 format)
+        - name: end_time
+          in: query
+          required: false
+          schema:
+            type: string
+          description: End time for metrics query (RFC3339 format)
+        - name: metric_type
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Type of metrics to retrieve
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Performance metrics data
+  /stateset/invoice/v1/invoices:
+    post:
+      summary: Create a new enhanced invoice
+      tags:
+        - invoice
+      parameters:
+        - name: invoice
+          in: query
+          required: true
+          schema:
+            type: object
+          description: Enhanced invoice data
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Created invoice information
+  /stateset/agreement/v1/agreements/{id}:
+    get:
+      summary: Get agreement details by ID
+      tags:
+        - agreement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Agreement ID
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Agreement details
