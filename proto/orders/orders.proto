@@ -1,0 +1,200 @@
+syntax = "proto3";
+package stateset.core.orders;
+
+option go_package = "github.com/stateset/core/x/orders/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "google/protobuf/timestamp.proto";
+
+// Order represents a customer order in the Stateset commerce system
+message Order {
+  // Unique identifier for the order
+  string id = 1;
+  
+  // Customer who placed the order
+  string customer = 2;
+  
+  // Merchant/seller handling the order
+  string merchant = 3;
+  
+  // Order status (pending, confirmed, shipped, delivered, cancelled, refunded)
+  string status = 4;
+  
+  // Total order amount
+  repeated cosmos.base.v1beta1.Coin total_amount = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  
+  // Currency used for pricing
+  string currency = 6;
+  
+  // List of items in the order
+  repeated OrderItem items = 7;
+  
+  // Shipping information
+  ShippingInfo shipping_info = 8;
+  
+  // Payment information
+  PaymentInfo payment_info = 9;
+  
+  // Order metadata (custom fields)
+  string metadata = 10;
+  
+  // Order creation timestamp
+  google.protobuf.Timestamp created_at = 11 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  
+  // Order last updated timestamp
+  google.protobuf.Timestamp updated_at = 12 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  
+  // Due date for order fulfillment
+  google.protobuf.Timestamp due_date = 13 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+  
+  // Order fulfillment type (physical, digital, service)
+  string fulfillment_type = 14;
+  
+  // Order source (web, mobile, api, pos)
+  string source = 15;
+  
+  // Order discount information
+  repeated DiscountInfo discounts = 16;
+  
+  // Tax information
+  TaxInfo tax_info = 17;
+}
+
+// OrderItem represents an individual item within an order
+message OrderItem {
+  // Unique identifier for the order item
+  string id = 1;
+  
+  // Product SKU or identifier
+  string product_id = 2;
+  
+  // Product name
+  string product_name = 3;
+  
+  // Quantity ordered
+  uint64 quantity = 4;
+  
+  // Unit price
+  repeated cosmos.base.v1beta1.Coin unit_price = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  
+  // Total line amount (quantity * unit_price)
+  repeated cosmos.base.v1beta1.Coin total_amount = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  
+  // Product variant information
+  string variant = 7;
+  
+  // Item-specific metadata
+  string metadata = 8;
+}
+
+// ShippingInfo contains shipping details for an order
+message ShippingInfo {
+  // Shipping address
+  Address shipping_address = 1;
+  
+  // Shipping method (standard, express, overnight)
+  string shipping_method = 2;
+  
+  // Shipping cost
+  repeated cosmos.base.v1beta1.Coin shipping_cost = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  
+  // Tracking number
+  string tracking_number = 4;
+  
+  // Carrier (fedex, ups, dhl, usps)
+  string carrier = 5;
+  
+  // Estimated delivery date
+  google.protobuf.Timestamp estimated_delivery = 6 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+  
+  // Actual delivery date
+  google.protobuf.Timestamp delivered_at = 7 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// Address represents a shipping or billing address
+message Address {
+  string line1 = 1;
+  string line2 = 2;
+  string city = 3;
+  string state = 4;
+  string postal_code = 5;
+  string country = 6;
+  string name = 7;
+  string phone = 8;
+}
+
+// PaymentInfo contains payment details for an order
+message PaymentInfo {
+  // Payment method (card, crypto, bank_transfer, wallet)
+  string payment_method = 1;
+  
+  // Payment status (pending, authorized, captured, failed, refunded)
+  string payment_status = 2;
+  
+  // Transaction ID from payment processor
+  string transaction_id = 3;
+  
+  // Payment processor used
+  string payment_processor = 4;
+  
+  // Amount paid
+  repeated cosmos.base.v1beta1.Coin amount_paid = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  
+  // Payment timestamp
+  google.protobuf.Timestamp payment_date = 6 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// DiscountInfo represents discount applied to an order
+message DiscountInfo {
+  string code = 1;
+  string type = 2; // percentage, fixed_amount, free_shipping
+  string value = 3;
+  repeated cosmos.base.v1beta1.Coin amount = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
+
+// TaxInfo represents tax information for an order
+message TaxInfo {
+  repeated cosmos.base.v1beta1.Coin tax_amount = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  string tax_rate = 2;
+  string tax_jurisdiction = 3;
+}

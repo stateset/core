@@ -1,0 +1,121 @@
+syntax = "proto3";
+package stateset.core.orders;
+
+option go_package = "github.com/stateset/core/x/orders/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "google/protobuf/timestamp.proto";
+import "orders/orders.proto";
+
+// Msg defines the orders Msg service.
+service Msg {
+  // CreateOrder creates a new order
+  rpc CreateOrder(MsgCreateOrder) returns (MsgCreateOrderResponse);
+  
+  // UpdateOrder updates an existing order
+  rpc UpdateOrder(MsgUpdateOrder) returns (MsgUpdateOrderResponse);
+  
+  // CancelOrder cancels an order
+  rpc CancelOrder(MsgCancelOrder) returns (MsgCancelOrderResponse);
+  
+  // FulfillOrder marks an order as fulfilled
+  rpc FulfillOrder(MsgFulfillOrder) returns (MsgFulfillOrderResponse);
+  
+  // RefundOrder processes a refund for an order
+  rpc RefundOrder(MsgRefundOrder) returns (MsgRefundOrderResponse);
+  
+  // UpdateOrderStatus updates the status of an order
+  rpc UpdateOrderStatus(MsgUpdateOrderStatus) returns (MsgUpdateOrderStatusResponse);
+}
+
+// MsgCreateOrder defines the message for creating a new order
+message MsgCreateOrder {
+  string creator = 1;
+  string customer = 2;
+  string merchant = 3;
+  repeated OrderItem items = 4;
+  ShippingInfo shipping_info = 5;
+  PaymentInfo payment_info = 6;
+  string currency = 7;
+  repeated cosmos.base.v1beta1.Coin total_amount = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  string fulfillment_type = 9;
+  string source = 10;
+  repeated DiscountInfo discounts = 11;
+  TaxInfo tax_info = 12;
+  string metadata = 13;
+  google.protobuf.Timestamp due_date = 14 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+message MsgCreateOrderResponse {
+  string order_id = 1;
+}
+
+// MsgUpdateOrder defines the message for updating an order
+message MsgUpdateOrder {
+  string creator = 1;
+  string order_id = 2;
+  repeated OrderItem items = 3;
+  ShippingInfo shipping_info = 4;
+  PaymentInfo payment_info = 5;
+  string metadata = 6;
+  google.protobuf.Timestamp due_date = 7 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+message MsgUpdateOrderResponse {}
+
+// MsgCancelOrder defines the message for cancelling an order
+message MsgCancelOrder {
+  string creator = 1;
+  string order_id = 2;
+  string reason = 3;
+}
+
+message MsgCancelOrderResponse {}
+
+// MsgFulfillOrder defines the message for fulfilling an order
+message MsgFulfillOrder {
+  string creator = 1;
+  string order_id = 2;
+  string tracking_number = 3;
+  string carrier = 4;
+  google.protobuf.Timestamp shipped_at = 5 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+message MsgFulfillOrderResponse {}
+
+// MsgRefundOrder defines the message for refunding an order
+message MsgRefundOrder {
+  string creator = 1;
+  string order_id = 2;
+  repeated cosmos.base.v1beta1.Coin refund_amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  string reason = 4;
+  bool partial_refund = 5;
+}
+
+message MsgRefundOrderResponse {}
+
+// MsgUpdateOrderStatus defines the message for updating order status
+message MsgUpdateOrderStatus {
+  string creator = 1;
+  string order_id = 2;
+  string status = 3;
+  string notes = 4;
+}
+
+message MsgUpdateOrderStatusResponse {}

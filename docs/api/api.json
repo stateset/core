@@ -1,7 +1,7 @@
 {
-  "version": "v1.0.0",
+  "version": "v1.1.0",
   "title": "Stateset Core Blockchain API",
-  "description": "Enhanced blockchain API with security, analytics, and business functionality",
+  "description": "Enhanced blockchain API with security, analytics, business functionality, orders, and stablecoins",
   "base_url": "https://api.stateset.io",
   "endpoints": [
     {
@@ -171,7 +171,285 @@
         }
       ],
       "module": "agreement"
+    },
+    {
+      "method": "POST",
+      "path": "/stateset/orders/v1/orders",
+      "description": "Create a new customer order",
+      "parameters": [
+        {
+          "name": "order",
+          "type": "object",
+          "required": true,
+          "description": "Order data including customer, merchant, items, and payment info",
+          "example": "{\"customer\": \"stateset1customer...\", \"merchant\": \"stateset1merchant...\", \"total_amount\": [{\"denom\": \"ustate\", \"amount\": \"50000\"}]}"
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Created order information",
+        "properties": {
+          "order_id": "string - Unique order identifier",
+          "status": "string - Order status",
+          "created_at": "string - Order creation timestamp"
+        }
+      },
+      "examples": [
+        {
+          "title": "Create new order",
+          "request": "POST /stateset/orders/v1/orders\n{\n  \"customer\": \"stateset1customer123...\",\n  \"merchant\": \"stateset1merchant456...\",\n  \"items\": [\n    {\n      \"product_id\": \"PROD-001\",\n      \"product_name\": \"Widget\",\n      \"quantity\": 2,\n      \"unit_price\": [{\"denom\": \"ustate\", \"amount\": \"25000\"}]\n    }\n  ],\n  \"total_amount\": [{\"denom\": \"ustate\", \"amount\": \"50000\"}],\n  \"currency\": \"USD\"\n}",
+          "response": "{\n  \"order_id\": \"ORDER-1\",\n  \"status\": \"pending\",\n  \"created_at\": \"2024-01-15T10:30:00Z\"\n}"
+        }
+      ],
+      "module": "orders"
+    },
+    {
+      "method": "GET",
+      "path": "/stateset/orders/v1/order/{id}",
+      "description": "Get order details by ID",
+      "parameters": [
+        {
+          "name": "id",
+          "type": "string",
+          "required": true,
+          "description": "Order ID",
+          "example": "ORDER-1"
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Complete order information",
+        "properties": {
+          "order": "object - Full order details including items, shipping, payment info"
+        }
+      },
+      "examples": [
+        {
+          "title": "Get order details",
+          "request": "GET /stateset/orders/v1/order/ORDER-1",
+          "response": "{\n  \"order\": {\n    \"id\": \"ORDER-1\",\n    \"customer\": \"stateset1customer...\",\n    \"merchant\": \"stateset1merchant...\",\n    \"status\": \"pending\",\n    \"total_amount\": [{\"denom\": \"ustate\", \"amount\": \"50000\"}],\n    \"items\": [...],\n    \"created_at\": \"2024-01-15T10:30:00Z\"\n  }\n}"
+        }
+      ],
+      "module": "orders"
+    },
+    {
+      "method": "GET",
+      "path": "/stateset/orders/v1/orders/customer/{customer}",
+      "description": "Get all orders for a specific customer",
+      "parameters": [
+        {
+          "name": "customer",
+          "type": "string",
+          "required": true,
+          "description": "Customer address",
+          "example": "stateset1customer123..."
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "List of orders for the customer",
+        "properties": {
+          "orders": "array - List of order objects",
+          "pagination": "object - Pagination information"
+        }
+      },
+      "examples": [
+        {
+          "title": "Get customer orders",
+          "request": "GET /stateset/orders/v1/orders/customer/stateset1customer123...",
+          "response": "{\n  \"orders\": [\n    {\n      \"id\": \"ORDER-1\",\n      \"status\": \"pending\",\n      \"total_amount\": [{\"denom\": \"ustate\", \"amount\": \"50000\"}]\n    }\n  ]\n}"
+        }
+      ],
+      "module": "orders"
+    },
+    {
+      "method": "GET",
+      "path": "/stateset/orders/v1/stats",
+      "description": "Get order statistics and analytics",
+      "parameters": [
+        {
+          "name": "time_range",
+          "type": "string",
+          "required": false,
+          "description": "Time range for statistics (day, week, month, year)",
+          "example": "month"
+        },
+        {
+          "name": "merchant",
+          "type": "string",
+          "required": false,
+          "description": "Filter by merchant address",
+          "example": "stateset1merchant456..."
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Order statistics",
+        "properties": {
+          "total_orders": "number - Total number of orders",
+          "total_revenue": "string - Total revenue amount",
+          "average_order_value": "string - Average order value"
+        }
+      },
+      "examples": [
+        {
+          "title": "Get order statistics",
+          "request": "GET /stateset/orders/v1/stats?time_range=month",
+          "response": "{\n  \"total_orders\": 1250,\n  \"pending_orders\": 125,\n  \"confirmed_orders\": 800,\n  \"shipped_orders\": 275,\n  \"delivered_orders\": 50,\n  \"total_revenue\": \"2500000\",\n  \"average_order_value\": \"2000\"\n}"
+        }
+      ],
+      "module": "orders"
+    },
+    {
+      "method": "POST",
+      "path": "/stateset/stablecoins/v1/stablecoins",
+      "description": "Create a new stablecoin configuration",
+      "parameters": [
+        {
+          "name": "stablecoin",
+          "type": "object",
+          "required": true,
+          "description": "Stablecoin configuration including denom, pegging info, and reserve details",
+          "example": "{\"denom\": \"usdx\", \"name\": \"StateSet USD\", \"symbol\": \"USDX\", \"peg_info\": {\"target_asset\": \"USD\"}}"
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Created stablecoin information",
+        "properties": {
+          "denom": "string - Stablecoin denomination",
+          "active": "boolean - Whether stablecoin is active"
+        }
+      },
+      "examples": [
+        {
+          "title": "Create USD-pegged stablecoin",
+          "request": "POST /stateset/stablecoins/v1/stablecoins\n{\n  \"denom\": \"usdx\",\n  \"name\": \"StateSet USD\",\n  \"symbol\": \"USDX\",\n  \"decimals\": 6,\n  \"max_supply\": \"1000000000000000\",\n  \"peg_info\": {\n    \"target_asset\": \"USD\",\n    \"target_price\": \"1.0\"\n  },\n  \"stability_mechanism\": \"collateralized\"\n}",
+          "response": "{\n  \"denom\": \"usdx\",\n  \"active\": true\n}"
+        }
+      ],
+      "module": "stablecoins"
+    },
+    {
+      "method": "GET",
+      "path": "/stateset/stablecoins/v1/stablecoin/{denom}",
+      "description": "Get stablecoin configuration by denomination",
+      "parameters": [
+        {
+          "name": "denom",
+          "type": "string",
+          "required": true,
+          "description": "Stablecoin denomination",
+          "example": "usdx"
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Complete stablecoin configuration",
+        "properties": {
+          "stablecoin": "object - Full stablecoin details including peg info, reserves, and access controls"
+        }
+      },
+      "examples": [
+        {
+          "title": "Get stablecoin details",
+          "request": "GET /stateset/stablecoins/v1/stablecoin/usdx",
+          "response": "{\n  \"stablecoin\": {\n    \"denom\": \"usdx\",\n    \"name\": \"StateSet USD\",\n    \"symbol\": \"USDX\",\n    \"total_supply\": \"10000000\",\n    \"active\": true,\n    \"peg_info\": {\n      \"target_asset\": \"USD\",\n      \"target_price\": \"1.0\"\n    }\n  }\n}"
+        }
+      ],
+      "module": "stablecoins"
+    },
+    {
+      "method": "GET",
+      "path": "/stateset/stablecoins/v1/supply/{denom}",
+      "description": "Get stablecoin supply information",
+      "parameters": [
+        {
+          "name": "denom",
+          "type": "string",
+          "required": true,
+          "description": "Stablecoin denomination",
+          "example": "usdx"
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Supply information",
+        "properties": {
+          "total_supply": "string - Total tokens in circulation",
+          "max_supply": "string - Maximum possible supply",
+          "circulating_supply": "string - Currently circulating supply"
+        }
+      },
+      "examples": [
+        {
+          "title": "Get supply information",
+          "request": "GET /stateset/stablecoins/v1/supply/usdx",
+          "response": "{\n  \"total_supply\": \"10000000\",\n  \"max_supply\": \"1000000000000000\",\n  \"circulating_supply\": \"9850000\"\n}"
+        }
+      ],
+      "module": "stablecoins"
+    },
+    {
+      "method": "GET",
+      "path": "/stateset/stablecoins/v1/price/{denom}",
+      "description": "Get current price data for a stablecoin",
+      "parameters": [
+        {
+          "name": "denom",
+          "type": "string",
+          "required": true,
+          "description": "Stablecoin denomination",
+          "example": "usdx"
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Price data from oracles",
+        "properties": {
+          "price_data": "array - Price information from different oracle sources"
+        }
+      },
+      "examples": [
+        {
+          "title": "Get price data",
+          "request": "GET /stateset/stablecoins/v1/price/usdx",
+          "response": "{\n  \"price_data\": [\n    {\n      \"price\": \"1.001\",\n      \"source\": \"chainlink\",\n      \"timestamp\": \"2024-01-15T10:30:00Z\"\n    }\n  ]\n}"
+        }
+      ],
+      "module": "stablecoins"
+    },
+    {
+      "method": "GET",
+      "path": "/stateset/stablecoins/v1/stats",
+      "description": "Get stablecoin ecosystem statistics",
+      "parameters": [
+        {
+          "name": "time_range",
+          "type": "string",
+          "required": false,
+          "description": "Time range for statistics (day, week, month, year)",
+          "example": "month"
+        }
+      ],
+      "response": {
+        "type": "object",
+        "description": "Stablecoin ecosystem statistics",
+        "properties": {
+          "total_stablecoins": "number - Number of active stablecoins",
+          "total_market_cap": "string - Combined market cap",
+          "total_volume_24h": "string - 24h trading volume"
+        }
+      },
+      "examples": [
+        {
+          "title": "Get ecosystem statistics",
+          "request": "GET /stateset/stablecoins/v1/stats",
+          "response": "{\n  \"total_stablecoins\": 5,\n  \"active_stablecoins\": 4,\n  \"total_market_cap\": \"50000000.00\",\n  \"total_volume_24h\": \"2500000.00\",\n  \"stablecoin_stats\": [\n    {\n      \"denom\": \"usdx\",\n      \"market_cap\": \"10000000.00\",\n      \"price\": \"1.001\"\n    }\n  ]\n}"
+        }
+      ],
+      "module": "stablecoins"
     }
   ],
-  "generated_at": "2025-07-23T23:19:51.545029662Z"
+  "generated_at": "2025-01-27T10:15:30.000000000Z"
 }
