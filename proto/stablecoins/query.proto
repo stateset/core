@@ -10,6 +10,10 @@ import "stablecoins/stablecoins.proto";
 
 // Query defines the gRPC querier service.
 service Query {
+  // Parameters queries the parameters of the module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/stateset/stablecoins/v1/params";
+  }
   // Stablecoin queries a stablecoin by denom
   rpc Stablecoin(QueryStablecoinRequest) returns (QueryStablecoinResponse) {
     option (google.api.http).get = "/stateset/stablecoins/v1/stablecoin/{denom}";
@@ -227,4 +231,23 @@ message QueryBurnRequestsRequest {
 message QueryBurnRequestsResponse {
   repeated BurnRequest burn_requests = 1;
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// Params holds parameters for the stablecoins module.
+message Params {
+  uint64 max_stablecoins = 1;
+  string min_initial_supply = 2;
+  string max_initial_supply = 3;
+  string creation_fee = 4;
+  string min_reserve_ratio = 5;
+  string max_fee_percentage = 6;
 }

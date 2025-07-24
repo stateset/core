@@ -1,5 +1,7 @@
 package app
 
+// Temporarily commented out due to dependency conflicts
+/*
 import (
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 )
@@ -22,4 +24,10 @@ func StatesetGasRegisterConfig() wasmkeeper.WasmGasRegisterConfig {
 
 func NewStatesetWasmGasRegister() wasmkeeper.WasmGasRegister {
 	return wasmkeeper.NewWasmGasRegister(StatesetGasRegisterConfig())
+}
+*/
+
+// Dummy function to replace NewStatesetWasmGasRegister temporarily
+func NewStatesetWasmGasRegister() interface{} {
+	return nil
 }
