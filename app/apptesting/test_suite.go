@@ -21,7 +21,7 @@ import (
 	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
 	tmdb "github.com/tendermint/tm-db"
 
-	"github.com/cosmos/cosmos-sdk/types/signing"
+	"cosmossdk.io/x/tx/signing"
 	"github.com/stateset/core/app"
 )
 
