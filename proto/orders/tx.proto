@@ -27,6 +27,18 @@ service Msg {
   
   // UpdateOrderStatus updates the status of an order
   rpc UpdateOrderStatus(MsgUpdateOrderStatus) returns (MsgUpdateOrderStatusResponse);
+  
+  // PayWithStablecoin processes a stablecoin payment for an order
+  rpc PayWithStablecoin(MsgPayWithStablecoin) returns (MsgPayWithStablecoinResponse);
+  
+  // ConfirmStablecoinPayment confirms a stablecoin payment
+  rpc ConfirmStablecoinPayment(MsgConfirmStablecoinPayment) returns (MsgConfirmStablecoinPaymentResponse);
+  
+  // RefundStablecoinPayment processes a stablecoin refund
+  rpc RefundStablecoinPayment(MsgRefundStablecoinPayment) returns (MsgRefundStablecoinPaymentResponse);
+  
+  // ReleaseEscrow releases escrowed stablecoin payment to merchant
+  rpc ReleaseEscrow(MsgReleaseEscrow) returns (MsgReleaseEscrowResponse);
 }
 
 // MsgCreateOrder defines the message for creating a new order
@@ -119,3 +131,69 @@ message MsgUpdateOrderStatus {
 }
 
 message MsgUpdateOrderStatusResponse {}
+
+// MsgPayWithStablecoin defines the message for paying with stablecoins
+message MsgPayWithStablecoin {
+  string creator = 1;
+  string order_id = 2;
+  string stablecoin_denom = 3;
+  string stablecoin_amount = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string customer_address = 5;
+  string merchant_address = 6;
+  string exchange_rate = 7 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  bool use_escrow = 8;
+  uint64 confirmations_required = 9;
+  google.protobuf.Timestamp escrow_timeout = 10 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+message MsgPayWithStablecoinResponse {
+  string tx_hash = 1;
+  string payment_id = 2;
+}
+
+// MsgConfirmStablecoinPayment defines the message for confirming stablecoin payment
+message MsgConfirmStablecoinPayment {
+  string creator = 1;
+  string order_id = 2;
+  string tx_hash = 3;
+  uint64 block_height = 4;
+  uint64 confirmations = 5;
+}
+
+message MsgConfirmStablecoinPaymentResponse {}
+
+// MsgRefundStablecoinPayment defines the message for refunding stablecoin payment
+message MsgRefundStablecoinPayment {
+  string creator = 1;
+  string order_id = 2;
+  string refund_amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  string reason = 4;
+  bool partial_refund = 5;
+}
+
+message MsgRefundStablecoinPaymentResponse {
+  string refund_tx_hash = 1;
+}
+
+// MsgReleaseEscrow defines the message for releasing escrowed payment
+message MsgReleaseEscrow {
+  string creator = 1;
+  string order_id = 2;
+  string release_reason = 3;
+}
+
+message MsgReleaseEscrowResponse {
+  string release_tx_hash = 1;
+}

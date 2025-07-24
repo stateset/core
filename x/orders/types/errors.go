@@ -20,4 +20,16 @@ var (
 	ErrOrderAlreadyCancelled = sdkerrors.Register(ModuleName, 1111, "order is already cancelled")
 	ErrInvalidCustomer   = sdkerrors.Register(ModuleName, 1112, "invalid customer address")
 	ErrInvalidMerchant   = sdkerrors.Register(ModuleName, 1113, "invalid merchant address")
+	
+	// Stablecoin payment errors
+	ErrInvalidStablecoin      = sdkerrors.Register(ModuleName, 1200, "invalid stablecoin denomination")
+	ErrOrderAlreadyPaid       = sdkerrors.Register(ModuleName, 1201, "order has already been paid")
+	ErrPaymentFailed          = sdkerrors.Register(ModuleName, 1202, "payment transaction failed")
+	ErrInvalidPaymentAmount   = sdkerrors.Register(ModuleName, 1203, "invalid payment amount")
+	ErrNoStablecoinPayment    = sdkerrors.Register(ModuleName, 1204, "no stablecoin payment found for order")
+	ErrRefundFailed           = sdkerrors.Register(ModuleName, 1205, "refund transaction failed")
+	ErrNoEscrow               = sdkerrors.Register(ModuleName, 1206, "no escrow found for order")
+	ErrEscrowReleaseFailed    = sdkerrors.Register(ModuleName, 1207, "escrow release failed")
+	ErrInsufficientConfirmations = sdkerrors.Register(ModuleName, 1208, "insufficient payment confirmations")
+	ErrEscrowTimeout          = sdkerrors.Register(ModuleName, 1209, "escrow timeout exceeded")
 )

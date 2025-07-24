@@ -26,6 +26,7 @@ var (
 	BlacklistKeyPrefix         = []byte{0x06}
 	StablecoinCountKey         = []byte{0x07}
 	TotalMarketCapKey          = []byte{0x08}
+	EscrowKeyPrefix            = []byte{0x09}
 )
 
 // StablecoinKey returns the store key to retrieve a Stablecoin from the index fields
@@ -84,6 +85,15 @@ func BlacklistKey(denom, address string) []byte {
 	key = append(key, denomBytes...)
 	key = append(key, []byte("/")...)
 	key = append(key, addressBytes...)
+	key = append(key, []byte("/")...)
+	return key
+}
+
+// EscrowKey returns the store key for escrow entries
+func EscrowKey(orderId string) []byte {
+	var key []byte
+	orderIdBytes := []byte(orderId)
+	key = append(key, orderIdBytes...)
 	key = append(key, []byte("/")...)
 	return key
 }

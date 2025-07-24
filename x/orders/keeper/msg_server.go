@@ -278,3 +278,291 @@ func (k msgServer) UpdateOrderStatus(goCtx context.Context, msg *types.MsgUpdate
 
 	return &types.MsgUpdateOrderStatusResponse{}, nil
 }
+
+// PayWithStablecoin handles stablecoin payments for orders
+func (k msgServer) PayWithStablecoin(goCtx context.Context, msg *types.MsgPayWithStablecoin) (*types.MsgPayWithStablecoinResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Get existing order
+	order, found := k.Keeper.GetOrder(ctx, msg.OrderId)
+	if !found {
+		return nil, sdkerrors.Wrap(types.ErrOrderNotFound, msg.OrderId)
+	}
+
+	// Check if payment is already processed
+	if order.PaymentInfo != nil && order.PaymentInfo.PaymentStatus == "captured" {
+		return nil, sdkerrors.Wrap(types.ErrOrderAlreadyPaid, msg.OrderId)
+	}
+
+	// Validate stablecoin
+	if !k.stablecoinsKeeper.IsValidStablecoin(ctx, msg.StablecoinDenom) {
+		return nil, sdkerrors.Wrap(types.ErrInvalidStablecoin, msg.StablecoinDenom)
+	}
+
+	// Parse addresses
+	customerAddr, err := sdk.AccAddressFromBech32(msg.CustomerAddress)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid customer address")
+	}
+
+	merchantAddr, err := sdk.AccAddressFromBech32(msg.MerchantAddress)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid merchant address")
+	}
+
+	// Create stablecoin amount
+	stablecoinAmount := sdk.NewCoin(msg.StablecoinDenom, msg.StablecoinAmount)
+
+	// Validate payment amount
+	if err := k.stablecoinsKeeper.ValidateStablecoinPayment(ctx, msg.StablecoinDenom, msg.StablecoinAmount); err != nil {
+		return nil, sdkerrors.Wrap(types.ErrInvalidPaymentAmount, err.Error())
+	}
+
+	var txHash string
+
+	// Handle payment based on escrow preference
+	if msg.UseEscrow {
+		// Transfer to escrow
+		err = k.stablecoinsKeeper.EscrowStablecoin(ctx, customerAddr, msg.OrderId, stablecoinAmount)
+		if err != nil {
+			return nil, sdkerrors.Wrap(types.ErrPaymentFailed, err.Error())
+		}
+		txHash = fmt.Sprintf("escrow_%s_%s", msg.OrderId, msg.StablecoinDenom)
+	} else {
+		// Direct transfer to merchant
+		err = k.stablecoinsKeeper.TransferStablecoin(ctx, customerAddr, merchantAddr, stablecoinAmount)
+		if err != nil {
+			return nil, sdkerrors.Wrap(types.ErrPaymentFailed, err.Error())
+		}
+		txHash = fmt.Sprintf("direct_%s_%s", msg.OrderId, msg.StablecoinDenom)
+	}
+
+	// Update order payment info
+	if order.PaymentInfo == nil {
+		order.PaymentInfo = &types.PaymentInfo{}
+	}
+	
+	order.PaymentInfo.PaymentMethod = "stablecoin"
+	order.PaymentInfo.PaymentStatus = "captured"
+	order.PaymentInfo.TransactionId = txHash
+	order.PaymentInfo.PaymentProcessor = "stateset-stablecoins"
+	order.PaymentInfo.AmountPaid = []sdk.Coin{stablecoinAmount}
+	order.PaymentInfo.PaymentDate = &time.Now()
+	order.PaymentInfo.StablecoinDenom = &msg.StablecoinDenom
+	order.PaymentInfo.ExchangeRate = &msg.ExchangeRate
+	order.PaymentInfo.UseEscrow = &msg.UseEscrow
+	order.PaymentInfo.ConfirmationsRequired = &msg.ConfirmationsRequired
+	order.PaymentInfo.EscrowTimeout = msg.EscrowTimeout
+
+	// Update order status
+	order.Status = "confirmed"
+	order.UpdatedAt = time.Now()
+
+	// Store updated order
+	k.Keeper.SetOrder(ctx, order)
+
+	// Emit event
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			"stablecoin_payment_processed",
+			sdk.NewAttribute("order_id", order.Id),
+			sdk.NewAttribute("customer", msg.CustomerAddress),
+			sdk.NewAttribute("merchant", msg.MerchantAddress),
+			sdk.NewAttribute("stablecoin_denom", msg.StablecoinDenom),
+			sdk.NewAttribute("amount", msg.StablecoinAmount.String()),
+			sdk.NewAttribute("use_escrow", fmt.Sprintf("%t", msg.UseEscrow)),
+			sdk.NewAttribute("tx_hash", txHash),
+		),
+	)
+
+	return &types.MsgPayWithStablecoinResponse{
+		TxHash:    txHash,
+		Success:   true,
+		Message:   "Payment processed successfully",
+		Timestamp: time.Now(),
+	}, nil
+}
+
+// ConfirmStablecoinPayment confirms a stablecoin payment after required confirmations
+func (k msgServer) ConfirmStablecoinPayment(goCtx context.Context, msg *types.MsgConfirmStablecoinPayment) (*types.MsgConfirmStablecoinPaymentResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Get existing order
+	order, found := k.Keeper.GetOrder(ctx, msg.OrderId)
+	if !found {
+		return nil, sdkerrors.Wrap(types.ErrOrderNotFound, msg.OrderId)
+	}
+
+	// Check authorization (only merchant can confirm)
+	if msg.Creator != order.Merchant {
+		return nil, sdkerrors.Wrap(types.ErrUnauthorized, "only merchant can confirm payment")
+	}
+
+	// Check if payment exists and is pending
+	if order.PaymentInfo == nil || order.PaymentInfo.PaymentMethod != "stablecoin" {
+		return nil, sdkerrors.Wrap(types.ErrNoStablecoinPayment, msg.OrderId)
+	}
+
+	// Update payment status
+	order.PaymentInfo.PaymentStatus = "confirmed"
+	order.PaymentInfo.ConfirmationCount = &msg.ConfirmationCount
+	order.PaymentInfo.ConfirmationBlockHeight = &msg.BlockHeight
+	order.UpdatedAt = time.Now()
+
+	// Store updated order
+	k.Keeper.SetOrder(ctx, order)
+
+	// Emit event
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			"stablecoin_payment_confirmed",
+			sdk.NewAttribute("order_id", order.Id),
+			sdk.NewAttribute("confirmation_count", fmt.Sprintf("%d", msg.ConfirmationCount)),
+			sdk.NewAttribute("block_height", fmt.Sprintf("%d", msg.BlockHeight)),
+		),
+	)
+
+	return &types.MsgConfirmStablecoinPaymentResponse{
+		Success: true,
+		Message: "Payment confirmed successfully",
+	}, nil
+}
+
+// RefundStablecoinPayment processes a stablecoin refund
+func (k msgServer) RefundStablecoinPayment(goCtx context.Context, msg *types.MsgRefundStablecoinPayment) (*types.MsgRefundStablecoinPaymentResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Get existing order
+	order, found := k.Keeper.GetOrder(ctx, msg.OrderId)
+	if !found {
+		return nil, sdkerrors.Wrap(types.ErrOrderNotFound, msg.OrderId)
+	}
+
+	// Check authorization (only merchant can process refund)
+	if msg.Creator != order.Merchant {
+		return nil, sdkerrors.Wrap(types.ErrUnauthorized, "only merchant can process refund")
+	}
+
+	// Check if stablecoin payment exists
+	if order.PaymentInfo == nil || order.PaymentInfo.PaymentMethod != "stablecoin" {
+		return nil, sdkerrors.Wrap(types.ErrNoStablecoinPayment, msg.OrderId)
+	}
+
+	// Parse customer address
+	customerAddr, err := sdk.AccAddressFromBech32(msg.CustomerAddress)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid customer address")
+	}
+
+	// Create refund amount
+	refundAmount := sdk.NewCoin(*order.PaymentInfo.StablecoinDenom, msg.RefundAmount)
+
+	var txHash string
+
+	// Process refund based on original payment method
+	if order.PaymentInfo.UseEscrow != nil && *order.PaymentInfo.UseEscrow {
+		// Refund from escrow
+		err = k.stablecoinsKeeper.RefundEscrow(ctx, msg.OrderId, customerAddr)
+		if err != nil {
+			return nil, sdkerrors.Wrap(types.ErrRefundFailed, err.Error())
+		}
+		txHash = fmt.Sprintf("refund_escrow_%s", msg.OrderId)
+	} else {
+		// Direct refund from merchant
+		merchantAddr, err := sdk.AccAddressFromBech32(order.Merchant)
+		if err != nil {
+			return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid merchant address")
+		}
+		
+		err = k.stablecoinsKeeper.TransferStablecoin(ctx, merchantAddr, customerAddr, refundAmount)
+		if err != nil {
+			return nil, sdkerrors.Wrap(types.ErrRefundFailed, err.Error())
+		}
+		txHash = fmt.Sprintf("refund_direct_%s", msg.OrderId)
+	}
+
+	// Update order status
+	if msg.PartialRefund {
+		order.Status = "partially_refunded"
+	} else {
+		order.Status = "refunded"
+	}
+	order.UpdatedAt = time.Now()
+
+	// Store updated order
+	k.Keeper.SetOrder(ctx, order)
+
+	// Emit event
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			"stablecoin_refund_processed",
+			sdk.NewAttribute("order_id", order.Id),
+			sdk.NewAttribute("customer", msg.CustomerAddress),
+			sdk.NewAttribute("refund_amount", msg.RefundAmount.String()),
+			sdk.NewAttribute("partial", fmt.Sprintf("%t", msg.PartialRefund)),
+			sdk.NewAttribute("reason", msg.Reason),
+			sdk.NewAttribute("tx_hash", txHash),
+		),
+	)
+
+	return &types.MsgRefundStablecoinPaymentResponse{
+		TxHash:  txHash,
+		Success: true,
+		Message: "Refund processed successfully",
+	}, nil
+}
+
+// ReleaseEscrow releases escrowed stablecoins to merchant
+func (k msgServer) ReleaseEscrow(goCtx context.Context, msg *types.MsgReleaseEscrow) (*types.MsgReleaseEscrowResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Get existing order
+	order, found := k.Keeper.GetOrder(ctx, msg.OrderId)
+	if !found {
+		return nil, sdkerrors.Wrap(types.ErrOrderNotFound, msg.OrderId)
+	}
+
+	// Check authorization (customer, merchant, or authorized party can release)
+	if msg.Creator != order.Customer && msg.Creator != order.Merchant {
+		return nil, sdkerrors.Wrap(types.ErrUnauthorized, "only customer or merchant can release escrow")
+	}
+
+	// Check if escrow exists
+	if order.PaymentInfo == nil || order.PaymentInfo.UseEscrow == nil || !*order.PaymentInfo.UseEscrow {
+		return nil, sdkerrors.Wrap(types.ErrNoEscrow, msg.OrderId)
+	}
+
+	// Parse merchant address
+	merchantAddr, err := sdk.AccAddressFromBech32(order.Merchant)
+	if err != nil {
+		return nil, sdkerrors.Wrap(sdkerrors.ErrInvalidAddress, "invalid merchant address")
+	}
+
+	// Release escrow to merchant
+	err = k.stablecoinsKeeper.ReleaseEscrow(ctx, msg.OrderId, merchantAddr)
+	if err != nil {
+		return nil, sdkerrors.Wrap(types.ErrEscrowReleaseFailed, err.Error())
+	}
+
+	// Update order status
+	order.Status = "completed"
+	order.UpdatedAt = time.Now()
+
+	// Store updated order
+	k.Keeper.SetOrder(ctx, order)
+
+	// Emit event
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			"escrow_released",
+			sdk.NewAttribute("order_id", order.Id),
+			sdk.NewAttribute("merchant", order.Merchant),
+			sdk.NewAttribute("released_by", msg.Creator),
+		),
+	)
+
+	return &types.MsgReleaseEscrowResponse{
+		Success: true,
+		Message: "Escrow released successfully",
+	}, nil
+}
