@@ -399,3 +399,70 @@ func (k msgServer) RemoveFromBlacklist(goCtx context.Context, msg *types.MsgRemo
 
 	return &types.MsgRemoveFromBlacklistResponse{}, nil
 }
+
+func (k msgServer) InitializeSSUSD(goCtx context.Context, msg *types.MsgInitializeSSUSD) (*types.MsgInitializeSSUSDResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Create ssUSD stablecoin engine
+	engine := NewSSUSDStablecoinEngine(&k.Keeper)
+
+	// Initialize ssUSD
+	err := engine.InitializeSSUSD(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgInitializeSSUSDResponse{
+		Success: true,
+	}, nil
+}
+
+func (k msgServer) IssueSSUSD(goCtx context.Context, msg *types.MsgIssueSSUSD) (*types.MsgIssueSSUSDResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Create ssUSD stablecoin engine
+	engine := NewSSUSDStablecoinEngine(&k.Keeper)
+
+	// Create issue request
+	request := SSUSDIssueRequest{
+		Requester:      msg.Creator,
+		Amount:         msg.Amount,
+		ReservePayment: msg.ReservePayment,
+		RequestTime:    ctx.BlockTime(),
+	}
+
+	// Issue ssUSD
+	err := engine.IssueSSUSD(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgIssueSSUSDResponse{
+		AmountIssued: msg.Amount,
+	}, nil
+}
+
+func (k msgServer) RedeemSSUSD(goCtx context.Context, msg *types.MsgRedeemSSUSD) (*types.MsgRedeemSSUSDResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Create ssUSD stablecoin engine
+	engine := NewSSUSDStablecoinEngine(&k.Keeper)
+
+	// Create redeem request
+	request := SSUSDRedeemRequest{
+		Requester:      msg.Creator,
+		SSUSDAmount:    msg.SSUSDAmount,
+		PreferredAsset: msg.PreferredAsset,
+		RequestTime:    ctx.BlockTime(),
+	}
+
+	// Redeem ssUSD
+	err := engine.RedeemSSUSD(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgRedeemSSUSDResponse{
+		AmountRedeemed: msg.SSUSDAmount,
+	}, nil
+}

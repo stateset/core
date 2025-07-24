@@ -25,6 +25,8 @@ func GetSSUSDTxCmd() *cobra.Command {
 
 	cmd.AddCommand(
 		CmdInitializeSSUSD(),
+		CmdIssueSSUSD(),
+		CmdRedeemSSUSD(),
 		CmdUpdateSSUSDPrice(),
 		CmdOptimizeSSUSDYield(),
 		CmdAddSSUSDLiquidity(),
@@ -55,6 +57,105 @@ func CmdInitializeSSUSD() *cobra.Command {
 
 			msg := &types.MsgInitializeSSUSD{
 				Creator: clientCtx.GetFromAddress().String(),
+			}
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+// CmdIssueSSUSD issues new ssUSD tokens backed by reserves
+func CmdIssueSSUSD() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "issue [amount] [reserve-payment]",
+		Short: "Issue new ssUSD tokens backed 1:1 by conservative reserves",
+		Long: `Issue new ssUSD tokens by providing backing reserves.
+Reserve payment should be in the format: 100us_cash_token,500treasury_bill_token,75mmf_token,25repo_token
+The total USD value of reserves must equal or exceed the ssUSD amount being issued.`,
+		Args: cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			amount, ok := sdk.NewIntFromString(args[0])
+			if !ok {
+				return fmt.Errorf("invalid amount: %s", args[0])
+			}
+
+			reservePayment, err := sdk.ParseCoinsNormalized(args[1])
+			if err != nil {
+				return fmt.Errorf("invalid reserve payment: %w", err)
+			}
+
+			msg := &types.MsgIssueSSUSD{
+				Creator:        clientCtx.GetFromAddress().String(),
+				Amount:         amount,
+				ReservePayment: reservePayment,
+			}
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+// CmdRedeemSSUSD redeems ssUSD tokens for underlying reserves
+func CmdRedeemSSUSD() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "redeem [ssusd-amount] [preferred-asset]",
+		Short: "Redeem ssUSD tokens for underlying reserve assets",
+		Long: `Redeem ssUSD tokens and receive underlying reserve assets in return.
+If preferred-asset is specified (us_cash_token, treasury_bill_token, mmf_token, or repo_token),
+the system will try to fulfill the redemption with that asset type first.
+If not specified or insufficient, redemption will be proportional across all reserve types.`,
+		Args: cobra.RangeArgs(1, 2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			amount, ok := sdk.NewIntFromString(args[0])
+			if !ok {
+				return fmt.Errorf("invalid ssUSD amount: %s", args[0])
+			}
+
+			preferredAsset := ""
+			if len(args) > 1 {
+				preferredAsset = args[1]
+				// Validate preferred asset
+				validAssets := []string{"us_cash_token", "treasury_bill_token", "mmf_token", "repo_token"}
+				valid := false
+				for _, asset := range validAssets {
+					if preferredAsset == asset {
+						valid = true
+						break
+					}
+				}
+				if !valid {
+					return fmt.Errorf("invalid preferred asset: %s. Valid options: %v", preferredAsset, validAssets)
+				}
+			}
+
+			msg := &types.MsgRedeemSSUSD{
+				Creator:        clientCtx.GetFromAddress().String(),
+				SSUSDAmount:    amount,
+				PreferredAsset: preferredAsset,
 			}
 
 			if err := msg.ValidateBasic(); err != nil {

@@ -285,6 +285,121 @@ type SSUSDFeeDistribution struct {
 	PendingDistribution sdk.Coins          `json:"pending_distribution"`
 }
 
+// SSUSDReserveType represents the types of reserves backing ssUSD
+type SSUSDReserveType int
+
+const (
+	USCash SSUSDReserveType = iota      // U.S. Dollar Cash (FDIC-insured deposits)
+	TreasuryBills                       // Treasury Bills (≤93 days maturity)
+	GovernmentMMFs                      // Government-only money market funds
+	OvernightRepos                      // Tri-party repo agreements
+)
+
+// SSUSDConservativeReserve represents the conservative reserve composition
+type SSUSDConservativeReserve struct {
+	CashReserves    SSUSDCashReserve    `json:"cash_reserves"`    // 10%
+	TreasuryBills   SSUSDTreasuryBills  `json:"treasury_bills"`   // 70%
+	GovernmentMMFs  SSUSDGovernmentMMFs `json:"government_mmfs"`  // 15%
+	OvernightRepos  SSUSDOvernightRepos `json:"overnight_repos"`  // 5%
+	TotalValue      sdk.Dec             `json:"total_value"`
+	LastUpdate      time.Time           `json:"last_update"`
+}
+
+// SSUSDCashReserve represents FDIC-insured deposits
+type SSUSDCashReserve struct {
+	Amount          sdk.Dec   `json:"amount"`
+	Allocation      sdk.Dec   `json:"allocation"`      // 10%
+	BankDeposits    []SSUSDBankDeposit `json:"bank_deposits"`
+	FDICInsured     bool      `json:"fdic_insured"`
+	RiskLevel       string    `json:"risk_level"`      // "minimal"
+}
+
+// SSUSDBankDeposit represents a deposit at a regulated bank
+type SSUSDBankDeposit struct {
+	BankName        string    `json:"bank_name"`
+	RoutingNumber   string    `json:"routing_number"`
+	AccountNumber   string    `json:"account_number"`
+	Amount          sdk.Dec   `json:"amount"`
+	InterestRate    sdk.Dec   `json:"interest_rate"`
+	FDICInsured     bool      `json:"fdic_insured"`
+	LastUpdate      time.Time `json:"last_update"`
+}
+
+// SSUSDTreasuryBills represents U.S. T-Bills with ≤93 days maturity
+type SSUSDTreasuryBills struct {
+	Amount          sdk.Dec     `json:"amount"`
+	Allocation      sdk.Dec     `json:"allocation"`    // 70%
+	TBills          []SSUSDTBill `json:"t_bills"`
+	AverageMaturity int64       `json:"average_maturity"` // days
+	RiskLevel       string      `json:"risk_level"`       // "minimal"
+}
+
+// SSUSDTBill represents a single Treasury Bill
+type SSUSDTBill struct {
+	CUSIP           string    `json:"cusip"`
+	FaceValue       sdk.Dec   `json:"face_value"`
+	PurchasePrice   sdk.Dec   `json:"purchase_price"`
+	MaturityDate    time.Time `json:"maturity_date"`
+	YieldRate       sdk.Dec   `json:"yield_rate"`
+	DaysToMaturity  int64     `json:"days_to_maturity"`
+}
+
+// SSUSDGovernmentMMFs represents government-only money market funds
+type SSUSDGovernmentMMFs struct {
+	Amount          sdk.Dec      `json:"amount"`
+	Allocation      sdk.Dec      `json:"allocation"`    // 15%
+	MMFFunds        []SSUSDMMFFund `json:"mmf_funds"`
+	WAM             int64        `json:"wam"`           // Weighted Average Maturity
+	RiskLevel       string       `json:"risk_level"`    // "minimal"
+}
+
+// SSUSDMMFFund represents a government money market fund
+type SSUSDMMFFund struct {
+	FundName        string    `json:"fund_name"`
+	FundSymbol      string    `json:"fund_symbol"`
+	SharesHeld      sdk.Dec   `json:"shares_held"`
+	NAVPerShare     sdk.Dec   `json:"nav_per_share"`
+	YieldRate       sdk.Dec   `json:"yield_rate"`
+	GovernmentOnly  bool      `json:"government_only"`
+	LastUpdate      time.Time `json:"last_update"`
+}
+
+// SSUSDOvernightRepos represents tri-party repo agreements
+type SSUSDOvernightRepos struct {
+	Amount          sdk.Dec     `json:"amount"`
+	Allocation      sdk.Dec     `json:"allocation"`    // 5%
+	RepoAgreements  []SSUSDRepo `json:"repo_agreements"`
+	AverageRate     sdk.Dec     `json:"average_rate"`
+	RiskLevel       string      `json:"risk_level"`    // "low"
+}
+
+// SSUSDRepo represents a single repo agreement
+type SSUSDRepo struct {
+	CounterpartyID  string    `json:"counterparty_id"`
+	Principal       sdk.Dec   `json:"principal"`
+	CollateralType  string    `json:"collateral_type"`
+	CollateralValue sdk.Dec   `json:"collateral_value"`
+	RepoRate        sdk.Dec   `json:"repo_rate"`
+	MaturityDate    time.Time `json:"maturity_date"`
+	TriParty        bool      `json:"tri_party"`
+}
+
+// SSUSDIssueRequest represents a request to issue (mint) ssUSD
+type SSUSDIssueRequest struct {
+	Requester       string    `json:"requester"`
+	Amount          sdk.Int   `json:"amount"`
+	ReservePayment  sdk.Coins `json:"reserve_payment"`  // Payment in reserve assets
+	RequestTime     time.Time `json:"request_time"`
+}
+
+// SSUSDRedeemRequest represents a request to redeem (burn) ssUSD
+type SSUSDRedeemRequest struct {
+	Requester       string    `json:"requester"`
+	SSUSDAmount     sdk.Int   `json:"ssusd_amount"`
+	PreferredAsset  string    `json:"preferred_asset"`  // Preferred reserve asset for redemption
+	RequestTime     time.Time `json:"request_time"`
+}
+
 // NewSSUSDStablecoinEngine creates a new ssUSD stablecoin engine
 func NewSSUSDStablecoinEngine(keeper *Keeper) *SSUSDStablecoinEngine {
 	return &SSUSDStablecoinEngine{
@@ -347,33 +462,33 @@ func (engine *SSUSDStablecoinEngine) InitializeSSUSD(ctx sdk.Context) error {
 		reserveInfo := &types.ReserveInfo{
 			ReserveAssets: []*types.ReserveAsset{
 				{
-					Denom:  "uusdc",
-					Amount: sdk.ZeroInt(),
-					Weight: sdk.NewDecWithPrec(40, 2), // 40%
-					Price:  sdk.OneDec(),
-				},
-				{
-					Denom:  "uusdt",
-					Amount: sdk.ZeroInt(),
-					Weight: sdk.NewDecWithPrec(30, 2), // 30%
-					Price:  sdk.OneDec(),
-				},
-				{
-					Denom:  "uatom",
-					Amount: sdk.ZeroInt(),
-					Weight: sdk.NewDecWithPrec(20, 2), // 20%
-					Price:  sdk.NewDec(10),
-				},
-				{
-					Denom:  "ustake",
+					Denom:  "us_cash_token",        // U.S. Dollar Cash (FDIC-insured deposits)
 					Amount: sdk.ZeroInt(),
 					Weight: sdk.NewDecWithPrec(10, 2), // 10%
-					Price:  sdk.NewDec(5),
+					Price:  sdk.OneDec(),
+				},
+				{
+					Denom:  "treasury_bill_token",  // Treasury Bills (≤93 days maturity)
+					Amount: sdk.ZeroInt(),
+					Weight: sdk.NewDecWithPrec(70, 2), // 70%
+					Price:  sdk.OneDec(),
+				},
+				{
+					Denom:  "mmf_token",           // Government-only money market funds
+					Amount: sdk.ZeroInt(),
+					Weight: sdk.NewDecWithPrec(15, 2), // 15%
+					Price:  sdk.OneDec(),
+				},
+				{
+					Denom:  "repo_token",          // Tri-party repo agreements
+					Amount: sdk.ZeroInt(),
+					Weight: sdk.NewDecWithPrec(5, 2), // 5%
+					Price:  sdk.OneDec(),
 				},
 			},
 			TotalReserveValue: sdk.ZeroDec(),
-			ReserveRatio:      sdk.NewDecWithPrec(150, 2), // 150%
-			MinReserveRatio:   sdk.NewDecWithPrec(120, 2), // 120%
+			ReserveRatio:      sdk.NewDecWithPrec(100, 2), // 100% for 1:1 backing
+			MinReserveRatio:   sdk.NewDecWithPrec(100, 2), // 100% minimum for stable backing
 		}
 
 		feeInfo := &types.FeeInfo{
@@ -862,4 +977,463 @@ func (engine *SSUSDStablecoinEngine) calculateAverageAPY() sdk.Dec {
 	}
 
 	return weightedAPY.Quo(totalWeight)
+}
+
+// IssueSSUSD issues new ssUSD tokens backed 1:1 by reserves
+func (engine *SSUSDStablecoinEngine) IssueSSUSD(ctx sdk.Context, request SSUSDIssueRequest) error {
+	// Validate the stablecoin exists and is active
+	stablecoin, found := engine.keeper.GetStablecoin(ctx, "ssusd")
+	if !found {
+		return sdkerrors.Wrap(types.ErrStablecoinNotFound, "ssusd")
+	}
+
+	if !stablecoin.Active {
+		return sdkerrors.Wrap(types.ErrStablecoinInactive, "ssusd")
+	}
+
+	// Calculate USD value of reserve payment
+	reserveValue, err := engine.calculateReserveValue(ctx, request.ReservePayment)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed to calculate reserve value")
+	}
+
+	// Ensure 1:1 backing - reserve value must equal or exceed ssUSD amount
+	ssUSDValue := sdk.NewDecFromInt(request.Amount).QuoInt64(1000000) // Convert from micro units
+	if reserveValue.LT(ssUSDValue) {
+		return sdkerrors.Wrapf(types.ErrInsufficientCollateral, 
+			"reserve value %s insufficient for ssUSD amount %s", 
+			reserveValue.String(), ssUSDValue.String())
+	}
+
+	// Validate reserve composition against target allocations
+	err = engine.validateReserveComposition(ctx, request.ReservePayment)
+	if err != nil {
+		return sdkerrors.Wrap(err, "reserve composition validation failed")
+	}
+
+	// Transfer reserve assets to module account
+	requesterAddr, err := sdk.AccAddressFromBech32(request.Requester)
+	if err != nil {
+		return err
+	}
+
+	err = engine.keeper.bankKeeper.SendCoinsFromAccountToModule(
+		ctx, requesterAddr, types.ModuleName, request.ReservePayment)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed to transfer reserve assets")
+	}
+
+	// Update reserve composition
+	err = engine.updateReserveComposition(ctx, request.ReservePayment, true)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed to update reserve composition")
+	}
+
+	// Mint ssUSD tokens
+	mintCoins := sdk.NewCoins(sdk.NewCoin("ssusd", request.Amount))
+	err = engine.keeper.bankKeeper.MintCoins(ctx, types.ModuleName, mintCoins)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed to mint ssUSD")
+	}
+
+	// Send ssUSD to requester
+	err = engine.keeper.bankKeeper.SendCoinsFromModuleToAccount(
+		ctx, types.ModuleName, requesterAddr, mintCoins)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed to send ssUSD to requester")
+	}
+
+	// Update stablecoin total supply
+	stablecoin.TotalSupply = stablecoin.TotalSupply.Add(request.Amount)
+	engine.keeper.SetStablecoin(ctx, stablecoin)
+
+	// Update reserve info
+	stablecoin.ReserveInfo.TotalReserveValue = stablecoin.ReserveInfo.TotalReserveValue.Add(reserveValue)
+	engine.keeper.SetStablecoin(ctx, stablecoin)
+
+	// Emit issue event
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			"ssusd_issued",
+			sdk.NewAttribute("requester", request.Requester),
+			sdk.NewAttribute("ssusd_amount", request.Amount.String()),
+			sdk.NewAttribute("reserve_value", reserveValue.String()),
+			sdk.NewAttribute("reserve_payment", request.ReservePayment.String()),
+			sdk.NewAttribute("new_total_supply", stablecoin.TotalSupply.String()),
+		),
+	)
+
+	return nil
+}
+
+// RedeemSSUSD redeems ssUSD tokens for underlying reserves
+func (engine *SSUSDStablecoinEngine) RedeemSSUSD(ctx sdk.Context, request SSUSDRedeemRequest) error {
+	// Validate the stablecoin exists and is active
+	stablecoin, found := engine.keeper.GetStablecoin(ctx, "ssusd")
+	if !found {
+		return sdkerrors.Wrap(types.ErrStablecoinNotFound, "ssusd")
+	}
+
+	if !stablecoin.Active {
+		return sdkerrors.Wrap(types.ErrStablecoinInactive, "ssusd")
+	}
+
+	// Validate requester has sufficient ssUSD balance
+	requesterAddr, err := sdk.AccAddressFromBech32(request.Requester)
+	if err != nil {
+		return err
+	}
+
+	balance := engine.keeper.bankKeeper.GetBalance(ctx, requesterAddr, "ssusd")
+	if balance.Amount.LT(request.SSUSDAmount) {
+		return sdkerrors.Wrap(types.ErrInsufficientFunds, "insufficient ssUSD balance")
+	}
+
+	// Calculate reserve value to redeem (1:1 backing)
+	redeemValue := sdk.NewDecFromInt(request.SSUSDAmount).QuoInt64(1000000) // Convert from micro units
+
+	// Calculate reserve assets to redeem based on current composition
+	reserveAssets, err := engine.calculateRedemptionAssets(ctx, redeemValue, request.PreferredAsset)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed to calculate redemption assets")
+	}
+
+	// Burn ssUSD tokens
+	burnCoins := sdk.NewCoins(sdk.NewCoin("ssusd", request.SSUSDAmount))
+	err = engine.keeper.bankKeeper.SendCoinsFromAccountToModule(
+		ctx, requesterAddr, types.ModuleName, burnCoins)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed to transfer ssUSD for burning")
+	}
+
+	err = engine.keeper.bankKeeper.BurnCoins(ctx, types.ModuleName, burnCoins)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed to burn ssUSD")
+	}
+
+	// Send reserve assets to requester
+	err = engine.keeper.bankKeeper.SendCoinsFromModuleToAccount(
+		ctx, types.ModuleName, requesterAddr, reserveAssets)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed to send reserve assets")
+	}
+
+	// Update reserve composition
+	err = engine.updateReserveComposition(ctx, reserveAssets, false)
+	if err != nil {
+		return sdkerrors.Wrap(err, "failed to update reserve composition")
+	}
+
+	// Update stablecoin total supply and reserve value
+	stablecoin.TotalSupply = stablecoin.TotalSupply.Sub(request.SSUSDAmount)
+	stablecoin.ReserveInfo.TotalReserveValue = stablecoin.ReserveInfo.TotalReserveValue.Sub(redeemValue)
+	engine.keeper.SetStablecoin(ctx, stablecoin)
+
+	// Emit redemption event
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			"ssusd_redeemed",
+			sdk.NewAttribute("requester", request.Requester),
+			sdk.NewAttribute("ssusd_amount", request.SSUSDAmount.String()),
+			sdk.NewAttribute("redeemed_value", redeemValue.String()),
+			sdk.NewAttribute("redeemed_assets", reserveAssets.String()),
+			sdk.NewAttribute("new_total_supply", stablecoin.TotalSupply.String()),
+		),
+	)
+
+	return nil
+}
+
+// calculateReserveValue calculates the USD value of reserve assets
+func (engine *SSUSDStablecoinEngine) calculateReserveValue(ctx sdk.Context, reserves sdk.Coins) (sdk.Dec, error) {
+	totalValue := sdk.ZeroDec()
+
+	for _, coin := range reserves {
+		// Get price for each asset
+		price, err := engine.getAssetPrice(ctx, coin.Denom)
+		if err != nil {
+			return sdk.ZeroDec(), err
+		}
+
+		// Calculate value: amount * price
+		assetValue := sdk.NewDecFromInt(coin.Amount).Mul(price)
+		totalValue = totalValue.Add(assetValue)
+	}
+
+	return totalValue, nil
+}
+
+// validateReserveComposition validates that reserve payment aligns with target allocations
+func (engine *SSUSDStablecoinEngine) validateReserveComposition(ctx sdk.Context, payment sdk.Coins) error {
+	// Get current reserve composition
+	reserves, err := engine.GetConservativeReserves(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Calculate total value after adding payment
+	paymentValue, err := engine.calculateReserveValue(ctx, payment)
+	if err != nil {
+		return err
+	}
+
+	newTotalValue := reserves.TotalValue.Add(paymentValue)
+
+	// Define target allocations based on conservative composition
+	targetAllocations := map[string]sdk.Dec{
+		"us_cash":         sdk.NewDecWithPrec(10, 2), // 10%
+		"treasury_bills":  sdk.NewDecWithPrec(70, 2), // 70%
+		"government_mmfs": sdk.NewDecWithPrec(15, 2), // 15%
+		"overnight_repos": sdk.NewDecWithPrec(5, 2),  // 5%
+	}
+
+	// Check if payment maintains proper allocation ratios
+	// This is a simplified check - in production, you'd implement more sophisticated validation
+	for denom, coin := range payment {
+		assetType := engine.getAssetType(denom)
+		targetAllocation := targetAllocations[assetType]
+		
+		if targetAllocation.IsZero() {
+			return sdkerrors.Wrapf(types.ErrInvalidAsset, 
+				"asset %s not allowed in conservative reserve composition", denom)
+		}
+	}
+
+	return nil
+}
+
+// updateReserveComposition updates the reserve composition after issue/redeem
+func (engine *SSUSDStablecoinEngine) updateReserveComposition(ctx sdk.Context, assets sdk.Coins, isAddition bool) error {
+	reserves, err := engine.GetConservativeReserves(ctx)
+	if err != nil {
+		return err
+	}
+
+	for _, coin := range assets {
+		assetValue, err := engine.getAssetPrice(ctx, coin.Denom)
+		if err != nil {
+			return err
+		}
+
+		coinValue := sdk.NewDecFromInt(coin.Amount).Mul(assetValue)
+		assetType := engine.getAssetType(coin.Denom)
+
+		// Update the appropriate reserve component
+		switch assetType {
+		case "us_cash":
+			if isAddition {
+				reserves.CashReserves.Amount = reserves.CashReserves.Amount.Add(coinValue)
+			} else {
+				reserves.CashReserves.Amount = reserves.CashReserves.Amount.Sub(coinValue)
+			}
+		case "treasury_bills":
+			if isAddition {
+				reserves.TreasuryBills.Amount = reserves.TreasuryBills.Amount.Add(coinValue)
+			} else {
+				reserves.TreasuryBills.Amount = reserves.TreasuryBills.Amount.Sub(coinValue)
+			}
+		case "government_mmfs":
+			if isAddition {
+				reserves.GovernmentMMFs.Amount = reserves.GovernmentMMFs.Amount.Add(coinValue)
+			} else {
+				reserves.GovernmentMMFs.Amount = reserves.GovernmentMMFs.Amount.Sub(coinValue)
+			}
+		case "overnight_repos":
+			if isAddition {
+				reserves.OvernightRepos.Amount = reserves.OvernightRepos.Amount.Add(coinValue)
+			} else {
+				reserves.OvernightRepos.Amount = reserves.OvernightRepos.Amount.Sub(coinValue)
+			}
+		}
+	}
+
+	// Recalculate total value
+	reserves.TotalValue = reserves.CashReserves.Amount.
+		Add(reserves.TreasuryBills.Amount).
+		Add(reserves.GovernmentMMFs.Amount).
+		Add(reserves.OvernightRepos.Amount)
+	
+	reserves.LastUpdate = time.Now()
+
+	return engine.SetConservativeReserves(ctx, reserves)
+}
+
+// calculateRedemptionAssets calculates which reserve assets to redeem
+func (engine *SSUSDStablecoinEngine) calculateRedemptionAssets(ctx sdk.Context, redeemValue sdk.Dec, preferredAsset string) (sdk.Coins, error) {
+	reserves, err := engine.GetConservativeReserves(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var redemptionAssets sdk.Coins
+
+	// If preferred asset is specified and available, prioritize it
+	if preferredAsset != "" {
+		assetType := engine.getAssetType(preferredAsset)
+		var availableAmount sdk.Dec
+
+		switch assetType {
+		case "us_cash":
+			availableAmount = reserves.CashReserves.Amount
+		case "treasury_bills":
+			availableAmount = reserves.TreasuryBills.Amount
+		case "government_mmfs":
+			availableAmount = reserves.GovernmentMMFs.Amount
+		case "overnight_repos":
+			availableAmount = reserves.OvernightRepos.Amount
+		}
+
+		if availableAmount.GTE(redeemValue) {
+			// Can fulfill entirely with preferred asset
+			price, err := engine.getAssetPrice(ctx, preferredAsset)
+			if err != nil {
+				return nil, err
+			}
+			amount := redeemValue.Quo(price)
+			redemptionAssets = sdk.NewCoins(sdk.NewCoin(preferredAsset, sdk.NewIntFromBigInt(amount.BigInt())))
+			return redemptionAssets, nil
+		}
+	}
+
+	// Redeem proportionally based on current composition
+	remainingValue := redeemValue
+
+	// Calculate proportions
+	if reserves.TotalValue.IsZero() {
+		return nil, sdkerrors.Wrap(types.ErrInsufficientCollateral, "no reserves available for redemption")
+	}
+
+	// Redeem from each reserve type proportionally
+	assetTypes := []struct {
+		denom  string
+		amount sdk.Dec
+	}{
+		{"us_cash_token", reserves.CashReserves.Amount},
+		{"treasury_bill_token", reserves.TreasuryBills.Amount},
+		{"mmf_token", reserves.GovernmentMMFs.Amount},
+		{"repo_token", reserves.OvernightRepos.Amount},
+	}
+
+	for _, asset := range assetTypes {
+		if asset.amount.IsZero() {
+			continue
+		}
+
+		proportion := asset.amount.Quo(reserves.TotalValue)
+		assetRedeemValue := redeemValue.Mul(proportion)
+
+		if assetRedeemValue.GT(remainingValue) {
+			assetRedeemValue = remainingValue
+		}
+
+		price, err := engine.getAssetPrice(ctx, asset.denom)
+		if err != nil {
+			return nil, err
+		}
+
+		amount := assetRedeemValue.Quo(price)
+		if amount.GT(sdk.ZeroDec()) {
+			coin := sdk.NewCoin(asset.denom, sdk.NewIntFromBigInt(amount.BigInt()))
+			redemptionAssets = redemptionAssets.Add(coin)
+			remainingValue = remainingValue.Sub(assetRedeemValue)
+		}
+
+		if remainingValue.LTE(sdk.ZeroDec()) {
+			break
+		}
+	}
+
+	return redemptionAssets, nil
+}
+
+// getAssetPrice gets the current price of an asset in USD
+func (engine *SSUSDStablecoinEngine) getAssetPrice(ctx sdk.Context, denom string) (sdk.Dec, error) {
+	// This would integrate with your price oracle system
+	// For now, returning simplified prices
+	switch denom {
+	case "us_cash_token", "treasury_bill_token", "mmf_token":
+		return sdk.OneDec(), nil // $1.00 for USD-denominated assets
+	case "repo_token":
+		return sdk.OneDec(), nil // $1.00 for repo agreements
+	default:
+		// For other assets, you'd query the price oracle
+		return sdk.OneDec(), nil
+	}
+}
+
+// getAssetType maps denomination to asset type
+func (engine *SSUSDStablecoinEngine) getAssetType(denom string) string {
+	switch denom {
+	case "us_cash_token":
+		return "us_cash"
+	case "treasury_bill_token":
+		return "treasury_bills"
+	case "mmf_token":
+		return "government_mmfs"
+	case "repo_token":
+		return "overnight_repos"
+	default:
+		return "unknown"
+	}
+}
+
+// GetConservativeReserves gets the current conservative reserve composition
+func (engine *SSUSDStablecoinEngine) GetConservativeReserves(ctx sdk.Context) (*SSUSDConservativeReserve, error) {
+	store := ctx.KVStore(engine.keeper.storeKey)
+	key := []byte("ssusd_conservative_reserves")
+	
+	bz := store.Get(key)
+	if bz == nil {
+		// Initialize with default values
+		return &SSUSDConservativeReserve{
+			CashReserves: SSUSDCashReserve{
+				Amount:      sdk.ZeroDec(),
+				Allocation:  sdk.NewDecWithPrec(10, 2), // 10%
+				FDICInsured: true,
+				RiskLevel:   "minimal",
+			},
+			TreasuryBills: SSUSDTreasuryBills{
+				Amount:          sdk.ZeroDec(),
+				Allocation:      sdk.NewDecWithPrec(70, 2), // 70%
+				AverageMaturity: 45, // 45 days average
+				RiskLevel:       "minimal",
+			},
+			GovernmentMMFs: SSUSDGovernmentMMFs{
+				Amount:     sdk.ZeroDec(),
+				Allocation: sdk.NewDecWithPrec(15, 2), // 15%
+				WAM:        30, // 30 days weighted average maturity
+				RiskLevel:  "minimal",
+			},
+			OvernightRepos: SSUSDOvernightRepos{
+				Amount:      sdk.ZeroDec(),
+				Allocation:  sdk.NewDecWithPrec(5, 2), // 5%
+				AverageRate: sdk.NewDecWithPrec(525, 4), // 5.25%
+				RiskLevel:   "low",
+			},
+			TotalValue: sdk.ZeroDec(),
+			LastUpdate: time.Now(),
+		}, nil
+	}
+
+	var reserves SSUSDConservativeReserve
+	err := engine.keeper.cdc.Unmarshal(bz, &reserves)
+	if err != nil {
+		return nil, err
+	}
+
+	return &reserves, nil
+}
+
+// SetConservativeReserves sets the conservative reserve composition
+func (engine *SSUSDStablecoinEngine) SetConservativeReserves(ctx sdk.Context, reserves *SSUSDConservativeReserve) error {
+	store := ctx.KVStore(engine.keeper.storeKey)
+	key := []byte("ssusd_conservative_reserves")
+	
+	bz, err := engine.keeper.cdc.Marshal(reserves)
+	if err != nil {
+		return err
+	}
+	
+	store.Set(key, bz)
+	return nil
 }
