@@ -1,0 +1,526 @@
+syntax = "proto3";
+package stateset.cctp.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+
+option go_package = "github.com/stateset/core/x/cctp/types";
+
+// Msg defines the Msg service.
+service Msg {
+  // DepositForBurn
+  rpc DepositForBurn(MsgDepositForBurn) returns (MsgDepositForBurnResponse);
+  
+  // DepositForBurnWithCaller
+  rpc DepositForBurnWithCaller(MsgDepositForBurnWithCaller) returns (MsgDepositForBurnWithCallerResponse);
+  
+  // ReceiveMessage
+  rpc ReceiveMessage(MsgReceiveMessage) returns (MsgReceiveMessageResponse);
+  
+  // SendMessage
+  rpc SendMessage(MsgSendMessage) returns (MsgSendMessageResponse);
+  
+  // SendMessageWithCaller
+  rpc SendMessageWithCaller(MsgSendMessageWithCaller) returns (MsgSendMessageWithCallerResponse);
+  
+  // ReplaceDepositForBurn
+  rpc ReplaceDepositForBurn(MsgReplaceDepositForBurn) returns (MsgReplaceDepositForBurnResponse);
+  
+  // ReplaceMessage
+  rpc ReplaceMessage(MsgReplaceMessage) returns (MsgReplaceMessageResponse);
+  
+  // AcceptOwner
+  rpc AcceptOwner(MsgAcceptOwner) returns (MsgAcceptOwnerResponse);
+  
+  // AddRemoteTokenMessenger
+  rpc AddRemoteTokenMessenger(MsgAddRemoteTokenMessenger) returns (MsgAddRemoteTokenMessengerResponse);
+  
+  // DisableAttester
+  rpc DisableAttester(MsgDisableAttester) returns (MsgDisableAttesterResponse);
+  
+  // EnableAttester
+  rpc EnableAttester(MsgEnableAttester) returns (MsgEnableAttesterResponse);
+  
+  // LinkTokenPair
+  rpc LinkTokenPair(MsgLinkTokenPair) returns (MsgLinkTokenPairResponse);
+  
+  // PauseBurningAndMinting
+  rpc PauseBurningAndMinting(MsgPauseBurningAndMinting) returns (MsgPauseBurningAndMintingResponse);
+  
+  // PauseSendingAndReceivingMessages
+  rpc PauseSendingAndReceivingMessages(MsgPauseSendingAndReceivingMessages) returns (MsgPauseSendingAndReceivingMessagesResponse);
+  
+  // RemoveRemoteTokenMessenger
+  rpc RemoveRemoteTokenMessenger(MsgRemoveRemoteTokenMessenger) returns (MsgRemoveRemoteTokenMessengerResponse);
+  
+  // SetMaxBurnAmountPerMessage
+  rpc SetMaxBurnAmountPerMessage(MsgSetMaxBurnAmountPerMessage) returns (MsgSetMaxBurnAmountPerMessageResponse);
+  
+  // UnlinkTokenPair
+  rpc UnlinkTokenPair(MsgUnlinkTokenPair) returns (MsgUnlinkTokenPairResponse);
+  
+  // UnpauseBurningAndMinting
+  rpc UnpauseBurningAndMinting(MsgUnpauseBurningAndMinting) returns (MsgUnpauseBurningAndMintingResponse);
+  
+  // UnpauseSendingAndReceivingMessages
+  rpc UnpauseSendingAndReceivingMessages(MsgUnpauseSendingAndReceivingMessages) returns (MsgUnpauseSendingAndReceivingMessagesResponse);
+  
+  // UpdateAttesterManager
+  rpc UpdateAttesterManager(MsgUpdateAttesterManager) returns (MsgUpdateAttesterManagerResponse);
+  
+  // UpdateMaxMessageBodySize
+  rpc UpdateMaxMessageBodySize(MsgUpdateMaxMessageBodySize) returns (MsgUpdateMaxMessageBodySizeResponse);
+  
+  // UpdateOwner
+  rpc UpdateOwner(MsgUpdateOwner) returns (MsgUpdateOwnerResponse);
+  
+  // UpdatePauser
+  rpc UpdatePauser(MsgUpdatePauser) returns (MsgUpdatePauserResponse);
+  
+  // UpdateSignatureThreshold
+  rpc UpdateSignatureThreshold(MsgUpdateSignatureThreshold) returns (MsgUpdateSignatureThresholdResponse);
+  
+  // UpdateTokenController
+  rpc UpdateTokenController(MsgUpdateTokenController) returns (MsgUpdateTokenControllerResponse);
+}
+
+// MsgDepositForBurn
+message MsgDepositForBurn {
+  string from = 1;
+  cosmos.base.v1beta1.Coin amount = 2 [(gogoproto.nullable) = false];
+  uint32 destination_domain = 3;
+  bytes mint_recipient = 4;
+  string burn_token = 5;
+}
+
+message MsgDepositForBurnResponse {
+  uint64 nonce = 1;
+}
+
+// MsgDepositForBurnWithCaller
+message MsgDepositForBurnWithCaller {
+  string from = 1;
+  cosmos.base.v1beta1.Coin amount = 2 [(gogoproto.nullable) = false];
+  uint32 destination_domain = 3;
+  bytes mint_recipient = 4;
+  string burn_token = 5;
+  bytes destination_caller = 6;
+}
+
+message MsgDepositForBurnWithCallerResponse {
+  uint64 nonce = 1;
+}
+
+// MsgReceiveMessage
+message MsgReceiveMessage {
+  string from = 1;
+  bytes message = 2;
+  bytes attestation = 3;
+}
+
+message MsgReceiveMessageResponse {
+  bool success = 1;
+}
+
+// MsgSendMessage
+message MsgSendMessage {
+  string from = 1;
+  uint32 destination_domain = 2;
+  bytes recipient = 3;
+  bytes message_body = 4;
+}
+
+message MsgSendMessageResponse {
+  uint64 nonce = 1;
+}
+
+// MsgSendMessageWithCaller
+message MsgSendMessageWithCaller {
+  string from = 1;
+  uint32 destination_domain = 2;
+  bytes recipient = 3;
+  bytes message_body = 4;
+  bytes destination_caller = 5;
+}
+
+message MsgSendMessageWithCallerResponse {
+  uint64 nonce = 1;
+}
+
+// MsgReplaceDepositForBurn
+message MsgReplaceDepositForBurn {
+  string from = 1;
+  bytes original_message = 2;
+  bytes original_attestation = 3;
+  bytes new_destination_caller = 4;
+  bytes new_mint_recipient = 5;
+}
+
+message MsgReplaceDepositForBurnResponse {
+  uint64 nonce = 1;
+}
+
+// MsgReplaceMessage
+message MsgReplaceMessage {
+  string from = 1;
+  bytes original_message = 2;
+  bytes original_attestation = 3;
+  bytes new_message_body = 4;
+  bytes new_destination_caller = 5;
+}
+
+message MsgReplaceMessageResponse {
+  uint64 nonce = 1;
+}
+
+// MsgAcceptOwner
+message MsgAcceptOwner {
+  string from = 1;
+}
+
+message MsgAcceptOwnerResponse {}
+
+// MsgAddRemoteTokenMessenger
+message MsgAddRemoteTokenMessenger {
+  string from = 1;
+  uint32 domain_id = 2;
+  bytes address = 3;
+}
+
+message MsgAddRemoteTokenMessengerResponse {}
+
+// MsgDisableAttester
+message MsgDisableAttester {
+  string from = 1;
+  string attester = 2;
+}
+
+message MsgDisableAttesterResponse {}
+
+// MsgEnableAttester
+message MsgEnableAttester {
+  string from = 1;
+  string attester = 2;
+}
+
+message MsgEnableAttesterResponse {}
+
+// MsgLinkTokenPair
+message MsgLinkTokenPair {
+  string from = 1;
+  string local_token = 2;
+  bytes remote_token = 3;
+  uint32 remote_domain = 4;
+}
+
+message MsgLinkTokenPairResponse {}
+
+// MsgPauseBurningAndMinting
+message MsgPauseBurningAndMinting {
+  string from = 1;
+}
+
+message MsgPauseBurningAndMintingResponse {}
+
+// MsgPauseSendingAndReceivingMessages
+message MsgPauseSendingAndReceivingMessages {
+  string from = 1;
+}
+
+message MsgPauseSendingAndReceivingMessagesResponse {}
+
+// MsgRemoveRemoteTokenMessenger
+message MsgRemoveRemoteTokenMessenger {
+  string from = 1;
+  uint32 domain_id = 2;
+}
+
+message MsgRemoveRemoteTokenMessengerResponse {}
+
+// MsgSetMaxBurnAmountPerMessage
+message MsgSetMaxBurnAmountPerMessage {
+  string from = 1;
+  string local_token = 2;
+  string amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message MsgSetMaxBurnAmountPerMessageResponse {}
+
+// MsgUnlinkTokenPair
+message MsgUnlinkTokenPair {
+  string from = 1;
+  uint32 remote_domain = 2;
+  bytes remote_token = 3;
+  string local_token = 4;
+}
+
+message MsgUnlinkTokenPairResponse {}
+
+// MsgUnpauseBurningAndMinting
+message MsgUnpauseBurningAndMinting {
+  string from = 1;
+}
+
+message MsgUnpauseBurningAndMintingResponse {}
+
+// MsgUnpauseSendingAndReceivingMessages
+message MsgUnpauseSendingAndReceivingMessages {
+  string from = 1;
+}
+
+message MsgUnpauseSendingAndReceivingMessagesResponse {}
+
+// MsgUpdateAttesterManager
+message MsgUpdateAttesterManager {
+  string from = 1;
+  string new_attester_manager = 2;
+}
+
+message MsgUpdateAttesterManagerResponse {}
+
+// MsgUpdateMaxMessageBodySize
+message MsgUpdateMaxMessageBodySize {
+  string from = 1;
+  uint64 message_size = 2;
+}
+
+message MsgUpdateMaxMessageBodySizeResponse {}
+
+// MsgUpdateOwner
+message MsgUpdateOwner {
+  string from = 1;
+  string new_owner = 2;
+}
+
+message MsgUpdateOwnerResponse {}
+
+// MsgUpdatePauser
+message MsgUpdatePauser {
+  string from = 1;
+  string new_pauser = 2;
+}
+
+message MsgUpdatePauserResponse {}
+
+// MsgUpdateSignatureThreshold
+message MsgUpdateSignatureThreshold {
+  string from = 1;
+  uint32 amount = 2;
+}
+
+message MsgUpdateSignatureThresholdResponse {}
+
+// MsgUpdateTokenController
+message MsgUpdateTokenController {
+  string from = 1;
+  string new_token_controller = 2;
+}
+
+message MsgUpdateTokenControllerResponse {}
+
+// State objects
+
+// Attester represents an attester and their status
+message Attester {
+  string attester = 1;
+  AttesterStatus status = 2;
+}
+
+enum AttesterStatus {
+  ATTESTER_STATUS_UNSPECIFIED = 0;
+  ATTESTER_STATUS_ENABLED = 1;
+  ATTESTER_STATUS_DISABLED = 2;
+}
+
+// RemoteTokenMessenger represents a remote token messenger
+message RemoteTokenMessenger {
+  uint32 domain_id = 1;
+  bytes address = 2;
+}
+
+// TokenPair represents a token pair between local and remote domains
+message TokenPair {
+  uint32 remote_domain = 1;
+  bytes remote_token = 2;
+  string local_token = 3;
+}
+
+// PerMessageBurnLimit represents the burn limit per message for a token
+message PerMessageBurnLimit {
+  string denom = 1;
+  string limit = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// Query service
+service Query {
+  // Owner returns the owner
+  rpc Owner(QueryOwnerRequest) returns (QueryOwnerResponse);
+  
+  // PendingOwner returns the pending owner
+  rpc PendingOwner(QueryPendingOwnerRequest) returns (QueryPendingOwnerResponse);
+  
+  // AttesterManager returns the attester manager
+  rpc AttesterManager(QueryAttesterManagerRequest) returns (QueryAttesterManagerResponse);
+  
+  // TokenController returns the token controller
+  rpc TokenController(QueryTokenControllerRequest) returns (QueryTokenControllerResponse);
+  
+  // Pauser returns the pauser
+  rpc Pauser(QueryPauserRequest) returns (QueryPauserResponse);
+  
+  // SignatureThreshold returns the signature threshold
+  rpc SignatureThreshold(QuerySignatureThresholdRequest) returns (QuerySignatureThresholdResponse);
+  
+  // NextAvailableNonce returns the next available nonce
+  rpc NextAvailableNonce(QueryNextAvailableNonceRequest) returns (QueryNextAvailableNonceResponse);
+  
+  // BurningAndMintingPaused returns whether burning and minting is paused
+  rpc BurningAndMintingPaused(QueryBurningAndMintingPausedRequest) returns (QueryBurningAndMintingPausedResponse);
+  
+  // SendingAndReceivingMessagesPaused returns whether sending and receiving messages is paused
+  rpc SendingAndReceivingMessagesPaused(QuerySendingAndReceivingMessagesPausedRequest) returns (QuerySendingAndReceivingMessagesPausedResponse);
+  
+  // MaxMessageBodySize returns the max message body size
+  rpc MaxMessageBodySize(QueryMaxMessageBodySizeRequest) returns (QueryMaxMessageBodySizeResponse);
+  
+  // Attester returns an attester
+  rpc Attester(QueryAttesterRequest) returns (QueryAttesterResponse);
+  
+  // Attesters returns all attesters
+  rpc Attesters(QueryAttestersRequest) returns (QueryAttestersResponse);
+  
+  // RemoteTokenMessenger returns a remote token messenger
+  rpc RemoteTokenMessenger(QueryRemoteTokenMessengerRequest) returns (QueryRemoteTokenMessengerResponse);
+  
+  // RemoteTokenMessengers returns all remote token messengers
+  rpc RemoteTokenMessengers(QueryRemoteTokenMessengersRequest) returns (QueryRemoteTokenMessengersResponse);
+  
+  // TokenPair returns a token pair
+  rpc TokenPair(QueryTokenPairRequest) returns (QueryTokenPairResponse);
+  
+  // TokenPairs returns all token pairs
+  rpc TokenPairs(QueryTokenPairsRequest) returns (QueryTokenPairsResponse);
+  
+  // UsedNonce returns whether a nonce is used
+  rpc UsedNonce(QueryUsedNonceRequest) returns (QueryUsedNonceResponse);
+  
+  // PerMessageBurnLimit returns the burn limit per message for a token
+  rpc PerMessageBurnLimit(QueryPerMessageBurnLimitRequest) returns (QueryPerMessageBurnLimitResponse);
+  
+  // PerMessageBurnLimits returns all burn limits per message
+  rpc PerMessageBurnLimits(QueryPerMessageBurnLimitsRequest) returns (QueryPerMessageBurnLimitsResponse);
+}
+
+// Query messages
+message QueryOwnerRequest {}
+message QueryOwnerResponse {
+  string owner = 1;
+}
+
+message QueryPendingOwnerRequest {}
+message QueryPendingOwnerResponse {
+  string pending_owner = 1;
+}
+
+message QueryAttesterManagerRequest {}
+message QueryAttesterManagerResponse {
+  string attester_manager = 1;
+}
+
+message QueryTokenControllerRequest {}
+message QueryTokenControllerResponse {
+  string token_controller = 1;
+}
+
+message QueryPauserRequest {}
+message QueryPauserResponse {
+  string pauser = 1;
+}
+
+message QuerySignatureThresholdRequest {}
+message QuerySignatureThresholdResponse {
+  uint32 signature_threshold = 1;
+}
+
+message QueryNextAvailableNonceRequest {}
+message QueryNextAvailableNonceResponse {
+  uint64 nonce = 1;
+}
+
+message QueryBurningAndMintingPausedRequest {}
+message QueryBurningAndMintingPausedResponse {
+  bool paused = 1;
+}
+
+message QuerySendingAndReceivingMessagesPausedRequest {}
+message QuerySendingAndReceivingMessagesPausedResponse {
+  bool paused = 1;
+}
+
+message QueryMaxMessageBodySizeRequest {}
+message QueryMaxMessageBodySizeResponse {
+  uint64 max_message_body_size = 1;
+}
+
+message QueryAttesterRequest {
+  string attester = 1;
+}
+message QueryAttesterResponse {
+  Attester attester = 1;
+}
+
+message QueryAttestersRequest {}
+message QueryAttestersResponse {
+  repeated Attester attesters = 1;
+}
+
+message QueryRemoteTokenMessengerRequest {
+  uint32 domain_id = 1;
+}
+message QueryRemoteTokenMessengerResponse {
+  RemoteTokenMessenger remote_token_messenger = 1;
+}
+
+message QueryRemoteTokenMessengersRequest {}
+message QueryRemoteTokenMessengersResponse {
+  repeated RemoteTokenMessenger remote_token_messengers = 1;
+}
+
+message QueryTokenPairRequest {
+  uint32 remote_domain = 1;
+  bytes remote_token = 2;
+}
+message QueryTokenPairResponse {
+  TokenPair token_pair = 1;
+}
+
+message QueryTokenPairsRequest {}
+message QueryTokenPairsResponse {
+  repeated TokenPair token_pairs = 1;
+}
+
+message QueryUsedNonceRequest {
+  uint32 source_domain = 1;
+  uint64 nonce = 2;
+}
+message QueryUsedNonceResponse {
+  bool used = 1;
+}
+
+message QueryPerMessageBurnLimitRequest {
+  string denom = 1;
+}
+message QueryPerMessageBurnLimitResponse {
+  PerMessageBurnLimit burn_limit = 1;
+}
+
+message QueryPerMessageBurnLimitsRequest {}
+message QueryPerMessageBurnLimitsResponse {
+  repeated PerMessageBurnLimit burn_limits = 1;
+}
