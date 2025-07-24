@@ -401,3 +401,207 @@ func NewStablecoin(
 		AccessControl:          accessControl,
 	}
 }
+
+// Message type URLs for ssUSD functionality
+const (
+	TypeMsgInitializeSSUSD = "initialize_ssusd"
+	TypeMsgIssueSSUSD      = "issue_ssusd"
+	TypeMsgRedeemSSUSD     = "redeem_ssusd"
+)
+
+// MsgInitializeSSUSD initializes the ssUSD stablecoin
+type MsgInitializeSSUSD struct {
+	Creator string `json:"creator"`
+}
+
+var _ sdk.Msg = &MsgInitializeSSUSD{}
+
+func NewMsgInitializeSSUSD(creator string) *MsgInitializeSSUSD {
+	return &MsgInitializeSSUSD{
+		Creator: creator,
+	}
+}
+
+func (msg *MsgInitializeSSUSD) Route() string {
+	return RouterKey
+}
+
+func (msg *MsgInitializeSSUSD) Type() string {
+	return TypeMsgInitializeSSUSD
+}
+
+func (msg *MsgInitializeSSUSD) GetSigners() []sdk.AccAddress {
+	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{creator}
+}
+
+func (msg *MsgInitializeSSUSD) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
+}
+
+func (msg *MsgInitializeSSUSD) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+	}
+	return nil
+}
+
+// MsgIssueSSUSD issues new ssUSD tokens backed by reserves
+type MsgIssueSSUSD struct {
+	Creator        string    `json:"creator"`
+	Amount         sdk.Int   `json:"amount"`
+	ReservePayment sdk.Coins `json:"reserve_payment"`
+}
+
+var _ sdk.Msg = &MsgIssueSSUSD{}
+
+func NewMsgIssueSSUSD(creator string, amount sdk.Int, reservePayment sdk.Coins) *MsgIssueSSUSD {
+	return &MsgIssueSSUSD{
+		Creator:        creator,
+		Amount:         amount,
+		ReservePayment: reservePayment,
+	}
+}
+
+func (msg *MsgIssueSSUSD) Route() string {
+	return RouterKey
+}
+
+func (msg *MsgIssueSSUSD) Type() string {
+	return TypeMsgIssueSSUSD
+}
+
+func (msg *MsgIssueSSUSD) GetSigners() []sdk.AccAddress {
+	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{creator}
+}
+
+func (msg *MsgIssueSSUSD) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
+}
+
+func (msg *MsgIssueSSUSD) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+	}
+
+	if msg.Amount.IsNil() || !msg.Amount.IsPositive() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "amount must be positive")
+	}
+
+	if !msg.ReservePayment.IsValid() || msg.ReservePayment.IsZero() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "reserve payment must be valid and non-zero")
+	}
+
+	// Validate reserve asset types
+	validAssets := map[string]bool{
+		"us_cash_token":       true,
+		"treasury_bill_token": true,
+		"mmf_token":          true,
+		"repo_token":         true,
+	}
+
+	for _, coin := range msg.ReservePayment {
+		if !validAssets[coin.Denom] {
+			return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, 
+				"invalid reserve asset type: %s. Valid types: us_cash_token, treasury_bill_token, mmf_token, repo_token", 
+				coin.Denom)
+		}
+	}
+
+	return nil
+}
+
+// MsgRedeemSSUSD redeems ssUSD tokens for underlying reserves
+type MsgRedeemSSUSD struct {
+	Creator        string  `json:"creator"`
+	SSUSDAmount    sdk.Int `json:"ssusd_amount"`
+	PreferredAsset string  `json:"preferred_asset"`
+}
+
+var _ sdk.Msg = &MsgRedeemSSUSD{}
+
+func NewMsgRedeemSSUSD(creator string, ssusdAmount sdk.Int, preferredAsset string) *MsgRedeemSSUSD {
+	return &MsgRedeemSSUSD{
+		Creator:        creator,
+		SSUSDAmount:    ssusdAmount,
+		PreferredAsset: preferredAsset,
+	}
+}
+
+func (msg *MsgRedeemSSUSD) Route() string {
+	return RouterKey
+}
+
+func (msg *MsgRedeemSSUSD) Type() string {
+	return TypeMsgRedeemSSUSD
+}
+
+func (msg *MsgRedeemSSUSD) GetSigners() []sdk.AccAddress {
+	creator, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		panic(err)
+	}
+	return []sdk.AccAddress{creator}
+}
+
+func (msg *MsgRedeemSSUSD) GetSignBytes() []byte {
+	bz := ModuleCdc.MustMarshalJSON(msg)
+	return sdk.MustSortJSON(bz)
+}
+
+func (msg *MsgRedeemSSUSD) ValidateBasic() error {
+	_, err := sdk.AccAddressFromBech32(msg.Creator)
+	if err != nil {
+		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+	}
+
+	if msg.SSUSDAmount.IsNil() || !msg.SSUSDAmount.IsPositive() {
+		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "ssUSD amount must be positive")
+	}
+
+	// Validate preferred asset if specified
+	if msg.PreferredAsset != "" {
+		validAssets := map[string]bool{
+			"us_cash_token":       true,
+			"treasury_bill_token": true,
+			"mmf_token":          true,
+			"repo_token":         true,
+		}
+
+		if !validAssets[msg.PreferredAsset] {
+			return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, 
+				"invalid preferred asset: %s. Valid types: us_cash_token, treasury_bill_token, mmf_token, repo_token", 
+				msg.PreferredAsset)
+		}
+	}
+
+	return nil
+}
+
+// Response types for ssUSD messages
+
+// MsgInitializeSSUSDResponse response type for MsgInitializeSSUSD
+type MsgInitializeSSUSDResponse struct {
+	Success bool `json:"success"`
+}
+
+// MsgIssueSSUSDResponse response type for MsgIssueSSUSD
+type MsgIssueSSUSDResponse struct {
+	AmountIssued sdk.Int `json:"amount_issued"`
+}
+
+// MsgRedeemSSUSDResponse response type for MsgRedeemSSUSD
+type MsgRedeemSSUSDResponse struct {
+	AmountRedeemed sdk.Int `json:"amount_redeemed"`
+}
