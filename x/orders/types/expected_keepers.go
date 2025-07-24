@@ -4,6 +4,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	stablecointypes "github.com/stateset/core/x/stablecoins/types"
 )
 
 // AccountKeeper defines the expected account keeper used for simulations (noalias)
@@ -25,4 +26,17 @@ type BankKeeper interface {
 	GetSupply(ctx sdk.Context, denom string) sdk.Coin
 	GetMetadata(ctx sdk.Context, denom string) (banktypes.Metadata, bool)
 	SetDenomMetaData(ctx sdk.Context, denomMetaData banktypes.Metadata)
+}
+
+// StablecoinsKeeper defines the expected interface needed for stablecoin operations
+type StablecoinsKeeper interface {
+	GetStablecoin(ctx sdk.Context, denom string) (stablecoin stablecointypes.Stablecoin, found bool)
+	GetAllStablecoins(ctx sdk.Context) (list []stablecointypes.Stablecoin)
+	IsValidStablecoin(ctx sdk.Context, denom string) bool
+	TransferStablecoin(ctx sdk.Context, from, to sdk.AccAddress, amount sdk.Coin) error
+	EscrowStablecoin(ctx sdk.Context, from sdk.AccAddress, orderId string, amount sdk.Coin) error
+	ReleaseEscrow(ctx sdk.Context, orderId string, to sdk.AccAddress) error
+	RefundEscrow(ctx sdk.Context, orderId string, to sdk.AccAddress) error
+	GetEscrowBalance(ctx sdk.Context, orderId string) (sdk.Coin, bool)
+	ValidateStablecoinPayment(ctx sdk.Context, denom string, amount sdk.Int) error
 }

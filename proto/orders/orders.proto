@@ -153,7 +153,7 @@ message Address {
 
 // PaymentInfo contains payment details for an order
 message PaymentInfo {
-  // Payment method (card, crypto, bank_transfer, wallet)
+  // Payment method (card, crypto, bank_transfer, wallet, stablecoin)
   string payment_method = 1;
   
   // Payment status (pending, authorized, captured, failed, refunded)
@@ -176,6 +176,72 @@ message PaymentInfo {
     (gogoproto.nullable) = true,
     (gogoproto.stdtime) = true
   ];
+  
+  // Stablecoin payment details (only used when payment_method is "stablecoin")
+  StablecoinPaymentInfo stablecoin_payment = 7;
+}
+
+// StablecoinPaymentInfo contains stablecoin-specific payment details
+message StablecoinPaymentInfo {
+  // Stablecoin denomination used for payment
+  string stablecoin_denom = 1;
+  
+  // Amount paid in stablecoin
+  string stablecoin_amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Exchange rate at time of payment (stablecoin to order currency)
+  string exchange_rate = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Customer wallet address that sent the payment
+  string customer_address = 4;
+  
+  // Merchant wallet address that received the payment
+  string merchant_address = 5;
+  
+  // Transaction hash on the blockchain
+  string tx_hash = 6;
+  
+  // Block height when payment was confirmed
+  uint64 block_height = 7;
+  
+  // Payment confirmation status
+  string confirmation_status = 8; // pending, confirmed, failed
+  
+  // Number of confirmations required
+  uint64 confirmations_required = 9;
+  
+  // Current number of confirmations
+  uint64 current_confirmations = 10;
+  
+  // Escrow details (if payment is held in escrow)
+  EscrowInfo escrow_info = 11;
+}
+
+// EscrowInfo contains escrow details for stablecoin payments
+message EscrowInfo {
+  // Whether payment is held in escrow
+  bool is_escrowed = 1;
+  
+  // Escrow contract address
+  string escrow_address = 2;
+  
+  // Escrow release conditions
+  string release_conditions = 3;
+  
+  // Escrow timeout (when funds auto-release to merchant)
+  google.protobuf.Timestamp escrow_timeout = 4 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+  
+  // Dispute resolution address
+  string dispute_resolver = 5;
 }
 
 // DiscountInfo represents discount applied to an order
