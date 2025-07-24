@@ -125,7 +125,46 @@ func (k Keeper) OrderStats(goCtx context.Context, req *types.QueryOrderStatsRequ
 		DeliveredOrders: deliveredOrders,
 		CancelledOrders: cancelledOrders,
 		RefundedOrders:  refundedOrders,
-		TotalRevenue:    "0", // TODO: Calculate based on successful orders
-		AverageOrderValue: "0", // TODO: Calculate based on successful orders
+		TotalRevenue:    k.calculateTotalRevenue(ctx),
+		AverageOrderValue: k.calculateAverageOrderValue(ctx, totalOrders),
 	}, nil
+}
+
+// calculateTotalRevenue calculates the total revenue from all successful orders
+func (k Keeper) calculateTotalRevenue(ctx sdk.Context) string {
+	store := ctx.KVStore(k.storeKey)
+	iterator := sdk.KVStorePrefixIterator(store, types.OrderPrefix)
+	defer iterator.Close()
+
+	totalRevenue := sdk.ZeroInt()
+	
+	for ; iterator.Valid(); iterator.Next() {
+		var order types.Order
+		k.cdc.MustUnmarshal(iterator.Value(), &order)
+		
+		// Only count revenue from delivered orders
+		if order.OrderStatus == "delivered" {
+			if orderAmount, ok := sdk.NewIntFromString(order.Amount); ok {
+				totalRevenue = totalRevenue.Add(orderAmount)
+			}
+		}
+	}
+	
+	return totalRevenue.String()
+}
+
+// calculateAverageOrderValue calculates the average value per order
+func (k Keeper) calculateAverageOrderValue(ctx sdk.Context, totalOrders int64) string {
+	if totalOrders == 0 {
+		return "0"
+	}
+	
+	totalRevenueStr := k.calculateTotalRevenue(ctx)
+	totalRevenue, ok := sdk.NewIntFromString(totalRevenueStr)
+	if !ok {
+		return "0"
+	}
+	
+	averageValue := totalRevenue.Quo(sdk.NewInt(totalOrders))
+	return averageValue.String()
 }
