@@ -21,7 +21,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/version"
 	"github.com/cosmos/cosmos-sdk/x/auth"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
-	authrest "github.com/cosmos/cosmos-sdk/x/auth/client/rest"
+
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -29,14 +29,14 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-	"github.com/cosmos/cosmos-sdk/x/capability"
-	capabilitykeeper "github.com/cosmos/cosmos-sdk/x/capability/keeper"
-	capabilitytypes "github.com/cosmos/cosmos-sdk/x/capability/types"
+	"github.com/cosmos/ibc-go/v7/modules/capability"
+	capabilitykeeper "github.com/cosmos/ibc-go/v7/modules/capability/keeper"
+	capabilitytypes "github.com/cosmos/ibc-go/v7/modules/capability/types"
 	"github.com/cosmos/cosmos-sdk/x/crisis"
 	crisiskeeper "github.com/cosmos/cosmos-sdk/x/crisis/keeper"
 	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 	distr "github.com/cosmos/cosmos-sdk/x/distribution"
-	distrclient "github.com/cosmos/cosmos-sdk/x/distribution/client"
+
 	distrkeeper "github.com/cosmos/cosmos-sdk/x/distribution/keeper"
 	distrtypes "github.com/cosmos/cosmos-sdk/x/distribution/types"
 	"github.com/cosmos/cosmos-sdk/x/evidence"
@@ -66,18 +66,18 @@ import (
 	stakingkeeper "github.com/cosmos/cosmos-sdk/x/staking/keeper"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/x/upgrade"
-	upgradeclient "github.com/cosmos/cosmos-sdk/x/upgrade/client"
+
 	upgradekeeper "github.com/cosmos/cosmos-sdk/x/upgrade/keeper"
 	upgradetypes "github.com/cosmos/cosmos-sdk/x/upgrade/types"
-	transfer "github.com/cosmos/ibc-go/v2/modules/apps/transfer"
-	ibctransferkeeper "github.com/cosmos/ibc-go/v2/modules/apps/transfer/keeper"
-	ibctransfertypes "github.com/cosmos/ibc-go/v2/modules/apps/transfer/types"
-	ibc "github.com/cosmos/ibc-go/v2/modules/core"
-	ibcclient "github.com/cosmos/ibc-go/v2/modules/core/02-client"
-	ibcclientclient "github.com/cosmos/ibc-go/v2/modules/core/02-client/client"
-	porttypes "github.com/cosmos/ibc-go/v2/modules/core/05-port/types"
-	ibchost "github.com/cosmos/ibc-go/v2/modules/core/24-host"
-	ibckeeper "github.com/cosmos/ibc-go/v2/modules/core/keeper"
+	transfer "github.com/cosmos/ibc-go/v7/modules/apps/transfer"
+	ibctransferkeeper "github.com/cosmos/ibc-go/v7/modules/apps/transfer/keeper"
+	ibctransfertypes "github.com/cosmos/ibc-go/v7/modules/apps/transfer/types"
+	ibc "github.com/cosmos/ibc-go/v7/modules/core"
+	ibcclient "github.com/cosmos/ibc-go/v7/modules/core/02-client"
+	ibcclientclient "github.com/cosmos/ibc-go/v7/modules/core/02-client/client"
+	porttypes "github.com/cosmos/ibc-go/v7/modules/core/05-port/types"
+	ibchost "github.com/cosmos/ibc-go/v7/modules/core/24-host"
+	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spf13/cast"
 	abci "github.com/tendermint/tendermint/abci/types"
@@ -86,8 +86,8 @@ import (
 	tmos "github.com/tendermint/tendermint/libs/os"
 	dbm "github.com/tendermint/tm-db"
 
-	"github.com/tendermint/spm/cosmoscmd"
-	"github.com/tendermint/spm/openapiconsole"
+	"github.com/cosmos/cosmos-sdk/client"
+	"github.com/cosmos/cosmos-sdk/server"
 
 	"github.com/stateset/core/docs"
 	agreementmodule "github.com/stateset/core/x/agreement"
@@ -109,11 +109,15 @@ import (
 	proofmodule "github.com/stateset/core/x/proof"
 	proofmodulekeeper "github.com/stateset/core/x/proof/keeper"
 	proofmoduletypes "github.com/stateset/core/x/proof/types"
+	stablecoinsmodule "github.com/stateset/core/x/stablecoins"
+	stablecoinsmodulekeeper "github.com/stateset/core/x/stablecoins/keeper"
+	stablecoinsmoduletypes "github.com/stateset/core/x/stablecoins/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 
-	"github.com/CosmWasm/wasmd/x/wasm"
-	wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	// Temporarily commented out due to dependency conflicts
+	// "github.com/CosmWasm/wasmd/x/wasm"
+	// wasmclient "github.com/CosmWasm/wasmd/x/wasm/client"
+	// wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 )
 
 const (
@@ -133,6 +137,8 @@ var (
 	EnableSpecificProposals = ""
 )
 
+// Temporarily commented out due to dependency conflicts
+/*
 func GetEnabledProposals() []wasm.ProposalType {
 	if EnableSpecificProposals == "" {
 		if ProposalsEnabled == "true" {
@@ -158,23 +164,49 @@ func GetWasmOpts(appOpts servertypes.AppOptions) []wasm.Option {
 
 	return wasmOpts
 }
+*/
 
 func getGovProposalHandlers() []govclient.ProposalHandler {
 	var govProposalHandlers []govclient.ProposalHandler
 	// this line is used by starport scaffolding # stargate/app/govProposalHandlers
-	govProposalHandlers = wasmclient.ProposalHandlers
+	// govProposalHandlers = wasmclient.ProposalHandlers // Temporarily disabled due to dependency issues
 
 	govProposalHandlers = append(govProposalHandlers,
 		paramsclient.ProposalHandler,
-		distrclient.ProposalHandler,
-		upgradeclient.ProposalHandler,
-		upgradeclient.CancelProposalHandler,
 		ibcclientclient.UpdateClientProposalHandler,
 		ibcclientclient.UpgradeProposalHandler,
 		// this line is used by starport scaffolding # stargate/app/govProposalHandler
 	)
 
 	return govProposalHandlers
+}
+
+// EncodingConfig specifies the concrete encoding types to use for a given app.
+// This is provided for compatibility with legacy versions.
+type EncodingConfig struct {
+	InterfaceRegistry types.InterfaceRegistry
+	Marshaler         codec.Codec
+	TxConfig          client.TxConfig
+	Amino             *codec.LegacyAmino
+}
+
+// MakeEncodingConfig creates an EncodingConfig for an amino based test configuration.
+func MakeEncodingConfig(mb module.BasicManager) EncodingConfig {
+	amino := codec.NewLegacyAmino()
+	interfaceRegistry := types.NewInterfaceRegistry()
+	marshaler := codec.NewProtoCodec(interfaceRegistry)
+	txCfg := authtx.NewTxConfig(marshaler, authtx.DefaultSignModes)
+
+	encodingConfig := EncodingConfig{
+		InterfaceRegistry: interfaceRegistry,
+		Marshaler:         marshaler,
+		TxConfig:          txCfg,
+		Amino:             amino,
+	}
+
+	mb.RegisterLegacyAminoCodec(encodingConfig.Amino)
+	mb.RegisterInterfaces(encodingConfig.InterfaceRegistry)
+	return encodingConfig
 }
 
 var (
@@ -208,8 +240,9 @@ var (
 		invoicemodule.AppModuleBasic{},
 		didmodule.AppModuleBasic{},
 		proofmodule.AppModuleBasic{},
+		stablecoinsmodule.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
-		wasm.AppModuleBasic{},
+		// wasm.AppModuleBasic{}, // Temporarily commented out due to dependency conflicts
 	)
 
 	// module account permissions
@@ -226,12 +259,11 @@ var (
 		purchaseordermoduletypes.ModuleName: {authtypes.Minter, authtypes.Burner, authtypes.Staking},
 		invoicemoduletypes.ModuleName:       {authtypes.Minter, authtypes.Burner, authtypes.Staking},
 		// this line is used by starport scaffolding # stargate/app/maccPerms
-		wasm.ModuleName: {authtypes.Burner},
+		// wasm.ModuleName: {authtypes.Burner}, // Temporarily commented out due to dependency conflicts
 	}
 )
 
 var (
-	_ cosmoscmd.CosmosApp     = (*App)(nil)
 	_ servertypes.Application = (*App)(nil)
 )
 
@@ -293,9 +325,11 @@ type App struct {
 	DidKeeper didmodulekeeper.Keeper
 
 	ProofKeeper proofmodulekeeper.Keeper
+
+	StablecoinsKeeper stablecoinsmodulekeeper.Keeper
 	// this line is used by starport scaffolding # stargate/app/keeperDeclaration
-	wasmKeeper       wasm.Keeper
-	scopedWasmKeeper capabilitykeeper.ScopedKeeper
+	// wasmKeeper       wasm.Keeper // Temporarily commented out due to dependency conflicts
+	// scopedWasmKeeper capabilitykeeper.ScopedKeeper // Temporarily commented out due to dependency conflicts
 
 	// the module manager
 	mm *module.Manager
@@ -310,10 +344,10 @@ func New(
 	skipUpgradeHeights map[int64]bool,
 	homePath string,
 	invCheckPeriod uint,
-	encodingConfig cosmoscmd.EncodingConfig,
+	encodingConfig EncodingConfig,
 	appOpts servertypes.AppOptions,
 	baseAppOptions ...func(*baseapp.BaseApp),
-) cosmoscmd.App {
+) *App {
 	appCodec := encodingConfig.Marshaler
 	cdc := encodingConfig.Amino
 	interfaceRegistry := encodingConfig.InterfaceRegistry
@@ -334,8 +368,9 @@ func New(
 		invoicemoduletypes.StoreKey,
 		didmoduletypes.StoreKey,
 		proofmoduletypes.StoreKey,
+		stablecoinsmoduletypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
-		wasm.StoreKey,
+		// wasm.StoreKey, // Temporarily commented out due to dependency conflicts
 	)
 	tkeys := sdk.NewTransientStoreKeys(paramstypes.TStoreKey)
 	memKeys := sdk.NewMemoryStoreKeys(capabilitytypes.MemStoreKey)
@@ -363,7 +398,7 @@ func New(
 	scopedIBCKeeper := app.CapabilityKeeper.ScopeToModule(ibchost.ModuleName)
 	scopedTransferKeeper := app.CapabilityKeeper.ScopeToModule(ibctransfertypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/scopedKeeper
-	scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName)
+	// scopedWasmKeeper := app.CapabilityKeeper.ScopeToModule(wasm.ModuleName) // Temporarily commented out
 
 	// add keepers
 	app.AccountKeeper = authkeeper.NewAccountKeeper(
@@ -485,7 +520,20 @@ func New(
 	)
 	proofModule := proofmodule.NewAppModule(appCodec, app.ProofKeeper, app.AccountKeeper, app.BankKeeper)
 
+	app.StablecoinsKeeper = *stablecoinsmodulekeeper.NewKeeper(
+		appCodec,
+		keys[stablecoinsmoduletypes.StoreKey],
+		keys[stablecoinsmoduletypes.MemStoreKey],
+		app.GetSubspace(stablecoinsmoduletypes.ModuleName),
+		app.AccountKeeper,
+		app.BankKeeper,
+		app.DistrKeeper,
+		app.StakingKeeper,
+	)
+
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
+	// Temporarily commented out due to dependency conflicts
+	/*
 	wasmDir := filepath.Join(homePath, "data")
 
 	wasmConfig, err := wasm.ReadWasmConfig(appOpts)
@@ -517,6 +565,7 @@ func New(
 		supportedFeatures,
 		wasmOpts...,
 	)
+	*/
 
 	// register wasm gov proposal types
 	//enabledProposals := GetEnabledProposals()
@@ -528,7 +577,7 @@ func New(
 	ibcRouter := porttypes.NewRouter()
 	ibcRouter.AddRoute(ibctransfertypes.ModuleName, transferModule)
 	// this line is used by starport scaffolding # ibc/app/router
-	ibcRouter.AddRoute(wasm.ModuleName, wasm.NewIBCHandler(app.wasmKeeper, app.IBCKeeper.ChannelKeeper))
+	// ibcRouter.AddRoute(// wasm.ModuleName, // Temporarily commented out wasm.NewIBCHandler(app.wasmKeeper, app.IBCKeeper.ChannelKeeper)) // Temporarily commented out
 	app.IBCKeeper.SetRouter(ibcRouter)
 
 	/****  Module Options ****/
@@ -567,8 +616,9 @@ func New(
 		invoiceModule,
 		didModule,
 		proofModule,
+		stablecoinsmodule.NewAppModule(appCodec, app.StablecoinsKeeper),
 		// this line is used by starport scaffolding # stargate/app/appModule
-		wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper),
+		// wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper), // Temporarily commented out
 	)
 
 	// During begin block slashing happens after distr.BeginBlocker so that
@@ -608,8 +658,9 @@ func New(
 		invoicemoduletypes.ModuleName,
 		didmoduletypes.ModuleName,
 		proofmoduletypes.ModuleName,
+		stablecoinsmoduletypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
-		wasm.ModuleName,
+		// wasm.ModuleName, // Temporarily commented out
 	)
 
 	app.mm.RegisterInvariants(&app.CrisisKeeper)
@@ -635,8 +686,8 @@ func New(
 				SigGasConsumer:  ante.DefaultSigVerificationGasConsumer,
 			},
 			IBCChannelkeeper:  app.IBCKeeper.ChannelKeeper,
-			TxCounterStoreKey: keys[wasm.StoreKey],
-			WasmConfig:        wasmConfig,
+			// TxCounterStoreKey: keys[wasm.StoreKey], // Temporarily commented out
+			// WasmConfig:        wasmConfig, // Temporarily commented out
 		},
 	)
 	if err != nil {
@@ -658,7 +709,7 @@ func New(
 	app.ScopedIBCKeeper = scopedIBCKeeper
 	app.ScopedTransferKeeper = scopedTransferKeeper
 	// this line is used by starport scaffolding # stargate/app/beforeInitReturn
-	app.scopedWasmKeeper = scopedWasmKeeper
+	// app.scopedWasmKeeper = scopedWasmKeeper // Temporarily commented out
 
 	return app
 }
@@ -756,8 +807,7 @@ func (app *App) GetSubspace(moduleName string) paramstypes.Subspace {
 func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig) {
 	clientCtx := apiSvr.ClientCtx
 	rpc.RegisterRoutes(clientCtx, apiSvr.Router)
-	// Register legacy tx routes.
-	authrest.RegisterTxRoutes(clientCtx, apiSvr.Router)
+	// Register legacy tx routes - deprecated REST endpoints removed
 	// Register new tx routes from grpc-gateway.
 	authtx.RegisterGRPCGatewayRoutes(clientCtx, apiSvr.GRPCGatewayRouter)
 	// Register new tendermint queries routes from grpc-gateway.
@@ -769,7 +819,9 @@ func (app *App) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APIConfig
 
 	// register app's OpenAPI routes.
 	apiSvr.Router.Handle("/static/openapi.yml", http.FileServer(http.FS(docs.Docs)))
-	apiSvr.Router.HandleFunc("/", openapiconsole.Handler(Name, "/static/openapi.yml"))
+	apiSvr.Router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/static/openapi.yml", http.StatusPermanentRedirect)
+	})
 }
 
 // RegisterTxService implements the Application.RegisterTxService method.
@@ -811,8 +863,9 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(invoicemoduletypes.ModuleName)
 	paramsKeeper.Subspace(didmoduletypes.ModuleName)
 	paramsKeeper.Subspace(proofmoduletypes.ModuleName)
+	paramsKeeper.Subspace(stablecoinsmoduletypes.ModuleName)
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
-	paramsKeeper.Subspace(wasm.ModuleName)
+	// paramsKeeper.Subspace(wasm.ModuleName) // Temporarily commented out
 
 	return paramsKeeper
 }

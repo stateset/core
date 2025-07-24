@@ -5,12 +5,13 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	channelkeeper "github.com/cosmos/ibc-go/v2/modules/core/04-channel/keeper"
-	ibcante "github.com/cosmos/ibc-go/v4/modules/core/ante"
-	ibckeeper "github.com/cosmos/ibc-go/v4/modules/core/keeper"
+	channelkeeper "github.com/cosmos/ibc-go/v7/modules/core/04-channel/keeper"
+	ibcante "github.com/cosmos/ibc-go/v7/modules/core/ante"
+	ibckeeper "github.com/cosmos/ibc-go/v7/modules/core/keeper"
 
-	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	// Temporarily commented out due to dependency conflicts
+	// wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
+	// wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
 // HandlerOptions extends the SDK's AnteHandler options by requiring the IBC
@@ -20,7 +21,7 @@ type HandlerOptions struct {
 
 	IBCChannelkeeper  channelkeeper.Keeper
 	TxCounterStoreKey sdk.StoreKey
-	WasmConfig        wasmTypes.WasmConfig
+	// WasmConfig        wasmTypes.WasmConfig // Temporarily commented out due to dependency conflicts
 }
 
 type MinCommissionDecorator struct{}
@@ -83,8 +84,8 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
 		NewMinCommissionDecorator(),
-		wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit),
-		wasmkeeper.NewCountTXDecorator(options.TxCounterStoreKey),
+		// wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // Temporarily commented out due to dependency conflicts
+		// wasmkeeper.NewCountTXDecorator(options.TxCounterStoreKey), // Temporarily commented out due to dependency conflicts
 		ante.NewRejectExtensionOptionsDecorator(),
 		ante.NewMempoolFeeDecorator(),
 		ante.NewValidateBasicDecorator(),

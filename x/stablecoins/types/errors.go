@@ -1,0 +1,36 @@
+package types
+
+import (
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+)
+
+// x/stablecoins module sentinel errors
+var (
+	ErrStablecoinAlreadyExists   = sdkerrors.Register(ModuleName, 1100, "stablecoin already exists")
+	ErrStablecoinNotFound        = sdkerrors.Register(ModuleName, 1101, "stablecoin not found")
+	ErrInvalidStablecoinDenom    = sdkerrors.Register(ModuleName, 1102, "invalid stablecoin denomination")
+	ErrInvalidIssuer             = sdkerrors.Register(ModuleName, 1103, "invalid issuer address")
+	ErrInvalidAdmin              = sdkerrors.Register(ModuleName, 1104, "invalid admin address")
+	ErrUnauthorized              = sdkerrors.Register(ModuleName, 1105, "unauthorized operation")
+	ErrStablecoinPaused          = sdkerrors.Register(ModuleName, 1106, "stablecoin operations are paused")
+	ErrInvalidAmount             = sdkerrors.Register(ModuleName, 1107, "invalid amount")
+	ErrExceedsMaxSupply          = sdkerrors.Register(ModuleName, 1108, "amount exceeds maximum supply")
+	ErrInsufficientFunds         = sdkerrors.Register(ModuleName, 1109, "insufficient funds for operation")
+	ErrInvalidPriceData          = sdkerrors.Register(ModuleName, 1110, "invalid price data")
+	ErrInvalidReserveRatio       = sdkerrors.Register(ModuleName, 1111, "invalid reserve ratio")
+	ErrAddressBlacklisted        = sdkerrors.Register(ModuleName, 1112, "address is blacklisted")
+	ErrAddressNotWhitelisted     = sdkerrors.Register(ModuleName, 1113, "address not whitelisted")
+	ErrInvalidFeePercentage      = sdkerrors.Register(ModuleName, 1114, "invalid fee percentage")
+	ErrMintRequestNotFound       = sdkerrors.Register(ModuleName, 1115, "mint request not found")
+	ErrBurnRequestNotFound       = sdkerrors.Register(ModuleName, 1116, "burn request not found")
+	ErrRequestAlreadyProcessed   = sdkerrors.Register(ModuleName, 1117, "request already processed")
+	ErrInvalidRequestStatus      = sdkerrors.Register(ModuleName, 1118, "invalid request status")
+	ErrInvalidCollateralRatio    = sdkerrors.Register(ModuleName, 1119, "invalid collateralization ratio")
+	ErrInvalidStabilityMechanism = sdkerrors.Register(ModuleName, 1120, "invalid stability mechanism")
+	ErrInvalidAccessControl      = sdkerrors.Register(ModuleName, 1121, "invalid access control configuration")
+	ErrInvalidDecimalPlaces      = sdkerrors.Register(ModuleName, 1122, "invalid decimal places")
+	ErrInvalidSymbol             = sdkerrors.Register(ModuleName, 1123, "invalid symbol")
+	ErrInvalidName               = sdkerrors.Register(ModuleName, 1124, "invalid name")
+	ErrStablecoinInactive        = sdkerrors.Register(ModuleName, 1125, "stablecoin is inactive")
+	ErrOperationNotAllowed       = sdkerrors.Register(ModuleName, 1126, "operation not allowed")
+)
