@@ -1,6 +1,6 @@
 # Stateset Core
 
-**Stateset Core** is a blockchain built using Cosmos SDK and Tendermint. It provides a decentralized platform for business processes including agreements, invoices, purchase orders, loans, and more.
+**Stateset Core** is a next-generation blockchain built using Cosmos SDK and Tendermint, designed for intelligent commerce and business automation. It provides a decentralized platform for advanced business processes including smart agreements, invoices, purchase orders, loans, stablecoins (ssUSD), and cross-chain commerce functionality.
 
 ## Prerequisites
 
@@ -279,6 +279,30 @@ This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENS
 
 ---
 
+## Core Modules
+
+Stateset Core includes several specialized modules for business and commerce operations:
+
+### Business Process Modules
+- **Agreement**: Smart contract-based agreements with activation, renewal, and termination capabilities
+- **Invoice**: Advanced invoicing with smart payment routing and factoring options
+- **Purchase Order**: Complete purchase order lifecycle management with financing options
+- **Loan**: Decentralized lending with collateral management and liquidation mechanisms
+- **DID**: Decentralized identity management for business entities
+
+### Financial Modules
+- **Stablecoins**: Native ssUSD stablecoin with conservative reserve management
+- **Orders**: Advanced order management with stablecoin payment integration
+- **Commerce**: Comprehensive commerce module with payment routing and compliance engine
+- **CCTP**: Cross-chain token transfer protocol for interoperability
+
+### Infrastructure Modules
+- **Epochs**: Time-based event scheduling and execution
+- **InterchainQuery**: Cross-chain data querying capabilities
+- **Security**: AI-powered security and threat detection
+- **Analytics**: On-chain analytics and business intelligence
+- **Proof**: Cryptographic proof generation and verification
+
 ## Available Transactions subcommands
 
 Usage:
@@ -312,12 +336,26 @@ Available Commands:
   validate-signatures validate transactions signatures
   vesting             Vesting transaction subcommands
   wasm                Wasm transaction subcommands
+  stablecoins         stablecoin transactions subcommands
+  orders              order management transactions subcommands
+  commerce            commerce transactions subcommands
+  cctp                cross-chain transfer protocol subcommands
 
   ```
 
-### CosmWasm
+### CosmWasm Smart Contracts
 
-CosmWasm is used for deploying smart contracts on the Stateset Network.
+Stateset Core supports CosmWasm smart contracts for advanced business logic and automation. The network includes several pre-built contracts:
+
+#### Available Smart Contracts
+
+- **stateset-escrow**: Secure escrow contract with enhanced security, validation, and gas optimizations
+- **stateset-loan**: Decentralized lending protocol with health monitoring and interest rate calculations
+- **stateset-option**: Options trading contract for derivatives and hedging
+- **stateset-proof**: On-chain proof verification and storage
+- **stateset-cw721-base**: NFT standard implementation for tokenized assets
+- **stateset-cw721-fixed-price**: Fixed-price NFT marketplace functionality
+- **stateset-workgroup**: Collaborative workgroup management for DAOs and teams
 
 ```
 Wasm transaction subcommands
@@ -333,5 +371,38 @@ Available Commands:
   migrate              Migrate a wasm contract to a new code version
   set-contract-admin   Set new admin for a contract
   store                Upload a wasm binary
+```
 
-  ```
+## Recent Enhancements
+
+### Performance Optimizations
+- **Adaptive Gas Pricing**: Dynamic gas pricing based on network congestion
+- **Batch Processing**: Efficient transaction batching for improved throughput
+- **State Caching**: Advanced caching mechanisms for faster state queries
+- **Sharding Engine**: Horizontal scaling through intelligent sharding
+
+### Security Features
+- **AI-Powered Security**: Machine learning-based threat detection and prevention
+- **Enhanced Validation**: Comprehensive input validation across all modules
+- **Audit Logging**: Complete transaction and state change audit trails
+
+### Cross-Chain Capabilities
+- **CCTP Integration**: Native cross-chain token transfers
+- **IBC Support**: Full Inter-Blockchain Communication protocol support
+- **Bridge Infrastructure**: Secure asset bridging to other networks
+
+## Network Information
+
+- **Chain ID**: stateset-1
+- **Native Token**: STATE
+- **Stablecoin**: ssUSD
+- **Consensus**: Tendermint BFT
+- **Block Time**: ~5 seconds
+- **Smart Contracts**: CosmWasm
+
+## Resources
+
+- **Documentation**: [https://docs.stateset.io](https://docs.stateset.io)
+- **Explorer**: [https://explorer.stateset.io](https://explorer.stateset.io)
+- **GitHub**: [https://github.com/stateset/core](https://github.com/stateset/core)
+- **Discord**: [https://discord.gg/stateset](https://discord.gg/stateset)
