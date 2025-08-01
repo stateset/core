@@ -1,24 +1,28 @@
 use cosmwasm_std::{
-    entry_point, to_binary, BankMsg, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
+    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Order,
 };
+use cw_storage_plus::{Item, Map};
 
 use crate::error::ContractError;
 use crate::msg::{ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{config, config_read, State};
 
-// Instantiate the Smart Contract for a Stateset Group 
+// Storage for proofs
+pub const PROOF_INFO: Map<String, State> = Map::new("proof_info");
+
+// Instantiate the Smart Contract for a Stateset Proof
 #[entry_point]
 pub fn instantiate(
     deps: DepsMut, // Mutable Deps
-    env: Env,
+    _env: Env,
     info: MessageInfo,
     msg: InstantiateMsg, // InstantiateMsg from msg.rs crate
 ) -> Result<Response, ContractError> {
 
-    // State from state.msg crate
+    // State from state.rs crate
     let state = State {
         provider: info.sender.clone(), // creator of the proof is the provider
-        did: info.did, // funds put up as collateral 
+        did: msg.did, // DID for the proof
         payload: msg.payload, // payload for the proof
         status: msg.status // status for the proof
     };
@@ -26,7 +30,10 @@ pub fn instantiate(
     // Save the State defined in state.rs crate to the state
     config(deps.storage).save(&state)?;
 
-    Ok(Response::default())
+    Ok(Response::new()
+        .add_attribute("action", "instantiate")
+        .add_attribute("provider", info.sender)
+        .add_attribute("did", &state.did))
 }
 
 
@@ -39,38 +46,52 @@ pub fn execute(
     msg: ExecuteMsg, // ExecuteMsg as defined in the msg.rs crate
 ) -> Result<Response, ContractError> {
     match msg {
-        // ExecuteMsg::Transfer from msg.rs crate
-        ExecuteMsg::Verify { proof } => execute_verify(deps, env, info, recipient),
+        // ExecuteMsg::Verify from msg.rs crate
+        ExecuteMsg::Verify { proof } => execute_verify(deps, env, info, proof),
     }
 }
 
 
-// Transfer the Option
+// Verify the Proof
 pub fn execute_verify(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
-    payload: String, // payload of the proof
+    proof: String, // proof payload to verify
 ) -> Result<Response, ContractError> {
 
     // Check Contract Error Conditions
-    // ensure msg sender is the owner
     // load the state from deps.storage imported from cosmwasm_std crate
     let mut state = config(deps.storage).load()?;
-    if info.sender != state.owner {
+    
+    // Only the provider can verify the proof
+    if info.sender != state.provider {
         // ContractError::Unauthorized from error.rs crate
         return Err(ContractError::Unauthorized {});
     }
 
-    // set new owner on state as defined in the state.rs crate
-    state.proof = deps.api.proof_validate(&proof)?;
+    // Simple proof verification (in a real implementation, this would be more sophisticated)
+    let is_valid = proof == state.payload;
+    
+    // Update the status based on verification result
+    state.status = if is_valid {
+        "verified".to_string()
+    } else {
+        "invalid".to_string()
+    };
+    
     // save the state to storage
     config(deps.storage).save(&state)?;
 
     let mut res = Response::new();
-    let status = 'valid';
-    res.add_attribute("action", "verify");
-    res.add_attribute("status", status);
+    res = res.add_attribute("action", "verify");
+    res = res.add_attribute("status", &state.status);
+    res = res.add_attribute("proof_valid", is_valid.to_string());
+    
+    if !is_valid {
+        return Err(ContractError::VerificationFailed {});
+    }
+    
     Ok(res)
 }
 
@@ -78,24 +99,11 @@ pub fn execute_verify(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::ListProofs {} => to_binary(&query_list(deps)?),
-        QueryMsg::Proof { id } => to_binary(&query_proof(deps, id)?),
+        QueryMsg::Config {} => to_binary(&query_config(deps)?),
     }
 }
 
-
-fn query_proof(deps: Deps) -> StdResult<ProofResponse> {
-    let query = ProofQuery::ProofId {}.into();
-    let ProofIdResponse { proof_id } = deps.querier.query(&query)?;
-    Ok(ProofResponse { proof_id })
-}
-
-fn query_list(deps: Deps) -> StdResult<ListProofsResponse> {
-    let proofs: StdResult<Vec<_>> = PROOF_INFO
-        .range(deps.storage, None, None, Order::Ascending)
-        .map(|r| r.map(|(_, v)| v))
-        .collect();
-    Ok(ListProofsResponse {
-        proofs: proofs?,
-    })
+fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
+    let state = config_read(deps.storage).load()?;
+    Ok(state)
 }

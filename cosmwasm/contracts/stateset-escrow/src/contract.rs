@@ -2,7 +2,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     from_binary, to_binary, Addr, BankMsg, Binary, Deps, DepsMut, Env, MessageInfo, Response,
-    StdResult, SubMsg, WasmMsg,
+    StdResult, SubMsg, WasmMsg, Event, Uint128,
 };
 
 use cw2::set_contract_version;
@@ -18,6 +18,12 @@ use crate::state::{all_escrow_ids, Escrow, GenericBalance, ESCROWS};
 const CONTRACT_NAME: &str = "crates.io:stateset-escrow";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
+// Constants for gas optimization
+const MAX_ESCROW_ID_LENGTH: usize = 64;
+const MAX_TITLE_LENGTH: usize = 128;
+const MAX_DESCRIPTION_LENGTH: usize = 512;
+const MAX_WHITELIST_SIZE: usize = 50;
+
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
@@ -26,8 +32,11 @@ pub fn instantiate(
     _msg: InstantiateMsg,
 ) -> StdResult<Response> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-    // no setup
-    Ok(Response::default())
+    
+    Ok(Response::new()
+        .add_event(Event::new("instantiate")
+            .add_attribute("contract_name", CONTRACT_NAME)
+            .add_attribute("contract_version", CONTRACT_VERSION)))
 }
 
 // execute the escrow contract
@@ -57,6 +66,7 @@ pub fn execute(
         ExecuteMsg::Receive(msg) => execute_receive(deps, info, msg),
     }
 }
+
 // execute receive escrow
 pub fn execute_receive(
     deps: DepsMut,
@@ -77,14 +87,63 @@ pub fn execute_receive(
     }
 }
 
+// Validation helper function
+fn validate_create_msg(msg: &CreateMsg) -> Result<(), ContractError> {
+    // Validate ID length
+    if msg.id.is_empty() || msg.id.len() > MAX_ESCROW_ID_LENGTH {
+        return Err(ContractError::InvalidInput {
+            field: "id".to_string(),
+            msg: format!("ID must be 1-{} characters", MAX_ESCROW_ID_LENGTH),
+        });
+    }
+    
+    // Validate title length
+    if msg.title.len() > MAX_TITLE_LENGTH {
+        return Err(ContractError::InvalidInput {
+            field: "title".to_string(),
+            msg: format!("Title must not exceed {} characters", MAX_TITLE_LENGTH),
+        });
+    }
+    
+    // Validate description length
+    if msg.description.len() > MAX_DESCRIPTION_LENGTH {
+        return Err(ContractError::InvalidInput {
+            field: "description".to_string(),
+            msg: format!("Description must not exceed {} characters", MAX_DESCRIPTION_LENGTH),
+        });
+    }
+    
+    // Validate end conditions - must have at least one
+    if msg.end_height.is_none() && msg.end_time.is_none() {
+        return Err(ContractError::InvalidInput {
+            field: "end_conditions".to_string(),
+            msg: "Must specify either end_height or end_time".to_string(),
+        });
+    }
+    
+    // Validate whitelist size
+    if let Some(ref whitelist) = msg.cw20_whitelist {
+        if whitelist.len() > MAX_WHITELIST_SIZE {
+            return Err(ContractError::InvalidInput {
+                field: "cw20_whitelist".to_string(),
+                msg: format!("Whitelist cannot exceed {} tokens", MAX_WHITELIST_SIZE),
+            });
+        }
+    }
+    
+    Ok(())
+}
 
-// execute create
+// execute create with improved validation and security
 pub fn execute_create(
     deps: DepsMut,
     msg: CreateMsg,
     balance: Balance,
     sender: &Addr,
 ) -> Result<Response, ContractError> {
+    // Validate input parameters
+    validate_create_msg(&msg)?;
+    
     if balance.is_empty() {
         return Err(ContractError::EmptyBalance {});
     }
@@ -116,8 +175,8 @@ pub fn execute_create(
         arbiter: deps.api.addr_validate(&msg.arbiter)?,
         recipient,
         source: sender.clone(),
-        title: msg.title,
-        description: msg.description,
+        title: msg.title.clone(),
+        description: msg.description.clone(),
         end_height: msg.end_height,
         end_time: msg.end_time,
         balance: escrow_balance,
@@ -130,11 +189,16 @@ pub fn execute_create(
         Some(_) => Err(ContractError::AlreadyInUse {}),
     })?;
 
-    let res = Response::new().add_attributes(vec![("action", "create"), ("id", msg.id.as_str())]);
-    Ok(res)
+    Ok(Response::new()
+        .add_event(Event::new("escrow_created")
+            .add_attribute("action", "create")
+            .add_attribute("id", &msg.id)
+            .add_attribute("arbiter", &msg.arbiter)
+            .add_attribute("source", sender)
+            .add_attribute("title", &msg.title)))
 }
 
-// exectute set recipient
+// execute set recipient with validation
 pub fn execute_set_recipient(
     deps: DepsMut,
     _env: Env,
@@ -142,23 +206,25 @@ pub fn execute_set_recipient(
     id: String,
     recipient: String,
 ) -> Result<Response, ContractError> {
+    // Validate recipient address format
+    let recipient_addr = deps.api.addr_validate(&recipient)?;
+    
     let mut escrow = ESCROWS.load(deps.storage, &id)?;
     if info.sender != escrow.arbiter {
         return Err(ContractError::Unauthorized {});
     }
 
-    let recipient = deps.api.addr_validate(recipient.as_str())?;
-    escrow.recipient = Some(recipient.clone());
+    escrow.recipient = Some(recipient_addr.clone());
     ESCROWS.save(deps.storage, &id, &escrow)?;
 
-    Ok(Response::new().add_attributes(vec![
-        ("action", "set_recipient"),
-        ("id", id.as_str()),
-        ("recipient", recipient.as_str()),
-    ]))
+    Ok(Response::new()
+        .add_event(Event::new("recipient_set")
+            .add_attribute("action", "set_recipient")
+            .add_attribute("id", &id)
+            .add_attribute("recipient", recipient_addr)))
 }
 
-// execute top up function
+// execute top up function with enhanced validation
 pub fn execute_top_up(
     deps: DepsMut,
     id: String,
@@ -167,7 +233,8 @@ pub fn execute_top_up(
     if balance.is_empty() {
         return Err(ContractError::EmptyBalance {});
     }
-    // this fails is no escrow there
+    
+    // this fails if no escrow there
     let mut escrow = ESCROWS.load(deps.storage, &id)?;
 
     if let Balance::Cw20(token) = &balance {
@@ -177,13 +244,29 @@ pub fn execute_top_up(
         }
     };
 
-    escrow.balance.add_tokens(balance);
+    escrow.balance.add_tokens(balance.clone());
 
     // and save
     ESCROWS.save(deps.storage, &id, &escrow)?;
 
-    let res = Response::new().add_attributes(vec![("action", "top_up"), ("id", id.as_str())]);
-    Ok(res)
+    let mut event = Event::new("escrow_topped_up")
+        .add_attribute("action", "top_up")
+        .add_attribute("id", &id);
+    
+    // Add balance-specific attributes
+    match balance {
+        Balance::Native(coins) => {
+            for coin in coins.0 {
+                event = event.add_attribute(format!("native_{}", coin.denom), coin.amount);
+            }
+        }
+        Balance::Cw20(token) => {
+            event = event.add_attribute("cw20_address", token.address)
+                         .add_attribute("cw20_amount", token.amount);
+        }
+    }
+
+    Ok(Response::new().add_event(event))
 }
 
 // execute approve and send the tokens to the recipient
@@ -205,16 +288,18 @@ pub fn execute_approve(
 
     let recipient = escrow.recipient.ok_or(ContractError::RecipientNotSet {})?;
 
-    // we delete the escrow
+    // we delete the escrow (prevents reentrancy)
     ESCROWS.remove(deps.storage, &id);
 
     // send all tokens out
     let messages: Vec<SubMsg> = send_tokens(&recipient, &escrow.balance)?;
 
     Ok(Response::new()
-        .add_attribute("action", "approve")
-        .add_attribute("id", id)
-        .add_attribute("to", recipient)
+        .add_event(Event::new("escrow_approved")
+            .add_attribute("action", "approve")
+            .add_attribute("id", &id)
+            .add_attribute("recipient", &recipient)
+            .add_attribute("arbiter", &escrow.arbiter))
         .add_submessages(messages))
 }
 
@@ -230,23 +315,25 @@ pub fn execute_refund(
 
     // the arbiter can send anytime OR anyone can send after expiration
     if !escrow.is_expired(&env) && info.sender != escrow.arbiter {
-        Err(ContractError::Unauthorized {})
-    } else {
-        // we delete the escrow
-        ESCROWS.remove(deps.storage, &id);
-
-        // send all tokens out back to the source address
-        let messages = send_tokens(&escrow.source, &escrow.balance)?;
-
-        Ok(Response::new()
-            .add_attribute("action", "refund")
-            .add_attribute("id", id)
-            .add_attribute("to", escrow.source)
-            .add_submessages(messages))
+        return Err(ContractError::Unauthorized {});
     }
+    
+    // we delete the escrow (prevents reentrancy)
+    ESCROWS.remove(deps.storage, &id);
+
+    // send all tokens out back to the source address
+    let messages = send_tokens(&escrow.source, &escrow.balance)?;
+
+    Ok(Response::new()
+        .add_event(Event::new("escrow_refunded")
+            .add_attribute("action", "refund")
+            .add_attribute("id", &id)
+            .add_attribute("recipient", &escrow.source)
+            .add_attribute("refunder", &info.sender))
+        .add_submessages(messages))
 }
 
-// generic function for sending tokens
+// generic function for sending tokens - optimized for gas
 fn send_tokens(to: &Addr, balance: &GenericBalance) -> StdResult<Vec<SubMsg>> {
     let native_balance = &balance.native;
     let mut msgs: Vec<SubMsg> = if native_balance.is_empty() {
