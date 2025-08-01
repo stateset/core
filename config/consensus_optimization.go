@@ -3,8 +3,8 @@ package config
 import (
 	"time"
 
-	tmcfg "github.com/tendermint/tendermint/config"
-	tmproto "github.com/tendermint/tendermint/proto/tendermint/types"
+	tmcfg "github.com/cometbft/cometbft/config"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 )
 
 // GetOptimizedConsensusParams returns optimized consensus parameters for better blockchain performance

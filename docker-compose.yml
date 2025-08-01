@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  stateset-node:
+    image: cosmwasm/wasmd:v0.50.0
+    container_name: stateset-blockchain
+    ports:
+      - "26656:26656"  # P2P
+      - "26657:26657"  # RPC
+      - "1317:1317"    # REST API
+      - "9090:9090"    # gRPC
+      - "9091:9091"    # gRPC-Web
+    environment:
+      - DAEMON_NAME=wasmd
+      - DAEMON_HOME=/root/.wasmd
+      - CHAIN_ID=stateset-1
+    volumes:
+      - ./data:/root/.wasmd
+      - ./scripts:/scripts
+    command: >
+      sh -c "
+        if [ ! -f /root/.wasmd/config/genesis.json ]; then
+          echo 'Initializing blockchain...'
+          wasmd init stateset-node --chain-id stateset-1
+          
+          # Create validator key
+          wasmd keys add validator --keyring-backend test
+          
+          # Add genesis account with tokens
+          wasmd genesis add-genesis-account validator 100000000000stake --keyring-backend test
+          
+          # Create genesis transaction
+          wasmd genesis gentx validator 100000000stake --chain-id stateset-1 --keyring-backend test
+          
+          # Collect genesis transactions
+          wasmd genesis collect-gentxs
+          
+          # Configure for development
+          sed -i 's/minimum-gas-prices = \"\"/minimum-gas-prices = \"0.025stake\"/' /root/.wasmd/config/app.toml
+          sed -i 's/enable = false/enable = true/' /root/.wasmd/config/app.toml
+          sed -i 's/swagger = false/swagger = true/' /root/.wasmd/config/app.toml
+        fi
+        
+        echo 'Starting blockchain node...'
+        wasmd start --api.enable --api.swagger
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:26657/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # Optional: Block explorer
+  explorer:
+    image: notional-labs/explorer:latest
+    container_name: stateset-explorer
+    ports:
+      - "8080:80"
+    environment:
+      - CHAIN_ID=stateset-1
+      - API_URL=http://stateset-node:1317
+      - RPC_URL=http://stateset-node:26657
+    depends_on:
+      - stateset-node
+    restart: unless-stopped

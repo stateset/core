@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/store/types"
+	"cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	lru "github.com/hashicorp/golang-lru"
 )

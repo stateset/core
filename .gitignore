@@ -1,3 +1,10 @@
 vue/node_modules
 vue/dist
 release/
+
+# Local data and keyring
+data/
+
+# Backup files
+*.backup
+*.original

@@ -3,7 +3,7 @@ package app
 import (
 	"bytes"
 	"compress/gzip"
-	"compress/lz4"
+	"github.com/pierrec/lz4/v4"
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/json"
@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cosmos/cosmos-sdk/store/types"
+	"cosmossdk.io/store/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )

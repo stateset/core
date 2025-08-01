@@ -1,0 +1,14 @@
+{
+  "chain_id": "stateset-1",
+  "stablecoin": {
+    "code_id": 1,
+    "address": "wasm1qg5ega6dykkxc307y25pecuufrjkxkaggkkxh7nad0vhyhtuhw3sqaa3c5",
+    "symbol": "aiUSD",
+    "decimals": 6
+  },
+  "agent_registry": {
+    "code_id": 2,
+    "address": "wasm1nc5tatafv6eyq7llkr2gv50ff9e22mnf70qgjlv737ktmt4eswrqr5j2ht"
+  },
+  "deployer": "stateset1khz6pv95x6l3dr7h55x8hcnup7mfkfqufex7sw"
+}
