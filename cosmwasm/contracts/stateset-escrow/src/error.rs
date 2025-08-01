@@ -29,4 +29,16 @@ pub enum ContractError {
     // need to set escrow recipient
     #[error("Recipient is not set")]
     RecipientNotSet {},
+    
+    // Invalid input validation
+    #[error("Invalid input for field '{field}': {msg}")]
+    InvalidInput { field: String, msg: String },
+    
+    // Insufficient balance
+    #[error("Insufficient balance: required {required}, available {available}")]
+    InsufficientBalance { required: String, available: String },
+    
+    // Contract is paused
+    #[error("Contract is currently paused")]
+    ContractPaused {},
 }
