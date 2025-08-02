@@ -22,6 +22,10 @@ var (
 	KeySlashFractionDoubleSign = []byte("SlashFractionDoubleSign")
 	KeySlashFractionDowntime   = []byte("SlashFractionDowntime")
 	KeyGovernanceVotingPeriod  = []byte("GovernanceVotingPeriod")
+	KeyBurnRate                = []byte("BurnRate")
+	KeyAgentExecutionFee       = []byte("AgentExecutionFee")
+	KeyValidatorRewardsPool    = []byte("ValidatorRewardsPool")
+	KeyTreasuryAddress         = []byte("TreasuryAddress")
 )
 
 var _ paramtypes.ParamSet = (*Params)(nil)
@@ -37,14 +41,20 @@ type Params struct {
 	SlashFractionDoubleSign math.LegacyDec `protobuf:"bytes,7,opt,name=slash_fraction_double_sign,json=slashFractionDoubleSign,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_double_sign" yaml:"slash_fraction_double_sign"`
 	SlashFractionDowntime   math.LegacyDec `protobuf:"bytes,8,opt,name=slash_fraction_downtime,json=slashFractionDowntime,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"slash_fraction_downtime" yaml:"slash_fraction_downtime"`
 	GovernanceVotingPeriod  time.Duration `protobuf:"bytes,9,opt,name=governance_voting_period,json=governanceVotingPeriod,proto3,stdduration" json:"governance_voting_period" yaml:"governance_voting_period"`
+	BurnRate                math.LegacyDec `protobuf:"bytes,10,opt,name=burn_rate,json=burnRate,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Dec" json:"burn_rate" yaml:"burn_rate"`
+	AgentExecutionFee       math.Int      `protobuf:"bytes,11,opt,name=agent_execution_fee,json=agentExecutionFee,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"agent_execution_fee" yaml:"agent_execution_fee"`
+	ValidatorRewardsPool    math.Int      `protobuf:"bytes,12,opt,name=validator_rewards_pool,json=validatorRewardsPool,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"validator_rewards_pool" yaml:"validator_rewards_pool"`
+	TreasuryAddress         string        `protobuf:"bytes,13,opt,name=treasury_address,json=treasuryAddress,proto3" json:"treasury_address,omitempty" yaml:"treasury_address"`
 }
 
 // NewParams creates a new Params instance
 func NewParams(
 	mintDenom string,
 	maxSupply, initialSupply, minStakingAmount math.Int,
-	stakingRewardsRate, slashFractionDoubleSign, slashFractionDowntime math.LegacyDec,
+	stakingRewardsRate, slashFractionDoubleSign, slashFractionDowntime, burnRate math.LegacyDec,
 	unstakingPeriod, governanceVotingPeriod time.Duration,
+	agentExecutionFee, validatorRewardsPool math.Int,
+	treasuryAddress string,
 ) Params {
 	return Params{
 		MintDenom:                mintDenom,
@@ -56,6 +66,10 @@ func NewParams(
 		SlashFractionDoubleSign: slashFractionDoubleSign,
 		SlashFractionDowntime:   slashFractionDowntime,
 		GovernanceVotingPeriod:  governanceVotingPeriod,
+		BurnRate:                burnRate,
+		AgentExecutionFee:       agentExecutionFee,
+		ValidatorRewardsPool:    validatorRewardsPool,
+		TreasuryAddress:         treasuryAddress,
 	}
 }
 
@@ -63,14 +77,18 @@ func NewParams(
 func DefaultParams() Params {
 	return NewParams(
 		STSTDenom,                                         // mint_denom
-		math.NewInt(1_000_000_000_000_000),               // max_supply: 1 billion STST (with 6 decimals)
-		math.NewInt(100_000_000_000_000),                 // initial_supply: 100 million STST
+		math.NewInt(1_000_000_000_000_000),               // max_supply: 1 billion STST (with 6 decimals) - FIXED SUPPLY
+		math.NewInt(50_000_000_000_000),                  // initial_supply: 50 million STST (5% circulating at TGE)
 		math.NewInt(1_000_000),                           // min_staking_amount: 1 STST
-		math.LegacyNewDecWithPrec(8, 2),                  // staking_rewards_rate: 8% annual
+		math.LegacyNewDecWithPrec(12, 2),                 // staking_rewards_rate: 12% annual from validator rewards allocation
 		math.LegacyNewDecWithPrec(5, 2),                  // slash_fraction_double_sign: 5%
 		math.LegacyNewDecWithPrec(1, 2),                  // slash_fraction_downtime: 1%
+		math.LegacyNewDecWithPrec(50, 2),                 // burn_rate: 50% of transaction fees burned (deflationary)
 		time.Hour*24*21,                                  // unstaking_period: 21 days
-		time.Hour*24*14,                                  // governance_voting_period: 14 days
+		time.Hour*24*7,                                   // governance_voting_period: 7 days for DAO decisions
+		math.NewInt(1000),                                // agent_execution_fee: 0.001 STST per agent execution
+		math.NewInt(250_000_000_000_000),                 // validator_rewards_pool: 250M STST (25% of total supply)
+		"",                                               // treasury_address: set by governance
 	)
 }
 

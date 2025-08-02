@@ -1,49 +1,74 @@
-# STST Staking Token Module
+# STST: StateSet Autonomous Commerce Network Token
 
-The STST (Stateset Staking Token) module is a comprehensive staking token implementation for the Stateset blockchain network. This module provides secure staking functionality, validator management, and reward distribution mechanisms.
+The STST (StateSet Token) module powers the StateSet Protocol - an autonomous commerce network where AI agents execute workflows, manage transactions, and secure the ecosystem through a sophisticated tokenomics model.
 
-## Overview
+## 🎯 Mission
 
-STST is the native staking token of the Stateset blockchain, designed to:
+STST is the economic engine of the StateSet Protocol, creating a self-sustaining ecosystem that incentivizes participation, secures the network, and drives long-term value accrual through direct utility and deflationary mechanisms.
 
-- **Secure the Network**: Token holders can stake STST to validators to help secure the blockchain
-- **Earn Rewards**: Stakers earn rewards proportional to their stake and the performance of chosen validators
-- **Participate in Governance**: STST holders can participate in on-chain governance decisions
-- **Validator Operations**: Run validator nodes and earn commission from delegated stake
+## 🚀 The STST Economic Flywheel
 
-## Token Details
+The tokenomics create a virtuous cycle where network growth directly enhances token value:
 
-- **Symbol**: STST
-- **Base Denomination**: `ustst` (micro-STST)
-- **Display Denomination**: `STST`
-- **Decimals**: 6
-- **Maximum Supply**: 1,000,000,000 STST (1 billion)
-- **Initial Supply**: 100,000,000 STST (100 million)
+1. **Demand Driver**: Brands and services fund autonomous workflows, creating foundational demand for STST
+2. **Utility & Consumption**: AI Agents consume STST as execution fuel, with a portion burned to reduce supply
+3. **Security & Yield**: Validators and stakers lock STST to secure the network and earn rewards
+4. **Value Accrual**: Growing usage increases burn rate and staking locks, creating scarcity and value appreciation
 
-## Key Features
+## 💎 Core Token Details
 
-### Staking Operations
-- **Delegate**: Stake STST tokens to validators
-- **Undelegate**: Initiate unstaking with a 21-day unbonding period
-- **Redelegate**: Move stake between validators instantly
-- **Withdraw Rewards**: Claim accumulated staking rewards
+| Attribute | Value |
+|-----------|-------|
+| **Token Name** | StateSet Token |
+| **Ticker** | $STST |
+| **Total Supply** | 1,000,000,000 STST (Fixed - No Inflation) |
+| **Initial Circulating** | 50,000,000 STST (5% at TGE) |
+| **Base Denomination** | `ustst` (micro-STST) |
+| **Decimals** | 6 |
+| **Core Functions** | Utility, Governance, Staking, Settlement |
+| **Value Model** | Deflationary (Fee Burning) + Staking Rewards |
 
-### Validator Management
-- **Create Validator**: Set up a new validator node
-- **Edit Validator**: Update validator metadata and commission
-- **Unjail Validator**: Restore a slashed validator to active status
+## 📊 Token Allocation & Vesting
 
-### Security Features
-- **Slashing Protection**: Validators are slashed for misbehavior
-  - Double signing: 5% slash
-  - Downtime: 1% slash
-- **Minimum Stake**: 1 STST minimum staking amount
-- **Unbonding Period**: 21-day security unbonding period
+| Category | Allocation | Amount (STST) | Vesting Schedule |
+|----------|------------|---------------|------------------|
+| **Protocol Treasury** | 30% | 300,000,000 | DAO-governed for ecosystem grants & liquidity |
+| **Validator & Agent Rewards** | 25% | 250,000,000 | Linear release over 10 years via smart contract |
+| **Team & Founders** | 15% | 150,000,000 | 12-month cliff + 36-month linear vesting |
+| **Investors** | 15% | 150,000,000 | 6-12 month cliff + 24-36 month linear vesting |
+| **Partner Ecosystem** | 10% | 100,000,000 | DAO-governed for integrations & partnerships |
+| **Community & Airdrop** | 5% | 50,000,000 | Immediate for early adopters & community building |
 
-### Reward Distribution
-- **Annual Staking Rate**: 8% annual rewards for stakers
-- **Commission System**: Validators can set commission rates
-- **Automatic Distribution**: Rewards are distributed each block
+## 🔥 Deflationary Mechanisms
+
+### Fixed Supply Design
+- **Total Supply**: 1 billion STST (no new tokens can ever be minted)
+- **No Inflation**: Only pre-allocated validator rewards are distributed over 10 years
+- **Deflationary Pressure**: Multiple burn mechanisms reduce circulating supply
+
+### Burn Mechanisms
+1. **Execution Fee Burn**: 50% of AI agent execution fees permanently burned
+2. **Slashing Burns**: Portion of slashed validator tokens removed from circulation  
+3. **Protocol Buybacks**: DAO can vote to burn tokens from protocol revenue
+
+## ⚡ Utility & Staking Features
+
+### AI Agent Operations
+- **Execution Fuel**: STST powers all AI agent workflows and transactions
+- **Gas Payments**: Agents pay execution fees in STST (0.001 STST base fee)
+- **Network Access**: STST required for agent registration and operation
+
+### Staking & Security
+- **Validator Staking**: Secure the network and earn from 250M STST rewards pool
+- **Delegated Staking**: Token holders delegate to validators for 12% annual rewards
+- **Slashing Protection**: 5% slash for double signing, 1% for downtime
+- **Unbonding Period**: 21-day security period for unstaking
+
+### Governance Power
+- **DAO Voting**: STST holders control protocol parameters and upgrades
+- **Treasury Management**: Community controls 300M STST treasury allocation
+- **Parameter Updates**: Adjust burn rates, fees, and reward mechanisms
+- **Voting Period**: 7-day voting cycles for efficient governance
 
 ## Module Architecture
 
@@ -75,9 +100,22 @@ x/xss/
 └── proto/            # Protobuf definitions
 ```
 
-## Usage Examples
+## 🔧 Usage Examples
 
-### Staking Tokens
+### Agent Operations
+```bash
+# Execute an AI agent workflow
+statesetd tx xss execute-agent \
+  --agent-id="autonomous_commerce_agent_001" \
+  --workflow-data=[encoded-workflow] \
+  --execution-fee=1000ustst \
+  --from=[executor-address]
+
+# Query agent execution history
+statesetd query xss agent-executions [agent-id]
+```
+
+### Staking & Rewards
 ```bash
 # Delegate 100 STST to a validator
 statesetd tx xss stake-tokens [validator-address] 100000000ustst --from [delegator]
@@ -89,60 +127,70 @@ statesetd tx xss unstake-tokens [validator-address] 50000000ustst --from [delega
 statesetd tx xss withdraw-rewards [validator-address] --from [delegator]
 ```
 
+### Deflationary Operations
+```bash
+# Burn tokens from treasury (DAO governance)
+statesetd tx xss burn-tokens \
+  --amount=1000000ustst \
+  --reason="Protocol buyback and burn" \
+  --from=[treasury-address]
+
+# Query burned tokens history
+statesetd query xss burned-tokens
+```
+
 ### Validator Operations
 ```bash
 # Create a new validator
 statesetd tx xss create-validator \
   --amount=1000000ustst \
   --pubkey=[consensus-pubkey] \
-  --moniker="My Validator" \
-  --commission-rate="0.10" \
-  --commission-max-rate="0.20" \
+  --moniker="StateSet Validator" \
+  --commission-rate="0.05" \
+  --commission-max-rate="0.10" \
   --commission-max-change-rate="0.01" \
   --min-self-delegation="1000000" \
   --from=[validator-operator]
-
-# Edit validator description
-statesetd tx xss edit-validator \
-  --moniker="Updated Validator Name" \
-  --website="https://validator.example.com" \
-  --details="Updated validator description" \
-  --from=[validator-operator]
 ```
 
-### Queries
+### Governance & Queries
 ```bash
 # Query module parameters
 statesetd query xss params
 
-# Query total supply
+# Query tokenomics data
 statesetd query xss total-supply
+statesetd query xss circulating-supply
+statesetd query xss staked-supply
 
-# Query all validators
+# Query validator information
 statesetd query xss validators
-
-# Query validator details
 statesetd query xss validator [validator-address]
 
-# Query delegator rewards
+# Query rewards and burns
 statesetd query xss rewards [delegator-address]
+statesetd query xss burn-rate
 ```
 
-## Parameters
+## 🛠️ Technical Parameters
 
 The STST module supports the following configurable parameters:
 
 | Parameter | Default Value | Description |
 |-----------|---------------|-------------|
-| `mint_denom` | `ustst` | Base denomination for minting |
-| `max_supply` | `1000000000000000` | Maximum token supply (1B STST) |
-| `initial_supply` | `100000000000000` | Initial token supply (100M STST) |
-| `staking_rewards_rate` | `0.08` | Annual staking rewards rate (8%) |
+| `mint_denom` | `ustst` | Base denomination for STST tokens |
+| `max_supply` | `1000000000000000` | Fixed maximum supply (1B STST) |
+| `initial_supply` | `50000000000000` | Initial circulating supply (50M STST) |
+| `staking_rewards_rate` | `0.12` | Annual staking rewards rate (12%) |
 | `min_staking_amount` | `1000000` | Minimum staking amount (1 STST) |
 | `unstaking_period` | `21 days` | Unbonding period duration |
 | `slash_fraction_double_sign` | `0.05` | Slashing rate for double signing (5%) |
 | `slash_fraction_downtime` | `0.01` | Slashing rate for downtime (1%) |
-| `governance_voting_period` | `14 days` | Governance proposal voting period |
+| `governance_voting_period` | `7 days` | DAO voting period |
+| `burn_rate` | `0.50` | Percentage of fees burned (50%) |
+| `agent_execution_fee` | `1000` | Base fee per agent execution (0.001 STST) |
+| `validator_rewards_pool` | `250000000000000` | Validator rewards allocation (250M STST) |
+| `treasury_address` | `` | DAO treasury address (governance controlled) |
 
 ## Integration
 

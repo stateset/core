@@ -1,6 +1,6 @@
 package types
 
-// Event types for the XSS module
+// Event types for the STST module
 const (
 	EventTypeStakeTokens          = "stake_tokens"
 	EventTypeUnstakeTokens        = "unstake_tokens"
@@ -21,6 +21,14 @@ const (
 	EventTypeLiveness             = "liveness"
 	EventTypeMint                 = "mint"
 	EventTypeBurn                 = "burn"
+	EventTypeExecuteAgent         = "execute_agent"
+	EventTypeAgentExecution       = "agent_execution"
+	EventTypeFeeBurn              = "fee_burn"
+	EventTypeTreasuryBurn         = "treasury_burn"
+	EventTypeProtocolBuyback      = "protocol_buyback"
+	EventTypeVestingRelease       = "vesting_release"
+	EventTypeDAOVote              = "dao_vote"
+	EventTypeParameterUpdate      = "parameter_update"
 )
 
 // Event attribute keys
@@ -49,9 +57,30 @@ const (
 	AttributeKeyBondedTokens      = "bonded_tokens"
 	AttributeKeyNotBondedTokens   = "not_bonded_tokens"
 	
+	// Agent and tokenomics attribute keys
+	AttributeKeyAgentID           = "agent_id"
+	AttributeKeyExecutor          = "executor"
+	AttributeKeyExecutionResult   = "execution_result"
+	AttributeKeyGasUsed           = "gas_used"
+	AttributeKeyExecutionFee      = "execution_fee"
+	AttributeKeyBurnedAmount      = "burned_amount"
+	AttributeKeyBurnRate          = "burn_rate"
+	AttributeKeyTreasuryAmount    = "treasury_amount"
+	AttributeKeyVestingSchedule   = "vesting_schedule"
+	AttributeKeyBuybackAmount     = "buyback_amount"
+	AttributeKeyCirculatingSupply = "circulating_supply"
+	AttributeKeyParameterName     = "parameter_name"
+	AttributeKeyParameterValue    = "parameter_value"
+	AttributeKeyProposalID        = "proposal_id"
+	AttributeKeyVotingPower       = "voting_power"
+	
 	// Common attribute values
 	AttributeValueCategory        = ModuleName
 	AttributeValueAction         = "action"
 	AttributeValueDoubleSign     = "double_sign"
 	AttributeValueMissingSignature = "missing_signature"
+	AttributeValueAgentExecution  = "agent_execution"
+	AttributeValueFeeBurn         = "fee_burn"
+	AttributeValueTreasuryBurn    = "treasury_burn"
+	AttributeValueProtocolBuyback = "protocol_buyback"
 )

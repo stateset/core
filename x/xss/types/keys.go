@@ -60,6 +60,34 @@ const (
 
 	// GovernanceModuleName defines the governance module name for authority
 	GovernanceModuleName = "gov"
+
+	// Token allocation constants (as per tokenomics)
+	TotalSupplySTST           = 1_000_000_000_000_000  // 1 billion STST (with 6 decimals)
+	ProtocolTreasuryAlloc     = 300_000_000_000_000    // 30% - 300M STST
+	ValidatorRewardsAlloc     = 250_000_000_000_000    // 25% - 250M STST
+	TeamFoundersAlloc         = 150_000_000_000_000    // 15% - 150M STST
+	InvestorsAlloc            = 150_000_000_000_000    // 15% - 150M STST
+	PartnerEcosystemAlloc     = 100_000_000_000_000    // 10% - 100M STST
+	CommunityAirdropAlloc     = 50_000_000_000_000     // 5% - 50M STST
+
+	// Initial circulating supply (5% at TGE from community allocation)
+	InitialCirculatingSupply  = 50_000_000_000_000     // 50M STST
+
+	// Agent execution base fee (0.001 STST)
+	DefaultAgentExecutionFee  = 1_000                  // 0.001 STST in ustst
+
+	// Burn rate (50% of transaction fees)
+	DefaultBurnRate           = "0.50"                 // 50%
+
+	// Reward emission period (10 years)
+	RewardEmissionYears       = 10
+	
+	// Module account names for token allocations
+	TreasuryModuleName        = "treasury"
+	ValidatorRewardsModuleName = "validator_rewards"
+	TeamVestingModuleName     = "team_vesting"
+	InvestorVestingModuleName = "investor_vesting"
+	PartnerModuleName         = "partner_ecosystem"
 )
 
 var (

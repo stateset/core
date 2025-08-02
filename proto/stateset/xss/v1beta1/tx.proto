@@ -38,6 +38,12 @@ service Msg {
   
   // SlashValidator slashes a misbehaving validator
   rpc SlashValidator(MsgSlashValidator) returns (MsgSlashValidatorResponse);
+  
+  // ExecuteAgent processes agent execution and burns fees
+  rpc ExecuteAgent(MsgExecuteAgent) returns (MsgExecuteAgentResponse);
+  
+  // BurnTokens burns STST tokens from treasury or DAO decisions
+  rpc BurnTokens(MsgBurnTokens) returns (MsgBurnTokensResponse);
 }
 
 // MsgStakeTokens represents a message to stake STST tokens
@@ -216,4 +222,53 @@ message MsgSlashValidatorResponse {
     (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
     (gogoproto.nullable) = false
   ];
+}
+
+// MsgExecuteAgent represents a message to execute an AI agent workflow
+message MsgExecuteAgent {
+  option (cosmos.msg.v1.signer) = "executor";
+  
+  // executor is the address executing the agent
+  string executor = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // agent_id is the unique identifier of the agent
+  string agent_id = 2;
+  
+  // workflow_data is the encoded workflow to execute
+  bytes workflow_data = 3;
+  
+  // execution_fee is the fee paid for execution
+  cosmos.base.v1beta1.Coin execution_fee = 4 [(gogoproto.nullable) = false];
+}
+
+// MsgExecuteAgentResponse defines the response for agent execution
+message MsgExecuteAgentResponse {
+  // execution_result is the result of the agent execution
+  bytes execution_result = 1;
+  
+  // gas_used is the amount of gas consumed
+  uint64 gas_used = 2;
+  
+  // fees_burned is the amount of fees burned
+  cosmos.base.v1beta1.Coin fees_burned = 3 [(gogoproto.nullable) = false];
+}
+
+// MsgBurnTokens represents a message to burn STST tokens
+message MsgBurnTokens {
+  option (cosmos.msg.v1.signer) = "authority";
+  
+  // authority is the address that can burn tokens (treasury or DAO)
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // amount is the amount of tokens to burn
+  cosmos.base.v1beta1.Coin amount = 2 [(gogoproto.nullable) = false];
+  
+  // reason is the reason for burning tokens
+  string reason = 3;
+}
+
+// MsgBurnTokensResponse defines the response for burning tokens
+message MsgBurnTokensResponse {
+  // burned_amount is the amount of tokens burned
+  cosmos.base.v1beta1.Coin burned_amount = 1 [(gogoproto.nullable) = false];
 }

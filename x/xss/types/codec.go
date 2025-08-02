@@ -22,6 +22,8 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgUnjailValidator{}, "xss/MsgUnjailValidator", nil)
 	cdc.RegisterConcrete(&MsgUpdateParams{}, "xss/MsgUpdateParams", nil)
 	cdc.RegisterConcrete(&MsgSlashValidator{}, "xss/MsgSlashValidator", nil)
+	cdc.RegisterConcrete(&MsgExecuteAgent{}, "xss/MsgExecuteAgent", nil)
+	cdc.RegisterConcrete(&MsgBurnTokens{}, "xss/MsgBurnTokens", nil)
 }
 
 // RegisterInterfaces registers the x/xss interfaces types with the interface registry
@@ -35,6 +37,8 @@ func RegisterInterfaces(registry types.InterfaceRegistry) {
 		&MsgUnjailValidator{},
 		&MsgUpdateParams{},
 		&MsgSlashValidator{},
+		&MsgExecuteAgent{},
+		&MsgBurnTokens{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
