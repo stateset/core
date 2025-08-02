@@ -1,0 +1,56 @@
+syntax = "proto3";
+package stateset.xss.v1beta1;
+
+import "cosmos/base/v1beta1/coin.proto";
+import "gogoproto/gogo.proto";
+import "stateset/xss/v1beta1/xss.proto";
+
+option go_package = "github.com/stateset/core/x/xss/types";
+
+// GenesisState defines the XSS module's genesis state
+message GenesisState {
+  // params defines all the parameters of the module
+  XSSParams params = 1 [(gogoproto.nullable) = false];
+  
+  // minter defines the XSS minter state
+  XSSMinter minter = 2 [(gogoproto.nullable) = false];
+  
+  // validators defines the list of validators at genesis
+  repeated XSSValidator validators = 3 [(gogoproto.nullable) = false];
+  
+  // delegations defines the list of delegations at genesis
+  repeated XSSStake delegations = 4 [(gogoproto.nullable) = false];
+  
+  // unbonding_delegations defines the list of unbonding delegations at genesis
+  repeated XSSUnbondingDelegation unbonding_delegations = 5 [(gogoproto.nullable) = false];
+  
+  // rewards defines the accumulated rewards at genesis
+  repeated XSSRewards rewards = 6 [(gogoproto.nullable) = false];
+  
+  // slashing_history defines the slashing history at genesis
+  repeated XSSSlashing slashing_history = 7 [(gogoproto.nullable) = false];
+  
+  // total_supply defines the total supply of XSS tokens at genesis
+  cosmos.base.v1beta1.Coin total_supply = 8 [(gogoproto.nullable) = false];
+  
+  // bonded_pool defines the amount in the bonded pool at genesis
+  cosmos.base.v1beta1.Coin bonded_pool = 9 [(gogoproto.nullable) = false];
+  
+  // not_bonded_pool defines the amount in the not bonded pool at genesis
+  cosmos.base.v1beta1.Coin not_bonded_pool = 10 [(gogoproto.nullable) = false];
+  
+  // last_validator_powers defines the last validator powers at genesis
+  repeated LastValidatorPower last_validator_powers = 11 [(gogoproto.nullable) = false];
+  
+  // exported defines whether the genesis was exported
+  bool exported = 12;
+}
+
+// LastValidatorPower represents a validator's power at the last update
+message LastValidatorPower {
+  // address is the validator's operator address
+  string address = 1;
+  
+  // power is the validator's voting power
+  int64 power = 2;
+}
