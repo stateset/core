@@ -22,11 +22,11 @@ const (
 	// NotBondedPoolName defines the name of the not bonded pool
 	NotBondedPoolName = "not_bonded_tokens_pool"
 
-	// XSSDenom defines the default denomination for XSS tokens
-	XSSDenom = "uxss"
+	// STSTDenom defines the default denomination for STST tokens
+	STSTDenom = "ustst"
 
-	// XSSDisplayDenom defines the display denomination for XSS tokens
-	XSSDisplayDenom = "XSS"
+	// STSTDisplayDenom defines the display denomination for STST tokens
+	STSTDisplayDenom = "STST"
 
 	// DefaultUnbondingTime defines the default unbonding period (21 days)
 	DefaultUnbondingTime = 21 * 24 * 60 * 60 // 21 days in seconds

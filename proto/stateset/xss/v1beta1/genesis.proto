@@ -7,30 +7,30 @@ import "stateset/xss/v1beta1/xss.proto";
 
 option go_package = "github.com/stateset/core/x/xss/types";
 
-// GenesisState defines the XSS module's genesis state
+// GenesisState defines the STST module's genesis state
 message GenesisState {
   // params defines all the parameters of the module
-  XSSParams params = 1 [(gogoproto.nullable) = false];
+  STSTParams params = 1 [(gogoproto.nullable) = false];
   
-  // minter defines the XSS minter state
-  XSSMinter minter = 2 [(gogoproto.nullable) = false];
+  // minter defines the STST minter state
+  STSTMinter minter = 2 [(gogoproto.nullable) = false];
   
   // validators defines the list of validators at genesis
-  repeated XSSValidator validators = 3 [(gogoproto.nullable) = false];
+  repeated STSTValidator validators = 3 [(gogoproto.nullable) = false];
   
   // delegations defines the list of delegations at genesis
-  repeated XSSStake delegations = 4 [(gogoproto.nullable) = false];
+  repeated STSTStake delegations = 4 [(gogoproto.nullable) = false];
   
   // unbonding_delegations defines the list of unbonding delegations at genesis
-  repeated XSSUnbondingDelegation unbonding_delegations = 5 [(gogoproto.nullable) = false];
+  repeated STSTUnbondingDelegation unbonding_delegations = 5 [(gogoproto.nullable) = false];
   
   // rewards defines the accumulated rewards at genesis
-  repeated XSSRewards rewards = 6 [(gogoproto.nullable) = false];
+  repeated STSTRewards rewards = 6 [(gogoproto.nullable) = false];
   
   // slashing_history defines the slashing history at genesis
-  repeated XSSSlashing slashing_history = 7 [(gogoproto.nullable) = false];
+  repeated STSTSlashing slashing_history = 7 [(gogoproto.nullable) = false];
   
-  // total_supply defines the total supply of XSS tokens at genesis
+  // total_supply defines the total supply of STST tokens at genesis
   cosmos.base.v1beta1.Coin total_supply = 8 [(gogoproto.nullable) = false];
   
   // bonded_pool defines the amount in the bonded pool at genesis

@@ -9,34 +9,34 @@ import "stateset/xss/v1beta1/xss.proto";
 
 option go_package = "github.com/stateset/core/x/xss/types";
 
-// Query defines the gRPC querier service for XSS module
+// Query defines the gRPC querier service for STST module
 service Query {
-  // Params queries the parameters of the XSS module
+  // Params queries the parameters of the STST module
   rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
     option (google.api.http).get = "/stateset/xss/v1beta1/params";
   }
   
-  // TotalSupply queries the total supply of XSS tokens
+  // TotalSupply queries the total supply of STST tokens
   rpc TotalSupply(QueryTotalSupplyRequest) returns (QueryTotalSupplyResponse) {
     option (google.api.http).get = "/stateset/xss/v1beta1/total_supply";
   }
   
-  // CirculatingSupply queries the circulating supply of XSS tokens
+  // CirculatingSupply queries the circulating supply of STST tokens
   rpc CirculatingSupply(QueryCirculatingSupplyRequest) returns (QueryCirculatingSupplyResponse) {
     option (google.api.http).get = "/stateset/xss/v1beta1/circulating_supply";
   }
   
-  // StakedSupply queries the total staked supply of XSS tokens
+  // StakedSupply queries the total staked supply of STST tokens
   rpc StakedSupply(QueryStakedSupplyRequest) returns (QueryStakedSupplyResponse) {
     option (google.api.http).get = "/stateset/xss/v1beta1/staked_supply";
   }
   
-  // Validators queries all XSS validators
+  // Validators queries all STST validators
   rpc Validators(QueryValidatorsRequest) returns (QueryValidatorsResponse) {
     option (google.api.http).get = "/stateset/xss/v1beta1/validators";
   }
   
-  // Validator queries a specific XSS validator
+  // Validator queries a specific STST validator
   rpc Validator(QueryValidatorRequest) returns (QueryValidatorResponse) {
     option (google.api.http).get = "/stateset/xss/v1beta1/validators/{validator_addr}";
   }
@@ -91,7 +91,7 @@ service Query {
     option (google.api.http).get = "/stateset/xss/v1beta1/delegators/{delegator_addr}/rewards/{validator_addr}";
   }
   
-  // Minter queries the XSS minter state
+  // Minter queries the STST minter state
   rpc Minter(QueryMinterRequest) returns (QueryMinterResponse) {
     option (google.api.http).get = "/stateset/xss/v1beta1/minter";
   }
@@ -113,7 +113,7 @@ message QueryParamsRequest {}
 // QueryParamsResponse is the response type for the Query/Params RPC method
 message QueryParamsResponse {
   // params holds all the parameters of this module
-  XSSParams params = 1 [(gogoproto.nullable) = false];
+  STSTParams params = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryTotalSupplyRequest is the request type for the Query/TotalSupply RPC method
@@ -121,7 +121,7 @@ message QueryTotalSupplyRequest {}
 
 // QueryTotalSupplyResponse is the response type for the Query/TotalSupply RPC method
 message QueryTotalSupplyResponse {
-  // total_supply is the total supply of XSS tokens
+  // total_supply is the total supply of STST tokens
   cosmos.base.v1beta1.Coin total_supply = 1 [(gogoproto.nullable) = false];
 }
 
@@ -130,7 +130,7 @@ message QueryCirculatingSupplyRequest {}
 
 // QueryCirculatingSupplyResponse is the response type for the Query/CirculatingSupply RPC method
 message QueryCirculatingSupplyResponse {
-  // circulating_supply is the circulating supply of XSS tokens
+  // circulating_supply is the circulating supply of STST tokens
   cosmos.base.v1beta1.Coin circulating_supply = 1 [(gogoproto.nullable) = false];
 }
 
@@ -139,7 +139,7 @@ message QueryStakedSupplyRequest {}
 
 // QueryStakedSupplyResponse is the response type for the Query/StakedSupply RPC method
 message QueryStakedSupplyResponse {
-  // staked_supply is the total staked supply of XSS tokens
+  // staked_supply is the total staked supply of STST tokens
   cosmos.base.v1beta1.Coin staked_supply = 1 [(gogoproto.nullable) = false];
 }
 
@@ -155,7 +155,7 @@ message QueryValidatorsRequest {
 // QueryValidatorsResponse is the response type for the Query/Validators RPC method
 message QueryValidatorsResponse {
   // validators contains all the queried validators
-  repeated XSSValidator validators = 1 [(gogoproto.nullable) = false];
+  repeated STSTValidator validators = 1 [(gogoproto.nullable) = false];
   
   // pagination defines the pagination in the response
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
@@ -170,7 +170,7 @@ message QueryValidatorRequest {
 // QueryValidatorResponse is the response type for the Query/Validator RPC method
 message QueryValidatorResponse {
   // validator defines the validator info
-  XSSValidator validator = 1 [(gogoproto.nullable) = false];
+  STSTValidator validator = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryValidatorDelegationsRequest is the request type for the Query/ValidatorDelegations RPC method
@@ -194,7 +194,7 @@ message QueryValidatorDelegationsResponse {
 // DelegationResponse is the response type for delegation queries
 message DelegationResponse {
   // delegation is the delegation info
-  XSSStake delegation = 1 [(gogoproto.nullable) = false];
+  STSTStake delegation = 1 [(gogoproto.nullable) = false];
   
   // balance is the current balance of the delegation
   cosmos.base.v1beta1.Coin balance = 2 [(gogoproto.nullable) = false];
@@ -212,7 +212,7 @@ message QueryValidatorUnbondingDelegationsRequest {
 // QueryValidatorUnbondingDelegationsResponse is the response type for the Query/ValidatorUnbondingDelegations RPC method
 message QueryValidatorUnbondingDelegationsResponse {
   // unbonding_responses are the unbonding delegations from the validator
-  repeated XSSUnbondingDelegation unbonding_responses = 1 [(gogoproto.nullable) = false];
+  repeated STSTUnbondingDelegation unbonding_responses = 1 [(gogoproto.nullable) = false];
   
   // pagination defines the pagination in the response
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
@@ -245,7 +245,7 @@ message QueryUnbondingDelegationRequest {
 // QueryUnbondingDelegationResponse is the response type for the Query/UnbondingDelegation RPC method
 message QueryUnbondingDelegationResponse {
   // unbond is the unbonding delegation info
-  XSSUnbondingDelegation unbond = 1 [(gogoproto.nullable) = false];
+  STSTUnbondingDelegation unbond = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryDelegatorDelegationsRequest is the request type for the Query/DelegatorDelegations RPC method
@@ -278,7 +278,7 @@ message QueryDelegatorUnbondingDelegationsRequest {
 // QueryDelegatorUnbondingDelegationsResponse is the response type for the Query/DelegatorUnbondingDelegations RPC method
 message QueryDelegatorUnbondingDelegationsResponse {
   // unbonding_responses are the unbonding delegations of the delegator
-  repeated XSSUnbondingDelegation unbonding_responses = 1 [(gogoproto.nullable) = false];
+  repeated STSTUnbondingDelegation unbonding_responses = 1 [(gogoproto.nullable) = false];
   
   // pagination defines the pagination in the response
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
@@ -296,7 +296,7 @@ message QueryDelegatorValidatorsRequest {
 // QueryDelegatorValidatorsResponse is the response type for the Query/DelegatorValidators RPC method
 message QueryDelegatorValidatorsResponse {
   // validators are the validators the delegator is delegating to
-  repeated XSSValidator validators = 1 [(gogoproto.nullable) = false];
+  repeated STSTValidator validators = 1 [(gogoproto.nullable) = false];
   
   // pagination defines the pagination in the response
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
@@ -314,7 +314,7 @@ message QueryDelegatorValidatorRequest {
 // QueryDelegatorValidatorResponse is the response type for the Query/DelegatorValidator RPC method
 message QueryDelegatorValidatorResponse {
   // validator is the validator the delegator is delegating to
-  XSSValidator validator = 1 [(gogoproto.nullable) = false];
+  STSTValidator validator = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryStakingRewardsRequest is the request type for the Query/StakingRewards RPC method
@@ -326,7 +326,7 @@ message QueryStakingRewardsRequest {
 // QueryStakingRewardsResponse is the response type for the Query/StakingRewards RPC method
 message QueryStakingRewardsResponse {
   // rewards are the accumulated staking rewards
-  repeated XSSRewards rewards = 1 [(gogoproto.nullable) = false];
+  repeated STSTRewards rewards = 1 [(gogoproto.nullable) = false];
   
   // total are the total rewards across all validators
   repeated cosmos.base.v1beta1.DecCoin total = 2 [
@@ -358,8 +358,8 @@ message QueryMinterRequest {}
 
 // QueryMinterResponse is the response type for the Query/Minter RPC method
 message QueryMinterResponse {
-  // minter is the XSS minter state
-  XSSMinter minter = 1 [(gogoproto.nullable) = false];
+  // minter is the STST minter state
+  STSTMinter minter = 1 [(gogoproto.nullable) = false];
 }
 
 // QueryAnnualProvisionsRequest is the request type for the Query/AnnualProvisions RPC method
@@ -386,7 +386,7 @@ message QuerySlashingHistoryRequest {
 // QuerySlashingHistoryResponse is the response type for the Query/SlashingHistory RPC method
 message QuerySlashingHistoryResponse {
   // slashing_history is the slashing history for the validator
-  repeated XSSSlashing slashing_history = 1 [(gogoproto.nullable) = false];
+  repeated STSTSlashing slashing_history = 1 [(gogoproto.nullable) = false];
   
   // pagination defines the pagination in the response
   cosmos.base.query.v1beta1.PageResponse pagination = 2;

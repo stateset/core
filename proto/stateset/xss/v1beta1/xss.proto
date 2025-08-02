@@ -9,8 +9,8 @@ import "google/protobuf/timestamp.proto";
 
 option go_package = "github.com/stateset/core/x/xss/types";
 
-// XSSParams defines the parameters for the XSS staking token module
-message XSSParams {
+// STSTParams defines the parameters for the STST staking token module
+message STSTParams {
   // mint_denom is the denomination of the token being minted
   string mint_denom = 1;
   
@@ -69,8 +69,8 @@ message XSSParams {
   ];
 }
 
-// XSSMinter represents the minting state for XSS tokens
-message XSSMinter {
+// STSTMinter represents the minting state for STST tokens
+message STSTMinter {
   // epoch_provisions is the current epoch provisions
   string epoch_provisions = 1 [
     (cosmos_proto.scalar) = "cosmos.Dec",
@@ -86,8 +86,8 @@ message XSSMinter {
   ];
 }
 
-// XSSStake represents a stake in the XSS network
-message XSSStake {
+// STSTStake represents a stake in the STST network
+message STSTStake {
   // delegator_address is the address of the delegator
   string delegator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   
@@ -111,8 +111,8 @@ message XSSStake {
   ];
 }
 
-// XSSUnbondingDelegation represents an unbonding delegation
-message XSSUnbondingDelegation {
+// STSTUnbondingDelegation represents an unbonding delegation
+message STSTUnbondingDelegation {
   // delegator_address is the address of the delegator
   string delegator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   
@@ -120,11 +120,11 @@ message XSSUnbondingDelegation {
   string validator_address = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   
   // entries are the unbonding delegation entries
-  repeated XSSUnbondingDelegationEntry entries = 3 [(gogoproto.nullable) = false];
+  repeated STSTUnbondingDelegationEntry entries = 3 [(gogoproto.nullable) = false];
 }
 
-// XSSUnbondingDelegationEntry represents an entry in an unbonding delegation
-message XSSUnbondingDelegationEntry {
+// STSTUnbondingDelegationEntry represents an entry in an unbonding delegation
+message STSTUnbondingDelegationEntry {
   // creation_height is the height when the unbonding was initiated
   int64 creation_height = 1;
   
@@ -149,8 +149,8 @@ message XSSUnbondingDelegationEntry {
   ];
 }
 
-// XSSValidator represents a validator in the XSS network
-message XSSValidator {
+// STSTValidator represents a validator in the STST network
+message STSTValidator {
   // operator_address is the bech32 address of the validator's operator
   string operator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   
@@ -178,7 +178,7 @@ message XSSValidator {
   ];
   
   // description is the validator description
-  XSSValidatorDescription description = 7 [(gogoproto.nullable) = false];
+  STSTValidatorDescription description = 7 [(gogoproto.nullable) = false];
   
   // unbonding_height is the height when the validator started unbonding
   int64 unbonding_height = 8;
@@ -190,7 +190,7 @@ message XSSValidator {
   ];
   
   // commission is the validator commission
-  XSSCommission commission = 10 [(gogoproto.nullable) = false];
+  STSTCommission commission = 10 [(gogoproto.nullable) = false];
   
   // min_self_delegation is the minimum self delegation
   string min_self_delegation = 11 [
@@ -200,8 +200,8 @@ message XSSValidator {
   ];
 }
 
-// XSSValidatorDescription defines the description for a validator
-message XSSValidatorDescription {
+// STSTValidatorDescription defines the description for a validator
+message STSTValidatorDescription {
   // moniker is the validator's name
   string moniker = 1;
   
@@ -218,10 +218,10 @@ message XSSValidatorDescription {
   string details = 5;
 }
 
-// XSSCommission defines the commission rates for a validator
-message XSSCommission {
+// STSTCommission defines the commission rates for a validator
+message STSTCommission {
   // commission_rates are the commission rates
-  XSSCommissionRates commission_rates = 1 [(gogoproto.nullable) = false];
+  STSTCommissionRates commission_rates = 1 [(gogoproto.nullable) = false];
   
   // update_time is the last time the commission was updated
   google.protobuf.Timestamp update_time = 2 [
@@ -230,8 +230,8 @@ message XSSCommission {
   ];
 }
 
-// XSSCommissionRates defines the commission rates for a validator
-message XSSCommissionRates {
+// STSTCommissionRates defines the commission rates for a validator
+message STSTCommissionRates {
   // rate is the commission rate charged to delegators
   string rate = 1 [
     (cosmos_proto.scalar) = "cosmos.Dec",
@@ -254,8 +254,8 @@ message XSSCommissionRates {
   ];
 }
 
-// XSSRewards represents staking rewards distribution
-message XSSRewards {
+// STSTRewards represents staking rewards distribution
+message STSTRewards {
   // validator_address is the address of the validator
   string validator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   
@@ -269,8 +269,8 @@ message XSSRewards {
   uint64 period = 3;
 }
 
-// XSSSlashing represents slashing information
-message XSSSlashing {
+// STSTSlashing represents slashing information
+message STSTSlashing {
   // validator_address is the address of the validator
   string validator_address = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
   

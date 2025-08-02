@@ -26,7 +26,7 @@ var (
 
 var _ paramtypes.ParamSet = (*Params)(nil)
 
-// Params defines the parameters for the XSS module
+// Params defines the parameters for the STST module
 type Params struct {
 	MintDenom                string        `protobuf:"bytes,1,opt,name=mint_denom,json=mintDenom,proto3" json:"mint_denom,omitempty" yaml:"mint_denom"`
 	MaxSupply               math.Int      `protobuf:"bytes,2,opt,name=max_supply,json=maxSupply,proto3,customtype=github.com/cosmos/cosmos-sdk/types.Int" json:"max_supply" yaml:"max_supply"`
@@ -59,13 +59,13 @@ func NewParams(
 	}
 }
 
-// DefaultParams returns the default parameters for the XSS module
+// DefaultParams returns the default parameters for the STST module
 func DefaultParams() Params {
 	return NewParams(
-		XSSDenom,                                          // mint_denom
-		math.NewInt(1_000_000_000_000_000),               // max_supply: 1 billion XSS (with 6 decimals)
-		math.NewInt(100_000_000_000_000),                 // initial_supply: 100 million XSS
-		math.NewInt(1_000_000),                           // min_staking_amount: 1 XSS
+		STSTDenom,                                         // mint_denom
+		math.NewInt(1_000_000_000_000_000),               // max_supply: 1 billion STST (with 6 decimals)
+		math.NewInt(100_000_000_000_000),                 // initial_supply: 100 million STST
+		math.NewInt(1_000_000),                           // min_staking_amount: 1 STST
 		math.LegacyNewDecWithPrec(8, 2),                  // staking_rewards_rate: 8% annual
 		math.LegacyNewDecWithPrec(5, 2),                  // slash_fraction_double_sign: 5%
 		math.LegacyNewDecWithPrec(1, 2),                  // slash_fraction_downtime: 1%
