@@ -1,0 +1,356 @@
+syntax = "proto3";
+package stateset.stst.v1;
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos/base/query/v1beta1/pagination.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "stateset/stst/v1/genesis.proto";
+import "stateset/stst/v1/tx.proto";
+
+option go_package = "github.com/stateset/core/x/stst/types";
+
+// Query defines the gRPC querier service for the STST module.
+service Query {
+  // Params queries the parameters of the STST module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/stateset/stst/v1/params";
+  }
+  
+  // StakingState queries the current staking state.
+  rpc StakingState(QueryStakingStateRequest) returns (QueryStakingStateResponse) {
+    option (google.api.http).get = "/stateset/stst/v1/staking_state";
+  }
+  
+  // FeeBurnState queries the current fee burn state.
+  rpc FeeBurnState(QueryFeeBurnStateRequest) returns (QueryFeeBurnStateResponse) {
+    option (google.api.http).get = "/stateset/stst/v1/fee_burn_state";
+  }
+  
+  // StakerInfo queries information about a specific staker.
+  rpc StakerInfo(QueryStakerInfoRequest) returns (QueryStakerInfoResponse) {
+    option (google.api.http).get = "/stateset/stst/v1/staker/{staker_address}";
+  }
+  
+  // Proposals queries all governance proposals.
+  rpc Proposals(QueryProposalsRequest) returns (QueryProposalsResponse) {
+    option (google.api.http).get = "/stateset/stst/v1/proposals";
+  }
+  
+  // Proposal queries a specific governance proposal.
+  rpc Proposal(QueryProposalRequest) returns (QueryProposalResponse) {
+    option (google.api.http).get = "/stateset/stst/v1/proposals/{proposal_id}";
+  }
+  
+  // VestingSchedules queries all vesting schedules.
+  rpc VestingSchedules(QueryVestingSchedulesRequest) returns (QueryVestingSchedulesResponse) {
+    option (google.api.http).get = "/stateset/stst/v1/vesting_schedules";
+  }
+  
+  // VestingSchedule queries a specific vesting schedule.
+  rpc VestingSchedule(QueryVestingScheduleRequest) returns (QueryVestingScheduleResponse) {
+    option (google.api.http).get = "/stateset/stst/v1/vesting_schedules/{category}";
+  }
+  
+  // VestingInfo queries vesting information for a specific beneficiary.
+  rpc VestingInfo(QueryVestingInfoRequest) returns (QueryVestingInfoResponse) {
+    option (google.api.http).get = "/stateset/stst/v1/vesting_info/{beneficiary}";
+  }
+  
+  // TokenSupply queries the current token supply information.
+  rpc TokenSupply(QueryTokenSupplyRequest) returns (QueryTokenSupplyResponse) {
+    option (google.api.http).get = "/stateset/stst/v1/token_supply";
+  }
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params defines the parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryStakingStateRequest is the request type for the Query/StakingState RPC method.
+message QueryStakingStateRequest {}
+
+// QueryStakingStateResponse is the response type for the Query/StakingState RPC method.
+message QueryStakingStateResponse {
+  // staking_state defines the current staking state.
+  StakingState staking_state = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryFeeBurnStateRequest is the request type for the Query/FeeBurnState RPC method.
+message QueryFeeBurnStateRequest {}
+
+// QueryFeeBurnStateResponse is the response type for the Query/FeeBurnState RPC method.
+message QueryFeeBurnStateResponse {
+  // fee_burn_state defines the current fee burn state.
+  FeeBurnState fee_burn_state = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryStakerInfoRequest is the request type for the Query/StakerInfo RPC method.
+message QueryStakerInfoRequest {
+  // staker_address is the address of the staker.
+  string staker_address = 1;
+}
+
+// QueryStakerInfoResponse is the response type for the Query/StakerInfo RPC method.
+message QueryStakerInfoResponse {
+  // staker_info defines the staker information.
+  StakerInfo staker_info = 1 [(gogoproto.nullable) = false];
+}
+
+// StakerInfo defines information about a staker.
+message StakerInfo {
+  // staker_address is the address of the staker.
+  string staker_address = 1;
+  
+  // total_staked is the total amount staked by this staker.
+  string total_staked = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // pending_rewards are the pending staking rewards.
+  repeated cosmos.base.v1beta1.Coin pending_rewards = 3 [(gogoproto.nullable) = false];
+  
+  // delegations are the delegations made by this staker.
+  repeated Delegation delegations = 4 [(gogoproto.nullable) = false];
+  
+  // voting_power is the voting power of this staker.
+  string voting_power = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// Delegation defines a delegation to a validator.
+message Delegation {
+  // validator_address is the address of the validator.
+  string validator_address = 1;
+  
+  // amount is the amount delegated.
+  cosmos.base.v1beta1.Coin amount = 2 [(gogoproto.nullable) = false];
+  
+  // rewards are the pending rewards from this delegation.
+  repeated cosmos.base.v1beta1.Coin rewards = 3 [(gogoproto.nullable) = false];
+}
+
+// QueryProposalsRequest is the request type for the Query/Proposals RPC method.
+message QueryProposalsRequest {
+  // pagination defines an optional pagination for the request.
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  
+  // proposal_status filters proposals by status.
+  ProposalStatus proposal_status = 2;
+}
+
+// QueryProposalsResponse is the response type for the Query/Proposals RPC method.
+message QueryProposalsResponse {
+  // proposals are the governance proposals.
+  repeated Proposal proposals = 1 [(gogoproto.nullable) = false];
+  
+  // pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryProposalRequest is the request type for the Query/Proposal RPC method.
+message QueryProposalRequest {
+  // proposal_id is the unique id of the proposal.
+  uint64 proposal_id = 1;
+}
+
+// QueryProposalResponse is the response type for the Query/Proposal RPC method.
+message QueryProposalResponse {
+  // proposal is the governance proposal.
+  Proposal proposal = 1 [(gogoproto.nullable) = false];
+}
+
+// Proposal defines a governance proposal.
+message Proposal {
+  // id is the unique id of the proposal.
+  uint64 id = 1;
+  
+  // title is the title of the proposal.
+  string title = 2;
+  
+  // description is the description of the proposal.
+  string description = 3;
+  
+  // proposal_type is the type of the proposal.
+  ProposalType proposal_type = 4;
+  
+  // proposer is the address of the proposer.
+  string proposer = 5;
+  
+  // total_deposit is the total deposit for the proposal.
+  repeated cosmos.base.v1beta1.Coin total_deposit = 6 [(gogoproto.nullable) = false];
+  
+  // submit_time is when the proposal was submitted.
+  int64 submit_time = 7;
+  
+  // voting_start_time is when voting starts.
+  int64 voting_start_time = 8;
+  
+  // voting_end_time is when voting ends.
+  int64 voting_end_time = 9;
+  
+  // status is the current status of the proposal.
+  ProposalStatus status = 10;
+  
+  // tally is the current vote tally.
+  TallyResult tally = 11 [(gogoproto.nullable) = false];
+}
+
+// ProposalStatus defines the status of a governance proposal.
+enum ProposalStatus {
+  // PROPOSAL_STATUS_UNSPECIFIED defines an unspecified proposal status.
+  PROPOSAL_STATUS_UNSPECIFIED = 0;
+  // PROPOSAL_STATUS_DEPOSIT_PERIOD defines a proposal status during the deposit period.
+  PROPOSAL_STATUS_DEPOSIT_PERIOD = 1;
+  // PROPOSAL_STATUS_VOTING_PERIOD defines a proposal status during the voting period.
+  PROPOSAL_STATUS_VOTING_PERIOD = 2;
+  // PROPOSAL_STATUS_PASSED defines a proposal status of a proposal that has passed.
+  PROPOSAL_STATUS_PASSED = 3;
+  // PROPOSAL_STATUS_REJECTED defines a proposal status of a proposal that has been rejected.
+  PROPOSAL_STATUS_REJECTED = 4;
+  // PROPOSAL_STATUS_FAILED defines a proposal status of a proposal that has failed.
+  PROPOSAL_STATUS_FAILED = 5;
+}
+
+// TallyResult defines the tally of a governance proposal.
+message TallyResult {
+  // yes is the number of yes votes.
+  string yes = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // abstain is the number of abstain votes.
+  string abstain = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // no is the number of no votes.
+  string no = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // no_with_veto is the number of no with veto votes.
+  string no_with_veto = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// QueryVestingSchedulesRequest is the request type for the Query/VestingSchedules RPC method.
+message QueryVestingSchedulesRequest {
+  // pagination defines an optional pagination for the request.
+  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+}
+
+// QueryVestingSchedulesResponse is the response type for the Query/VestingSchedules RPC method.
+message QueryVestingSchedulesResponse {
+  // vesting_schedules are the vesting schedules.
+  repeated VestingSchedule vesting_schedules = 1 [(gogoproto.nullable) = false];
+  
+  // pagination defines the pagination in the response.
+  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+// QueryVestingScheduleRequest is the request type for the Query/VestingSchedule RPC method.
+message QueryVestingScheduleRequest {
+  // category is the vesting category.
+  string category = 1;
+}
+
+// QueryVestingScheduleResponse is the response type for the Query/VestingSchedule RPC method.
+message QueryVestingScheduleResponse {
+  // vesting_schedule is the vesting schedule.
+  VestingSchedule vesting_schedule = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryVestingInfoRequest is the request type for the Query/VestingInfo RPC method.
+message QueryVestingInfoRequest {
+  // beneficiary is the address of the beneficiary.
+  string beneficiary = 1;
+}
+
+// QueryVestingInfoResponse is the response type for the Query/VestingInfo RPC method.
+message QueryVestingInfoResponse {
+  // vesting_info is the vesting information for the beneficiary.
+  repeated BeneficiaryVestingInfo vesting_info = 1 [(gogoproto.nullable) = false];
+}
+
+// BeneficiaryVestingInfo defines vesting information for a beneficiary.
+message BeneficiaryVestingInfo {
+  // category is the vesting category.
+  string category = 1;
+  
+  // total_amount is the total amount allocated to this beneficiary in this category.
+  string total_amount = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // vested_amount is the amount already vested.
+  string vested_amount = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // claimable_amount is the amount currently claimable.
+  string claimable_amount = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // next_vesting_time is when the next vesting occurs.
+  int64 next_vesting_time = 5;
+}
+
+// QueryTokenSupplyRequest is the request type for the Query/TokenSupply RPC method.
+message QueryTokenSupplyRequest {}
+
+// QueryTokenSupplyResponse is the response type for the Query/TokenSupply RPC method.
+message QueryTokenSupplyResponse {
+  // token_supply is the current token supply information.
+  TokenSupplyInfo token_supply = 1 [(gogoproto.nullable) = false];
+}
+
+// TokenSupplyInfo defines information about the token supply.
+message TokenSupplyInfo {
+  // total_supply is the total supply of STST tokens.
+  string total_supply = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // circulating_supply is the current circulating supply.
+  string circulating_supply = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // total_staked is the total amount currently staked.
+  string total_staked = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // total_burned is the total amount burned.
+  string total_burned = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // total_locked_in_vesting is the total amount locked in vesting schedules.
+  string total_locked_in_vesting = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}

@@ -1,0 +1,255 @@
+syntax = "proto3";
+package stateset.stst.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+import "amino/amino.proto";
+import "google/protobuf/duration.proto";
+
+option go_package = "github.com/stateset/core/x/stst/types";
+
+// Msg defines the STST module Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+  
+  // StakeTokens defines a method for staking STST tokens
+  rpc StakeTokens(MsgStakeTokens) returns (MsgStakeTokensResponse);
+  
+  // UnstakeTokens defines a method for unstaking STST tokens
+  rpc UnstakeTokens(MsgUnstakeTokens) returns (MsgUnstakeTokensResponse);
+  
+  // ClaimStakingRewards defines a method for claiming staking rewards
+  rpc ClaimStakingRewards(MsgClaimStakingRewards) returns (MsgClaimStakingRewardsResponse);
+  
+  // SubmitProposal defines a method for submitting governance proposals
+  rpc SubmitProposal(MsgSubmitProposal) returns (MsgSubmitProposalResponse);
+  
+  // Vote defines a method for voting on governance proposals
+  rpc Vote(MsgVote) returns (MsgVoteResponse);
+  
+  // ClaimVestedTokens defines a method for claiming vested tokens
+  rpc ClaimVestedTokens(MsgClaimVestedTokens) returns (MsgClaimVestedTokensResponse);
+  
+  // UpdateParams defines a method for updating module parameters
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+}
+
+// MsgStakeTokens represents a message to stake STST tokens
+message MsgStakeTokens {
+  option (cosmos.msg.v1.signer) = "staker";
+  option (amino.name) = "stateset/MsgStakeTokens";
+  
+  // staker is the address of the staker
+  string staker = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // amount is the amount of STST tokens to stake
+  cosmos.base.v1beta1.Coin amount = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  
+  // validator_address is the address of the validator to delegate to
+  string validator_address = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// MsgStakeTokensResponse defines the response structure for executing a MsgStakeTokens message
+message MsgStakeTokensResponse {}
+
+// MsgUnstakeTokens represents a message to unstake STST tokens
+message MsgUnstakeTokens {
+  option (cosmos.msg.v1.signer) = "staker";
+  option (amino.name) = "stateset/MsgUnstakeTokens";
+  
+  // staker is the address of the staker
+  string staker = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // amount is the amount of STST tokens to unstake
+  cosmos.base.v1beta1.Coin amount = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+  
+  // validator_address is the address of the validator to undelegate from
+  string validator_address = 3 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// MsgUnstakeTokensResponse defines the response structure for executing a MsgUnstakeTokens message
+message MsgUnstakeTokensResponse {
+  // completion_time is when the unstaking will be complete
+  int64 completion_time = 1;
+}
+
+// MsgClaimStakingRewards represents a message to claim staking rewards
+message MsgClaimStakingRewards {
+  option (cosmos.msg.v1.signer) = "staker";
+  option (amino.name) = "stateset/MsgClaimStakingRewards";
+  
+  // staker is the address of the staker
+  string staker = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // validator_addresses is the list of validator addresses to claim rewards from
+  repeated string validator_addresses = 2 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+}
+
+// MsgClaimStakingRewardsResponse defines the response structure for executing a MsgClaimStakingRewards message
+message MsgClaimStakingRewardsResponse {
+  // amount is the amount of rewards claimed
+  repeated cosmos.base.v1beta1.Coin amount = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// MsgSubmitProposal represents a message to submit a governance proposal
+message MsgSubmitProposal {
+  option (cosmos.msg.v1.signer) = "proposer";
+  option (amino.name) = "stateset/MsgSubmitProposal";
+  
+  // proposer is the address of the proposer
+  string proposer = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // title is the title of the proposal
+  string title = 2;
+  
+  // description is the description of the proposal
+  string description = 3;
+  
+  // proposal_type defines the type of proposal
+  ProposalType proposal_type = 4;
+  
+  // initial_deposit is the initial deposit for the proposal
+  repeated cosmos.base.v1beta1.Coin initial_deposit = 5 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// ProposalType defines the type of governance proposal
+enum ProposalType {
+  // PROPOSAL_TYPE_UNSPECIFIED defines an unspecified proposal type
+  PROPOSAL_TYPE_UNSPECIFIED = 0;
+  // PROPOSAL_TYPE_PARAMETER_CHANGE defines a parameter change proposal
+  PROPOSAL_TYPE_PARAMETER_CHANGE = 1;
+  // PROPOSAL_TYPE_SOFTWARE_UPGRADE defines a software upgrade proposal
+  PROPOSAL_TYPE_SOFTWARE_UPGRADE = 2;
+  // PROPOSAL_TYPE_TREASURY_SPEND defines a treasury spending proposal
+  PROPOSAL_TYPE_TREASURY_SPEND = 3;
+  // PROPOSAL_TYPE_FEE_BURN_RATE_CHANGE defines a fee burn rate change proposal
+  PROPOSAL_TYPE_FEE_BURN_RATE_CHANGE = 4;
+}
+
+// MsgSubmitProposalResponse defines the response structure for executing a MsgSubmitProposal message
+message MsgSubmitProposalResponse {
+  // proposal_id is the unique id of the proposal
+  uint64 proposal_id = 1;
+}
+
+// MsgVote represents a message to vote on a governance proposal
+message MsgVote {
+  option (cosmos.msg.v1.signer) = "voter";
+  option (amino.name) = "stateset/MsgVote";
+  
+  // voter is the address of the voter
+  string voter = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // proposal_id is the unique id of the proposal
+  uint64 proposal_id = 2;
+  
+  // option is the vote option
+  VoteOption option = 3;
+}
+
+// VoteOption defines the vote option
+enum VoteOption {
+  // VOTE_OPTION_UNSPECIFIED defines an unspecified vote option
+  VOTE_OPTION_UNSPECIFIED = 0;
+  // VOTE_OPTION_YES defines a yes vote option
+  VOTE_OPTION_YES = 1;
+  // VOTE_OPTION_ABSTAIN defines an abstain vote option
+  VOTE_OPTION_ABSTAIN = 2;
+  // VOTE_OPTION_NO defines a no vote option
+  VOTE_OPTION_NO = 3;
+  // VOTE_OPTION_NO_WITH_VETO defines a no with veto vote option
+  VOTE_OPTION_NO_WITH_VETO = 4;
+}
+
+// MsgVoteResponse defines the response structure for executing a MsgVote message
+message MsgVoteResponse {}
+
+// MsgClaimVestedTokens represents a message to claim vested tokens
+message MsgClaimVestedTokens {
+  option (cosmos.msg.v1.signer) = "beneficiary";
+  option (amino.name) = "stateset/MsgClaimVestedTokens";
+  
+  // beneficiary is the address of the beneficiary
+  string beneficiary = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // category is the vesting category to claim from
+  string category = 2;
+  
+  // amount is the amount to claim (optional, claims maximum available if not specified)
+  cosmos.base.v1beta1.Coin amount = 3 [(amino.dont_omitempty) = true];
+}
+
+// MsgClaimVestedTokensResponse defines the response structure for executing a MsgClaimVestedTokens message
+message MsgClaimVestedTokensResponse {
+  // amount is the amount of tokens claimed
+  cosmos.base.v1beta1.Coin amount = 1 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// MsgUpdateParams represents a message to update module parameters
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+  option (amino.name) = "stateset/MsgUpdateParams";
+  
+  // authority is the address that controls the module (should be the gov module unless overridden)
+  string authority = 1 [(cosmos_proto.scalar) = "cosmos.AddressString"];
+  
+  // params defines the module parameters to update.
+  // NOTE: All parameters must be supplied.
+  Params params = 2 [(gogoproto.nullable) = false, (amino.dont_omitempty) = true];
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a MsgUpdateParams message
+message MsgUpdateParamsResponse {}
+
+// Params defines the parameters for the STST module (imported from genesis.proto)
+message Params {
+  // total_supply is the total supply of STST tokens (1 billion)
+  string total_supply = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // token_denom is the denomination of the STST token
+  string token_denom = 2;
+  
+  // staking_rewards_rate is the annual percentage rate for staking rewards
+  string staking_rewards_rate = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // fee_burn_rate is the percentage of transaction fees to burn
+  string fee_burn_rate = 4 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // min_staking_amount is the minimum amount required for staking
+  string min_staking_amount = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // governance_voting_period is the duration for governance proposals
+  google.protobuf.Duration governance_voting_period = 6 [(gogoproto.nullable) = false, (gogoproto.stdduration) = true];
+  
+  // slashing_rate is the percentage of staked tokens slashed for malicious behavior
+  string slashing_rate = 7 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // burn_from_slash_rate is the percentage of slashed tokens to burn
+  string burn_from_slash_rate = 8 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
