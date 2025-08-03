@@ -1,0 +1,156 @@
+syntax = "proto3";
+package stateset.stst.v1;
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "google/protobuf/duration.proto";
+
+option go_package = "github.com/stateset/core/x/stst/types";
+
+// GenesisState defines the STST module's genesis state.
+message GenesisState {
+  // params defines the parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+  
+  // staking_state defines the current staking state
+  StakingState staking_state = 2 [(gogoproto.nullable) = false];
+  
+  // fee_burn_state defines the fee burning mechanism state
+  FeeBurnState fee_burn_state = 3 [(gogoproto.nullable) = false];
+  
+  // vesting_schedules defines the vesting schedules for different allocations
+  repeated VestingSchedule vesting_schedules = 4 [(gogoproto.nullable) = false];
+}
+
+// Params defines the parameters for the STST module.
+message Params {
+  // total_supply is the total supply of STST tokens (1 billion)
+  string total_supply = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // token_denom is the denomination of the STST token
+  string token_denom = 2;
+  
+  // staking_rewards_rate is the annual percentage rate for staking rewards
+  string staking_rewards_rate = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // fee_burn_rate is the percentage of transaction fees to burn
+  string fee_burn_rate = 4 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // min_staking_amount is the minimum amount required for staking
+  string min_staking_amount = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // governance_voting_period is the duration for governance proposals
+  google.protobuf.Duration governance_voting_period = 6 [(gogoproto.nullable) = false, (gogoproto.stdduration) = true];
+  
+  // slashing_rate is the percentage of staked tokens slashed for malicious behavior
+  string slashing_rate = 7 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // burn_from_slash_rate is the percentage of slashed tokens to burn
+  string burn_from_slash_rate = 8 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// StakingState defines the current staking state
+message StakingState {
+  // total_staked is the total amount of STST currently staked
+  string total_staked = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // total_validators is the number of active validators
+  uint64 total_validators = 2;
+  
+  // last_reward_distribution_time is the last time staking rewards were distributed
+  int64 last_reward_distribution_time = 3;
+}
+
+// FeeBurnState defines the fee burning mechanism state
+message FeeBurnState {
+  // total_burned is the total amount of STST tokens burned
+  string total_burned = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // burn_rate_history tracks the historical burn rates
+  repeated BurnRateEntry burn_rate_history = 2 [(gogoproto.nullable) = false];
+}
+
+// BurnRateEntry defines a historical burn rate entry
+message BurnRateEntry {
+  // block_height is the block height when this burn rate was set
+  int64 block_height = 1;
+  
+  // burn_rate is the burn rate at this block height
+  string burn_rate = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // amount_burned is the amount burned at this rate
+  string amount_burned = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// VestingSchedule defines the vesting schedule for token allocations
+message VestingSchedule {
+  // category is the allocation category (e.g., "team", "investors", "treasury")
+  string category = 1;
+  
+  // total_amount is the total amount allocated to this category
+  string total_amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // cliff_duration is the cliff period before vesting starts
+  google.protobuf.Duration cliff_duration = 3 [(gogoproto.nullable) = false, (gogoproto.stdduration) = true];
+  
+  // vesting_duration is the total vesting period
+  google.protobuf.Duration vesting_duration = 4 [(gogoproto.nullable) = false, (gogoproto.stdduration) = true];
+  
+  // start_time is when the vesting schedule starts
+  int64 start_time = 5;
+  
+  // vested_amount is the amount already vested
+  string vested_amount = 6 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // beneficiaries is the list of addresses that can claim from this schedule
+  repeated string beneficiaries = 7;
+}
