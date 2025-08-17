@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  stateset-node:
+    image: cosmwasm/wasmd:v0.50.0
+    container_name: stateset-blockchain
+    ports:
+      - "26656:26656"  # P2P
+      - "26657:26657"  # RPC
+      - "1317:1317"    # REST API
+      - "9090:9090"    # gRPC
+      - "9091:9091"    # gRPC-Web
+    environment:
+      - DAEMON_NAME=wasmd
+      - DAEMON_HOME=/root/.wasmd
+      - CHAIN_ID=stateset-1
+      - WASMD_BECH32_PREFIX=stateset
+    volumes:
+      - ./data:/root/.wasmd
+      - ./scripts:/scripts
+    command: >
+      sh -c "
+        if [ ! -f /root/.wasmd/config/genesis.json ]; then
+          echo 'Running custom initialization script...'
+          chmod +x /scripts/init-chain.sh
+          sh /scripts/init-chain.sh
+        fi
+        
+        echo 'Starting blockchain node with stateset prefix...'
+        WASMD_BECH32_PREFIX=stateset wasmd start --api.enable --api.swagger
+      "
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:26657/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # Optional: Block explorer
+  explorer:
+    image: notional-labs/explorer:latest
+    container_name: stateset-explorer
+    ports:
+      - "8080:80"
+    environment:
+      - CHAIN_ID=stateset-1
+      - API_URL=http://stateset-node:1317
+      - RPC_URL=http://stateset-node:26657
+    depends_on:
+      - stateset-node
+    restart: unless-stopped

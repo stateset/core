@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/stretchr/testify/require"
 
 	"github.com/stateset/core/x/invoice/types"
@@ -34,12 +34,12 @@ func TestSentInvoiceMsgServerUpdate(t *testing.T) {
 		{
 			desc:    "Unauthorized",
 			request: &types.MsgUpdateSentInvoice{Creator: "B"},
-			err:     sdkerrors.ErrUnauthorized,
+			err:     errorsmod.ErrUnauthorized,
 		},
 		{
 			desc:    "Unauthorized",
 			request: &types.MsgUpdateSentInvoice{Creator: creator, Id: 10},
-			err:     sdkerrors.ErrKeyNotFound,
+			err:     errorsmod.ErrKeyNotFound,
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -72,12 +72,12 @@ func TestSentInvoiceMsgServerDelete(t *testing.T) {
 		{
 			desc:    "Unauthorized",
 			request: &types.MsgDeleteSentInvoice{Creator: "B"},
-			err:     sdkerrors.ErrUnauthorized,
+			err:     errorsmod.ErrUnauthorized,
 		},
 		{
 			desc:    "KeyNotFound",
 			request: &types.MsgDeleteSentInvoice{Creator: creator, Id: 10},
-			err:     sdkerrors.ErrKeyNotFound,
+			err:     errorsmod.ErrKeyNotFound,
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {

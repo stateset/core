@@ -7,7 +7,7 @@ import (
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/stateset/core/x/stablecoins/types"
 )
 
@@ -782,7 +782,7 @@ func (engine *SSUSDStablecoinEngine) GetSSUSDPrice(ctx sdk.Context) sdk.Dec {
 func (engine *SSUSDStablecoinEngine) UpdateSSUSDPrice(ctx sdk.Context, provider string, price sdk.Dec) error {
 	feed, exists := engine.pegMaintainer.priceFeeds[provider]
 	if !exists {
-		return sdkerrors.Wrapf(types.ErrInvalidPriceFeed, "price feed not found: %s", provider)
+		return errorsmod.Wrapf(types.ErrInvalidPriceFeed, "price feed not found: %s", provider)
 	}
 
 	// Check for price deviation
@@ -790,7 +790,7 @@ func (engine *SSUSDStablecoinEngine) UpdateSSUSDPrice(ctx sdk.Context, provider 
 	deviation := price.Sub(currentPrice).Quo(currentPrice).Abs()
 	
 	if deviation.GT(feed.DeviationLimit) {
-		return sdkerrors.Wrapf(types.ErrPriceDeviationTooHigh, 
+		return errorsmod.Wrapf(types.ErrPriceDeviationTooHigh, 
 			"price deviation %.4f%% exceeds limit %.4f%%", 
 			deviation.MulInt64(100).MustFloat64(), 
 			feed.DeviationLimit.MulInt64(100).MustFloat64())
@@ -1000,7 +1000,7 @@ func (engine *SSUSDStablecoinEngine) IssueSSUSD(ctx sdk.Context, request SSUSDIs
 	// Ensure 1:1 backing - reserve value must equal or exceed ssUSD amount
 	ssUSDValue := sdk.NewDecFromInt(request.Amount).QuoInt64(1000000) // Convert from micro units
 	if reserveValue.LT(ssUSDValue) {
-		return sdkerrors.Wrapf(types.ErrInsufficientCollateral, 
+		return errorsmod.Wrapf(types.ErrInsufficientCollateral, 
 			"reserve value %s insufficient for ssUSD amount %s", 
 			reserveValue.String(), ssUSDValue.String())
 	}
@@ -1194,7 +1194,7 @@ func (engine *SSUSDStablecoinEngine) validateReserveComposition(ctx sdk.Context,
 		targetAllocation := targetAllocations[assetType]
 		
 		if targetAllocation.IsZero() {
-			return sdkerrors.Wrapf(types.ErrInvalidAsset, 
+			return errorsmod.Wrapf(types.ErrInvalidAsset, 
 				"asset %s not allowed in conservative reserve composition", denom)
 		}
 	}

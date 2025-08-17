@@ -5,7 +5,7 @@ import (
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/stateset/core/x/stablecoins/types"
 )
 
@@ -389,7 +389,7 @@ func (k Keeper) ProcessCrossBorderPayment(ctx sdk.Context, denom string, from, t
 	// Get enhanced stablecoin configuration
 	enhanced, found := k.GetEnhancedStablecoin(ctx, denom)
 	if !found {
-		return sdkerrors.Wrapf(types.ErrStablecoinNotFound, "enhanced stablecoin %s not found", denom)
+		return errorsmod.Wrapf(types.ErrStablecoinNotFound, "enhanced stablecoin %s not found", denom)
 	}
 
 	// Check jurisdiction compliance
@@ -425,7 +425,7 @@ func (k Keeper) ProcessCrossBorderPayment(ctx sdk.Context, denom string, from, t
 func (k Keeper) OptimizeExchangeRate(ctx sdk.Context, denom, baseCurrency, targetCurrency string) (sdk.Dec, error) {
 	enhanced, found := k.GetEnhancedStablecoin(ctx, denom)
 	if !found {
-		return sdk.ZeroDec(), sdkerrors.Wrapf(types.ErrStablecoinNotFound, "enhanced stablecoin %s not found", denom)
+		return sdk.ZeroDec(), errorsmod.Wrapf(types.ErrStablecoinNotFound, "enhanced stablecoin %s not found", denom)
 	}
 
 	if !enhanced.AIOptimization.PredictivePricing {

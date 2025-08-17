@@ -6,7 +6,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 	"github.com/cometbft/cometbft/libs/log"
 
@@ -56,17 +56,17 @@ func (k *Keeper) MakeRequest(ctx sdk.Context, module string, callbackId string, 
 	if connectionId == "" {
 		errMsg := "[ICQ Validation Check] Failed! connection id cannot be empty"
 		k.Logger(ctx).Error(errMsg)
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, errMsg)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, errMsg)
 	}
 	if !strings.HasPrefix(connectionId, "connection") {
 		errMsg := "[ICQ Validation Check] Failed! connection id must begin with 'connection'"
 		k.Logger(ctx).Error(errMsg)
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, errMsg)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, errMsg)
 	}
 	if chainId == "" {
 		errMsg := "[ICQ Validation Check] Failed! chain_id cannot be empty"
 		k.Logger(ctx).Error(errMsg)
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, errMsg)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, errMsg)
 	}
 
 	// Confirm the module and callbackId exist

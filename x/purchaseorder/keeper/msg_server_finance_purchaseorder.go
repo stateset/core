@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/stateset/core/x/purchaseorder/types"
 )
 
@@ -14,11 +14,11 @@ func (k msgServer) FinancePurchaseorder(goCtx context.Context, msg *types.MsgFin
 
 	purchaseorder, found := k.GetPurchaseorder(ctx, msg.Id)
 	if !found {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
+		return nil, errorsmod.Wrap(errorsmod.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
 	}
 
 	if purchaseorder.State != "requested" {
-		return nil, sdkerrors.Wrapf(types.ErrWrongPurchaseOrderState, "%v", purchaseorder.State)
+		return nil, errorsmod.Wrapf(types.ErrWrongPurchaseOrderState, "%v", purchaseorder.State)
 	}
 
 	financer, _ := sdk.AccAddressFromBech32(msg.Creator)

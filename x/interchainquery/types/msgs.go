@@ -2,7 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 )
 
 // interchainquery message types
@@ -23,7 +23,7 @@ func (msg MsgSubmitQueryResponse) ValidateBasic() error {
 	// check from address
 	_, err := sdk.AccAddressFromBech32(msg.FromAddress)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid fromAddress in ICQ response (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid fromAddress in ICQ response (%s)", err)
 	}
 	// check chain_id is not empty
 	if msg.ChainId == "" {

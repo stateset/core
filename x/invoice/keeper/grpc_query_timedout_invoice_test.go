@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
@@ -37,7 +37,7 @@ func TestTimedoutInvoiceQuerySingle(t *testing.T) {
 		{
 			desc:    "KeyNotFound",
 			request: &types.QueryGetTimedoutInvoiceRequest{Id: uint64(len(msgs))},
-			err:     sdkerrors.ErrKeyNotFound,
+			err:     errorsmod.ErrKeyNotFound,
 		},
 		{
 			desc: "InvalidRequest",

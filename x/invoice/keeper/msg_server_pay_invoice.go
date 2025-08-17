@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/stateset/core/x/invoice/types"
 )
 
@@ -14,7 +14,7 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 
 	invoice, found := k.GetInvoice(ctx, msg.Id)
 	if !found {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
+		return nil, errorsmod.Wrap(errorsmod.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
 	}
 
 	factor, _ := sdk.AccAddressFromBech32(invoice.Factor)
@@ -22,7 +22,7 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 	purchaser, _ := sdk.AccAddressFromBech32(invoice.Purchaser)
 
 	if msg.Creator != invoice.Purchaser {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "Cannot repay: not the purchaser")
+		return nil, errorsmod.Wrap(errorsmod.ErrUnauthorized, "Cannot repay: not the purchaser")
 	}
 
 	amount, _ := sdk.ParseCoinsNormalized(invoice.Amount)
@@ -30,7 +30,7 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 	if invoice.Factor != "" {
 
 		if invoice.State != "factored" {
-			return nil, sdkerrors.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
+			return nil, errorsmod.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
 		}
 
 		k.bankKeeper.SendCoins(ctx, purchaser, factor, amount)
@@ -38,7 +38,7 @@ func (k msgServer) PayInvoice(goCtx context.Context, msg *types.MsgPayInvoice) (
 	} else {
 
 		if invoice.State != "requested" {
-			return nil, sdkerrors.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
+			return nil, errorsmod.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
 		}
 
 		k.bankKeeper.SendCoins(ctx, purchaser, seller, amount)

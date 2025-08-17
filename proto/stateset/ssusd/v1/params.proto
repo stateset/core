@@ -1,0 +1,92 @@
+syntax = "proto3";
+package stateset.ssusd.v1;
+
+import "gogoproto/gogo.proto";
+
+option go_package = "github.com/stateset/core/x/ssusd/types";
+
+// Params defines the parameters for the ssUSD module
+message Params {
+  option (gogoproto.goproto_stringer) = false;
+  
+  // Minimum collateralization ratio (e.g., 150%)
+  string min_collateral_ratio = 1 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Liquidation threshold ratio (e.g., 130%)
+  string liquidation_threshold = 2 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Liquidation penalty (e.g., 10%)
+  string liquidation_penalty = 3 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Stability fee (annual percentage, e.g., 2%)
+  string stability_fee = 4 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Minting fee (one-time percentage, e.g., 0.1%)
+  string minting_fee = 5 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Redemption fee (percentage, e.g., 0.1%)
+  string redemption_fee = 6 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Maximum debt ceiling per user
+  string max_debt_per_user = 7 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Global debt ceiling
+  string global_debt_ceiling = 8 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Oracle update frequency in seconds
+  uint64 oracle_update_frequency = 9;
+  
+  // Dutch auction duration in seconds
+  uint64 auction_duration = 10;
+  
+  // Auction price decay rate per second
+  string auction_price_decay = 11 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Minimum agent reputation score
+  string min_agent_reputation = 12 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Agent transaction fee discount
+  string agent_fee_discount = 13 [
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable) = false
+  ];
+  
+  // Emergency shutdown enabled
+  bool emergency_shutdown = 14;
+  
+  // Accepted collateral types
+  repeated string accepted_collateral = 15;
+  
+  // Oracle sources whitelist
+  repeated string oracle_whitelist = 16;
+}

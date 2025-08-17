@@ -7,7 +7,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	
 	"github.com/stateset/core/x/stablecoins/types"
@@ -123,7 +123,7 @@ func (k Keeper) CreateStablecoin(ctx sdk.Context, msg *types.MsgCreateStablecoin
 	// Check max stablecoins limit
 	allStablecoins := k.GetAllStablecoin(ctx)
 	if uint64(len(allStablecoins)) >= params.MaxStablecoins {
-		return sdkerrors.Wrapf(types.ErrOperationNotAllowed, "maximum number of stablecoins reached: %d", params.MaxStablecoins)
+		return errorsmod.Wrapf(types.ErrOperationNotAllowed, "maximum number of stablecoins reached: %d", params.MaxStablecoins)
 	}
 
 	// Validate max supply against parameters

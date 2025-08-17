@@ -5,6 +5,7 @@ import (
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	"cosmossdk.io/math"
 )
 
 // InvoiceStatus represents the enhanced invoice statuses
@@ -49,7 +50,7 @@ type EnhancedInvoice struct {
 type LineItem struct {
 	ID          string    `json:"id"`
 	Description string    `json:"description"`
-	Quantity    sdk.Dec   `json:"quantity"`
+	Quantity    math.LegacyDec   `json:"quantity"`
 	UnitPrice   sdk.Coins `json:"unit_price"`
 	Total       sdk.Coins `json:"total"`
 	TaxRate     float64   `json:"tax_rate"`
@@ -81,7 +82,7 @@ type PaymentRecord struct {
 	TransactionHash string    `json:"transaction_hash"`
 	Amount          sdk.Coins `json:"amount"`
 	Currency        string    `json:"currency"`
-	ExchangeRate    sdk.Dec   `json:"exchange_rate,omitempty"`
+	ExchangeRate    math.LegacyDec   `json:"exchange_rate,omitempty"`
 	PaymentMethod   string    `json:"payment_method"`
 	PayerAddress    string    `json:"payer_address"`
 	ProcessedAt     time.Time `json:"processed_at"`
@@ -206,7 +207,7 @@ func (ei EnhancedInvoice) GetPaymentProgress() float64 {
 	// Calculate percentage based on the primary denomination
 	if len(total) > 0 && len(paid) > 0 {
 		totalAmount := total[0].Amount.ToDec()
-		paidAmount := sdk.ZeroDec()
+		paidAmount := math.LegacyZeroDec()
 		
 		for _, coin := range paid {
 			if coin.Denom == total[0].Denom {

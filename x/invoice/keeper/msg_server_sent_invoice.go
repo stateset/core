@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/stateset/core/x/invoice/types"
 )
 
@@ -41,12 +41,12 @@ func (k msgServer) UpdateSentInvoice(goCtx context.Context, msg *types.MsgUpdate
 	// Checks that the element exists
 	val, found := k.GetSentInvoice(ctx, msg.Id)
 	if !found {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
+		return nil, errorsmod.Wrap(errorsmod.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
 	}
 
 	// Checks if the msg creator is the same as the current owner
 	if msg.Creator != val.Creator {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "incorrect owner")
+		return nil, errorsmod.Wrap(errorsmod.ErrUnauthorized, "incorrect owner")
 	}
 
 	k.SetSentInvoice(ctx, sentInvoice)
@@ -60,12 +60,12 @@ func (k msgServer) DeleteSentInvoice(goCtx context.Context, msg *types.MsgDelete
 	// Checks that the element exists
 	val, found := k.GetSentInvoice(ctx, msg.Id)
 	if !found {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
+		return nil, errorsmod.Wrap(errorsmod.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
 	}
 
 	// Checks if the msg creator is the same as the current owner
 	if msg.Creator != val.Creator {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "incorrect owner")
+		return nil, errorsmod.Wrap(errorsmod.ErrUnauthorized, "incorrect owner")
 	}
 
 	k.RemoveSentInvoice(ctx, msg.Id)

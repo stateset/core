@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/stateset/core/x/invoice/types"
 )
 
@@ -14,11 +14,11 @@ func (k msgServer) FactorInvoice(goCtx context.Context, msg *types.MsgFactorInvo
 
 	invoice, found := k.GetInvoice(ctx, msg.Id)
 	if !found {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
+		return nil, errorsmod.Wrap(errorsmod.ErrKeyNotFound, fmt.Sprintf("key %d doesn't exist", msg.Id))
 	}
 
 	if invoice.State != "requested" {
-		return nil, sdkerrors.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
+		return nil, errorsmod.Wrapf(types.ErrWrongInvoiceState, "%v", invoice.State)
 	}
 
 	factor, _ := sdk.AccAddressFromBech32(msg.Creator)

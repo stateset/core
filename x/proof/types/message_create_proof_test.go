@@ -3,7 +3,7 @@ package types
 import (
 	"testing"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/stateset/core/testutil/sample"
 	"github.com/stretchr/testify/require"
 )
@@ -19,7 +19,7 @@ func TestMsgCreateProof_ValidateBasic(t *testing.T) {
 			msg: MsgCreateProof{
 				Creator: "invalid_address",
 			},
-			err: sdkerrors.ErrInvalidAddress,
+			err: errorsmod.ErrInvalidAddress,
 		}, {
 			name: "valid address",
 			msg: MsgCreateProof{

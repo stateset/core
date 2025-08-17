@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/stateset/core/x/loan/types"
 )
 
@@ -18,7 +18,7 @@ func (k msgServer) RepayLoan(goCtx context.Context, msg *types.MsgRepayLoan) (*t
 	}
 
 	if loan.State != "approved" {
-		return nil, sdkerrors.Wrapf(types.ErrWrongLoanState, "%v", loan.State)
+		return nil, errorsmod.Wrapf(types.ErrWrongLoanState, "%v", loan.State)
 	}
 
 	lender, _ := sdk.AccAddressFromBech32(loan.Lender)

@@ -5,7 +5,8 @@ import (
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 )
 
 // Params represents module parameters
@@ -46,7 +47,7 @@ func NewMsgCreateStablecoin(
 	symbol string,
 	decimals uint32,
 	description string,
-	maxSupply sdk.Int,
+	maxSupply math.Int,
 	pegInfo *PegInfo,
 	reserveInfo *ReserveInfo,
 	stabilityMechanism string,
@@ -95,7 +96,7 @@ func (msg *MsgCreateStablecoin) GetSignBytes() []byte {
 func (msg *MsgCreateStablecoin) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
@@ -170,7 +171,7 @@ func (msg *MsgUpdateStablecoin) GetSignBytes() []byte {
 func (msg *MsgUpdateStablecoin) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
@@ -186,7 +187,7 @@ var _ sdk.Msg = &MsgMintStablecoin{}
 func NewMsgMintStablecoin(
 	creator string,
 	denom string,
-	amount sdk.Int,
+	amount math.Int,
 	recipient string,
 ) *MsgMintStablecoin {
 	return &MsgMintStablecoin{
@@ -221,7 +222,7 @@ func (msg *MsgMintStablecoin) GetSignBytes() []byte {
 func (msg *MsgMintStablecoin) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
@@ -234,7 +235,7 @@ func (msg *MsgMintStablecoin) ValidateBasic() error {
 
 	_, err = sdk.AccAddressFromBech32(msg.Recipient)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid recipient address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid recipient address (%s)", err)
 	}
 
 	return nil
@@ -246,7 +247,7 @@ var _ sdk.Msg = &MsgBurnStablecoin{}
 func NewMsgBurnStablecoin(
 	creator string,
 	denom string,
-	amount sdk.Int,
+	amount math.Int,
 ) *MsgBurnStablecoin {
 	return &MsgBurnStablecoin{
 		Creator: creator,
@@ -279,7 +280,7 @@ func (msg *MsgBurnStablecoin) GetSignBytes() []byte {
 func (msg *MsgBurnStablecoin) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
@@ -334,7 +335,7 @@ func (msg *MsgPauseStablecoin) GetSignBytes() []byte {
 func (msg *MsgPauseStablecoin) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
@@ -368,7 +369,7 @@ func NewStablecoin(
 	description string,
 	issuer string,
 	admin string,
-	maxSupply sdk.Int,
+	maxSupply math.Int,
 	pegInfo *PegInfo,
 	reserveInfo *ReserveInfo,
 	stabilityMechanism string,
@@ -446,7 +447,7 @@ func (msg *MsgInitializeSSUSD) GetSignBytes() []byte {
 func (msg *MsgInitializeSSUSD) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 	return nil
 }
@@ -454,13 +455,13 @@ func (msg *MsgInitializeSSUSD) ValidateBasic() error {
 // MsgIssueSSUSD issues new ssUSD tokens backed by reserves
 type MsgIssueSSUSD struct {
 	Creator        string    `json:"creator"`
-	Amount         sdk.Int   `json:"amount"`
+	Amount         math.Int   `json:"amount"`
 	ReservePayment sdk.Coins `json:"reserve_payment"`
 }
 
 var _ sdk.Msg = &MsgIssueSSUSD{}
 
-func NewMsgIssueSSUSD(creator string, amount sdk.Int, reservePayment sdk.Coins) *MsgIssueSSUSD {
+func NewMsgIssueSSUSD(creator string, amount math.Int, reservePayment sdk.Coins) *MsgIssueSSUSD {
 	return &MsgIssueSSUSD{
 		Creator:        creator,
 		Amount:         amount,
@@ -492,7 +493,7 @@ func (msg *MsgIssueSSUSD) GetSignBytes() []byte {
 func (msg *MsgIssueSSUSD) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
 	if msg.Amount.IsNil() || !msg.Amount.IsPositive() {
@@ -513,7 +514,7 @@ func (msg *MsgIssueSSUSD) ValidateBasic() error {
 
 	for _, coin := range msg.ReservePayment {
 		if !validAssets[coin.Denom] {
-			return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, 
+			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, 
 				"invalid reserve asset type: %s. Valid types: us_cash_token, treasury_bill_token, mmf_token, repo_token", 
 				coin.Denom)
 		}
@@ -525,13 +526,13 @@ func (msg *MsgIssueSSUSD) ValidateBasic() error {
 // MsgRedeemSSUSD redeems ssUSD tokens for underlying reserves
 type MsgRedeemSSUSD struct {
 	Creator        string  `json:"creator"`
-	SSUSDAmount    sdk.Int `json:"ssusd_amount"`
+	SSUSDAmount    math.Int `json:"ssusd_amount"`
 	PreferredAsset string  `json:"preferred_asset"`
 }
 
 var _ sdk.Msg = &MsgRedeemSSUSD{}
 
-func NewMsgRedeemSSUSD(creator string, ssusdAmount sdk.Int, preferredAsset string) *MsgRedeemSSUSD {
+func NewMsgRedeemSSUSD(creator string, ssusdAmount math.Int, preferredAsset string) *MsgRedeemSSUSD {
 	return &MsgRedeemSSUSD{
 		Creator:        creator,
 		SSUSDAmount:    ssusdAmount,
@@ -563,7 +564,7 @@ func (msg *MsgRedeemSSUSD) GetSignBytes() []byte {
 func (msg *MsgRedeemSSUSD) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
 	if msg.SSUSDAmount.IsNil() || !msg.SSUSDAmount.IsPositive() {
@@ -580,7 +581,7 @@ func (msg *MsgRedeemSSUSD) ValidateBasic() error {
 		}
 
 		if !validAssets[msg.PreferredAsset] {
-			return sdkerrors.Wrapf(sdkerrors.ErrInvalidRequest, 
+			return errorsmod.Wrapf(sdkerrors.ErrInvalidRequest, 
 				"invalid preferred asset: %s. Valid types: us_cash_token, treasury_bill_token, mmf_token, repo_token", 
 				msg.PreferredAsset)
 		}
@@ -598,10 +599,10 @@ type MsgInitializeSSUSDResponse struct {
 
 // MsgIssueSSUSDResponse response type for MsgIssueSSUSD
 type MsgIssueSSUSDResponse struct {
-	AmountIssued sdk.Int `json:"amount_issued"`
+	AmountIssued math.Int `json:"amount_issued"`
 }
 
 // MsgRedeemSSUSDResponse response type for MsgRedeemSSUSD
 type MsgRedeemSSUSDResponse struct {
-	AmountRedeemed sdk.Int `json:"amount_redeemed"`
+	AmountRedeemed math.Int `json:"amount_redeemed"`
 }

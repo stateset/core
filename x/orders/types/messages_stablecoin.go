@@ -4,7 +4,7 @@ import (
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -48,7 +48,7 @@ func (msg *MsgPayWithStablecoin) GetSignBytes() []byte {
 func (msg *MsgPayWithStablecoin) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
 	if msg.OrderId == "" {
@@ -65,12 +65,12 @@ func (msg *MsgPayWithStablecoin) ValidateBasic() error {
 
 	_, err = sdk.AccAddressFromBech32(msg.CustomerAddress)
 	if err != nil {
-		return sdkerrors.Wrapf(ErrInvalidCustomer, "invalid customer address (%s)", err)
+		return errorsmod.Wrapf(ErrInvalidCustomer, "invalid customer address (%s)", err)
 	}
 
 	_, err = sdk.AccAddressFromBech32(msg.MerchantAddress)
 	if err != nil {
-		return sdkerrors.Wrapf(ErrInvalidMerchant, "invalid merchant address (%s)", err)
+		return errorsmod.Wrapf(ErrInvalidMerchant, "invalid merchant address (%s)", err)
 	}
 
 	if msg.ExchangeRate.IsNil() || msg.ExchangeRate.LTE(sdk.ZeroDec()) {
@@ -120,7 +120,7 @@ func (msg *MsgConfirmStablecoinPayment) GetSignBytes() []byte {
 func (msg *MsgConfirmStablecoinPayment) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
 	if msg.OrderId == "" {
@@ -170,7 +170,7 @@ func (msg *MsgRefundStablecoinPayment) GetSignBytes() []byte {
 func (msg *MsgRefundStablecoinPayment) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
 	if msg.OrderId == "" {
@@ -179,7 +179,7 @@ func (msg *MsgRefundStablecoinPayment) ValidateBasic() error {
 
 	_, err = sdk.AccAddressFromBech32(msg.CustomerAddress)
 	if err != nil {
-		return sdkerrors.Wrapf(ErrInvalidCustomer, "invalid customer address (%s)", err)
+		return errorsmod.Wrapf(ErrInvalidCustomer, "invalid customer address (%s)", err)
 	}
 
 	if msg.RefundAmount.IsNil() || msg.RefundAmount.LTE(sdk.ZeroInt()) {
@@ -226,7 +226,7 @@ func (msg *MsgReleaseEscrow) GetSignBytes() []byte {
 func (msg *MsgReleaseEscrow) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.Creator)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid creator address (%s)", err)
 	}
 
 	if msg.OrderId == "" {

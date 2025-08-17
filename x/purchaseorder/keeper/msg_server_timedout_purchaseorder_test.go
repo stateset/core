@@ -3,7 +3,7 @@ package keeper_test
 import (
 	"testing"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/stretchr/testify/require"
 
 	"github.com/stateset/core/x/purchaseorder/types"
@@ -34,12 +34,12 @@ func TestTimedoutPurchaseorderMsgServerUpdate(t *testing.T) {
 		{
 			desc:    "Unauthorized",
 			request: &types.MsgUpdateTimedoutPurchaseorder{Creator: "B"},
-			err:     sdkerrors.ErrUnauthorized,
+			err:     errorsmod.ErrUnauthorized,
 		},
 		{
 			desc:    "Unauthorized",
 			request: &types.MsgUpdateTimedoutPurchaseorder{Creator: creator, Id: 10},
-			err:     sdkerrors.ErrKeyNotFound,
+			err:     errorsmod.ErrKeyNotFound,
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {
@@ -72,12 +72,12 @@ func TestTimedoutPurchaseorderMsgServerDelete(t *testing.T) {
 		{
 			desc:    "Unauthorized",
 			request: &types.MsgDeleteTimedoutPurchaseorder{Creator: "B"},
-			err:     sdkerrors.ErrUnauthorized,
+			err:     errorsmod.ErrUnauthorized,
 		},
 		{
 			desc:    "KeyNotFound",
 			request: &types.MsgDeleteTimedoutPurchaseorder{Creator: creator, Id: 10},
-			err:     sdkerrors.ErrKeyNotFound,
+			err:     errorsmod.ErrKeyNotFound,
 		},
 	} {
 		t.Run(tc.desc, func(t *testing.T) {

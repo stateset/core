@@ -5,7 +5,7 @@ import (
 
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stateset/core/x/purchaseorder/types"
 	"google.golang.org/grpc/codes"
@@ -48,7 +48,7 @@ func (k Keeper) TimedoutPurchaseorder(c context.Context, req *types.QueryGetTime
 	ctx := sdk.UnwrapSDKContext(c)
 	timedoutPurchaseorder, found := k.GetTimedoutPurchaseorder(ctx, req.Id)
 	if !found {
-		return nil, sdkerrors.ErrKeyNotFound
+		return nil, errorsmod.ErrKeyNotFound
 	}
 
 	return &types.QueryGetTimedoutPurchaseorderResponse{TimedoutPurchaseorder: timedoutPurchaseorder}, nil

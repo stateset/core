@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/stateset/core/x/loan/types"
 )
 
@@ -22,7 +22,7 @@ func (k msgServer) CancelLoan(goCtx context.Context, msg *types.MsgCancelLoan) (
 	}
 
 	if loan.State != "requested" {
-		return nil, sdkerrors.Wrapf(types.ErrWrongLoanState, "%v", loan.State)
+		return nil, errorsmod.Wrapf(types.ErrWrongLoanState, "%v", loan.State)
 	}
 
 	borrower, _ := sdk.AccAddressFromBech32(loan.Borrower)

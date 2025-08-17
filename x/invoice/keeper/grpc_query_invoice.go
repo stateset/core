@@ -5,7 +5,7 @@ import (
 
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stateset/core/x/invoice/types"
 	"google.golang.org/grpc/codes"
@@ -48,7 +48,7 @@ func (k Keeper) Invoice(c context.Context, req *types.QueryGetInvoiceRequest) (*
 	ctx := sdk.UnwrapSDKContext(c)
 	invoice, found := k.GetInvoice(ctx, req.Id)
 	if !found {
-		return nil, sdkerrors.ErrKeyNotFound
+		return nil, errorsmod.ErrKeyNotFound
 	}
 
 	return &types.QueryGetInvoiceResponse{Invoice: invoice}, nil

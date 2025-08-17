@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/stateset/core/x/agreement/types"
 )
 
@@ -18,7 +18,7 @@ func (k msgServer) TerminateAgreement(goCtx context.Context, msg *types.MsgTermi
 	}
 
 	if agreement.State != "activated" {
-		return nil, sdkerrors.Wrapf(types.ErrWrongAgreementState, "%v", agreement.State)
+		return nil, errorsmod.Wrapf(types.ErrWrongAgreementState, "%v", agreement.State)
 	}
 
 	agreement.State = "terminated"

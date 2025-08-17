@@ -2,7 +2,7 @@ package types
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 )
 
 // Message types
@@ -93,7 +93,7 @@ func (msg *MsgDepositForBurn) GetSignBytes() []byte {
 func (msg *MsgDepositForBurn) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 
 	if !msg.Amount.IsValid() || msg.Amount.IsZero() {
@@ -101,7 +101,7 @@ func (msg *MsgDepositForBurn) ValidateBasic() error {
 	}
 
 	if len(msg.MintRecipient) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "mint recipient must be %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "mint recipient must be %d bytes", AddressSize)
 	}
 
 	if IsZeroBytes(msg.MintRecipient) {
@@ -157,7 +157,7 @@ func (msg *MsgDepositForBurnWithCaller) ValidateBasic() error {
 	}
 
 	if len(msg.DestinationCaller) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "destination caller must be %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "destination caller must be %d bytes", AddressSize)
 	}
 
 	if IsZeroBytes(msg.DestinationCaller) {
@@ -195,7 +195,7 @@ func (msg *MsgReceiveMessage) GetSignBytes() []byte {
 func (msg *MsgReceiveMessage) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 
 	if len(msg.Message) == 0 {
@@ -244,11 +244,11 @@ func (msg *MsgSendMessage) GetSignBytes() []byte {
 func (msg *MsgSendMessage) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 
 	if len(msg.Recipient) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "recipient must be %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "recipient must be %d bytes", AddressSize)
 	}
 
 	if IsZeroBytes(msg.Recipient) {
@@ -298,7 +298,7 @@ func (msg *MsgSendMessageWithCaller) ValidateBasic() error {
 	}
 
 	if len(msg.DestinationCaller) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "destination caller must be %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "destination caller must be %d bytes", AddressSize)
 	}
 
 	if IsZeroBytes(msg.DestinationCaller) {
@@ -338,7 +338,7 @@ func (msg *MsgReplaceDepositForBurn) GetSignBytes() []byte {
 func (msg *MsgReplaceDepositForBurn) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 
 	if len(msg.OriginalMessage) == 0 {
@@ -350,11 +350,11 @@ func (msg *MsgReplaceDepositForBurn) ValidateBasic() error {
 	}
 
 	if len(msg.NewMintRecipient) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "new mint recipient must be %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "new mint recipient must be %d bytes", AddressSize)
 	}
 
 	if len(msg.NewDestinationCaller) != 0 && len(msg.NewDestinationCaller) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "new destination caller must be empty or %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "new destination caller must be empty or %d bytes", AddressSize)
 	}
 
 	return nil
@@ -390,7 +390,7 @@ func (msg *MsgReplaceMessage) GetSignBytes() []byte {
 func (msg *MsgReplaceMessage) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 
 	if len(msg.OriginalMessage) == 0 {
@@ -402,7 +402,7 @@ func (msg *MsgReplaceMessage) ValidateBasic() error {
 	}
 
 	if len(msg.NewDestinationCaller) != 0 && len(msg.NewDestinationCaller) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "new destination caller must be empty or %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "new destination caller must be empty or %d bytes", AddressSize)
 	}
 
 	return nil
@@ -434,7 +434,7 @@ func (msg *MsgAcceptOwner) GetSignBytes() []byte {
 func (msg *MsgAcceptOwner) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 	return nil
 }
@@ -467,12 +467,12 @@ func (msg *MsgUpdateOwner) GetSignBytes() []byte {
 func (msg *MsgUpdateOwner) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 
 	_, err = sdk.AccAddressFromBech32(msg.NewOwner)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid new owner address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid new owner address (%s)", err)
 	}
 
 	return nil
@@ -507,7 +507,7 @@ func (msg *MsgLinkTokenPair) GetSignBytes() []byte {
 func (msg *MsgLinkTokenPair) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 
 	if msg.LocalToken == "" {
@@ -515,7 +515,7 @@ func (msg *MsgLinkTokenPair) ValidateBasic() error {
 	}
 
 	if len(msg.RemoteToken) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "remote token must be %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "remote token must be %d bytes", AddressSize)
 	}
 
 	return nil
@@ -548,12 +548,12 @@ func (msg *MsgEnableAttester) GetSignBytes() []byte {
 func (msg *MsgEnableAttester) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 
 	_, err = sdk.AccAddressFromBech32(msg.Attester)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid attester address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid attester address (%s)", err)
 	}
 
 	return nil
@@ -586,12 +586,12 @@ func (msg *MsgDisableAttester) GetSignBytes() []byte {
 func (msg *MsgDisableAttester) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 
 	_, err = sdk.AccAddressFromBech32(msg.Attester)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid attester address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid attester address (%s)", err)
 	}
 
 	return nil
@@ -621,7 +621,7 @@ func (msg *MsgPauseBurningAndMinting) GetSignBytes() []byte {
 func (msg *MsgPauseBurningAndMinting) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 	return nil
 }
@@ -649,7 +649,7 @@ func (msg *MsgUnpauseBurningAndMinting) GetSignBytes() []byte {
 func (msg *MsgUnpauseBurningAndMinting) ValidateBasic() error {
 	_, err := sdk.AccAddressFromBech32(msg.From)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid from address (%s)", err)
 	}
 	return nil
 }

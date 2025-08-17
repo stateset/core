@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 )
 
 // Message represents the core CCTP message structure
@@ -90,19 +90,19 @@ func NewBurnMessage(
 // Validate validates the message structure
 func (m *Message) Validate() error {
 	if m.Version != MessageVersion {
-		return sdkerrors.Wrapf(ErrInvalidMessageVersion, "expected %d, got %d", MessageVersion, m.Version)
+		return errorsmod.Wrapf(ErrInvalidMessageVersion, "expected %d, got %d", MessageVersion, m.Version)
 	}
 
 	if len(m.Sender) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "sender address must be %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "sender address must be %d bytes", AddressSize)
 	}
 
 	if len(m.Recipient) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "recipient address must be %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "recipient address must be %d bytes", AddressSize)
 	}
 
 	if len(m.DestinationCaller) != 0 && len(m.DestinationCaller) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "destination caller must be empty or %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "destination caller must be empty or %d bytes", AddressSize)
 	}
 
 	return nil
@@ -111,19 +111,19 @@ func (m *Message) Validate() error {
 // Validate validates the burn message structure
 func (bm *BurnMessage) Validate() error {
 	if bm.Version != MessageBodyVersion {
-		return sdkerrors.Wrapf(ErrInvalidMessageBodyVersion, "expected %d, got %d", MessageBodyVersion, bm.Version)
+		return errorsmod.Wrapf(ErrInvalidMessageBodyVersion, "expected %d, got %d", MessageBodyVersion, bm.Version)
 	}
 
 	if len(bm.BurnToken) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "burn token address must be %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "burn token address must be %d bytes", AddressSize)
 	}
 
 	if len(bm.MintRecipient) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "mint recipient address must be %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "mint recipient address must be %d bytes", AddressSize)
 	}
 
 	if len(bm.MessageSender) != AddressSize {
-		return sdkerrors.Wrapf(ErrInvalidAddressLength, "message sender address must be %d bytes", AddressSize)
+		return errorsmod.Wrapf(ErrInvalidAddressLength, "message sender address must be %d bytes", AddressSize)
 	}
 
 	if bm.Amount.IsNil() || bm.Amount.LTE(sdk.ZeroInt()) {
@@ -306,7 +306,7 @@ func (m *Message) HasDestinationCaller() bool {
 // ValidateMessageDomains validates that the message domains are correct for this chain
 func (m *Message) ValidateMessageDomains() error {
 	if m.DestinationDomain != NobleChainDomain {
-		return sdkerrors.Wrapf(ErrInvalidDestinationDomain, 
+		return errorsmod.Wrapf(ErrInvalidDestinationDomain, 
 			"message destination domain %d does not match Noble domain %d", 
 			m.DestinationDomain, NobleChainDomain)
 	}

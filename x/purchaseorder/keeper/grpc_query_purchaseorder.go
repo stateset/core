@@ -5,7 +5,7 @@ import (
 
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
 	"github.com/stateset/core/x/purchaseorder/types"
 	"google.golang.org/grpc/codes"
@@ -48,7 +48,7 @@ func (k Keeper) Purchaseorder(c context.Context, req *types.QueryGetPurchaseorde
 	ctx := sdk.UnwrapSDKContext(c)
 	purchaseorder, found := k.GetPurchaseorder(ctx, req.Id)
 	if !found {
-		return nil, sdkerrors.ErrKeyNotFound
+		return nil, errorsmod.ErrKeyNotFound
 	}
 
 	return &types.QueryGetPurchaseorderResponse{Purchaseorder: purchaseorder}, nil

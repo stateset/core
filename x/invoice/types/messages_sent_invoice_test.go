@@ -3,7 +3,7 @@ package types
 import (
 	"testing"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/stateset/core/testutil/sample"
 	"github.com/stretchr/testify/require"
 )
@@ -19,7 +19,7 @@ func TestMsgCreateSentInvoice_ValidateBasic(t *testing.T) {
 			msg: MsgCreateSentInvoice{
 				Creator: "invalid_address",
 			},
-			err: sdkerrors.ErrInvalidAddress,
+			err: errorsmod.ErrInvalidAddress,
 		}, {
 			name: "valid address",
 			msg: MsgCreateSentInvoice{
@@ -50,7 +50,7 @@ func TestMsgUpdateSentInvoice_ValidateBasic(t *testing.T) {
 			msg: MsgUpdateSentInvoice{
 				Creator: "invalid_address",
 			},
-			err: sdkerrors.ErrInvalidAddress,
+			err: errorsmod.ErrInvalidAddress,
 		}, {
 			name: "valid address",
 			msg: MsgUpdateSentInvoice{
@@ -81,7 +81,7 @@ func TestMsgDeleteSentInvoice_ValidateBasic(t *testing.T) {
 			msg: MsgDeleteSentInvoice{
 				Creator: "invalid_address",
 			},
-			err: sdkerrors.ErrInvalidAddress,
+			err: errorsmod.ErrInvalidAddress,
 		}, {
 			name: "valid address",
 			msg: MsgDeleteSentInvoice{

@@ -3,7 +3,7 @@ package types
 import (
 	"testing"
 
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	sdkerrors "cosmossdk.io/errors"
 	"github.com/stateset/core/testutil/sample"
 	"github.com/stretchr/testify/require"
 )
@@ -19,7 +19,7 @@ func TestMsgCreateTimedoutPurchaseorder_ValidateBasic(t *testing.T) {
 			msg: MsgCreateTimedoutPurchaseorder{
 				Creator: "invalid_address",
 			},
-			err: sdkerrors.ErrInvalidAddress,
+			err: errorsmod.ErrInvalidAddress,
 		}, {
 			name: "valid address",
 			msg: MsgCreateTimedoutPurchaseorder{
@@ -50,7 +50,7 @@ func TestMsgUpdateTimedoutPurchaseorder_ValidateBasic(t *testing.T) {
 			msg: MsgUpdateTimedoutPurchaseorder{
 				Creator: "invalid_address",
 			},
-			err: sdkerrors.ErrInvalidAddress,
+			err: errorsmod.ErrInvalidAddress,
 		}, {
 			name: "valid address",
 			msg: MsgUpdateTimedoutPurchaseorder{
@@ -81,7 +81,7 @@ func TestMsgDeleteTimedoutPurchaseorder_ValidateBasic(t *testing.T) {
 			msg: MsgDeleteTimedoutPurchaseorder{
 				Creator: "invalid_address",
 			},
-			err: sdkerrors.ErrInvalidAddress,
+			err: errorsmod.ErrInvalidAddress,
 		}, {
 			name: "valid address",
 			msg: MsgDeleteTimedoutPurchaseorder{

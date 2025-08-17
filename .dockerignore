@@ -1,0 +1,6 @@
+data/
+stateset-data/
+*.tar.gz
+go1.23.4.linux-amd64.tar.gz
+build/
+.git/

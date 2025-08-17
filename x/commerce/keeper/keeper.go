@@ -9,7 +9,7 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 
 	"github.com/stateset/core/x/commerce/types"
@@ -133,11 +133,11 @@ func (k Keeper) CreateCommerceTransaction(ctx sdk.Context, transaction types.Com
 func (k Keeper) ProcessPayment(ctx sdk.Context, transactionID string) error {
 	transaction, found := k.GetCommerceTransaction(ctx, transactionID)
 	if !found {
-		return sdkerrors.Wrapf(types.ErrTransactionNotFound, "transaction %s not found", transactionID)
+		return errorsmod.Wrapf(types.ErrTransactionNotFound, "transaction %s not found", transactionID)
 	}
 
 	if transaction.Status != types.PaymentStatusPending {
-		return sdkerrors.Wrapf(types.ErrInvalidTransactionStatus, "transaction %s is not pending", transactionID)
+		return errorsmod.Wrapf(types.ErrInvalidTransactionStatus, "transaction %s is not pending", transactionID)
 	}
 
 	// Update status to processing
@@ -395,7 +395,7 @@ func (k Keeper) CreateTradeFinanceInstrument(ctx sdk.Context, instrument types.F
 	// Check if issuer has authority
 	issuerAddr, err := sdk.AccAddressFromBech32(instrument.Issuer)
 	if err != nil {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidAddress, "invalid issuer address: %s", err)
+		return errorsmod.Wrapf(sdkerrors.ErrInvalidAddress, "invalid issuer address: %s", err)
 	}
 
 	// Verify issuer has sufficient balance for collateral

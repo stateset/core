@@ -5,7 +5,8 @@ import (
 	"time"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
+	"cosmossdk.io/math"
 	"github.com/stateset/core/x/invoice/types"
 )
 
@@ -55,9 +56,9 @@ type DisputeResolutionConfig struct {
 
 // EscrowFees defines escrow fee structure
 type EscrowFees struct {
-	ServiceFee    sdk.Dec   `json:"service_fee"`
-	ReleaseFee    sdk.Dec   `json:"release_fee"`
-	DisputeFee    sdk.Dec   `json:"dispute_fee"`
+	ServiceFee    math.LegacyDec   `json:"service_fee"`
+	ReleaseFee    math.LegacyDec   `json:"release_fee"`
+	DisputeFee    math.LegacyDec   `json:"dispute_fee"`
 	FeeRecipient  string    `json:"fee_recipient"`
 }
 
@@ -162,7 +163,7 @@ func (spm *SmartPaymentManager) ProcessConditionalPayment(ctx sdk.Context, invoi
 	// Get invoice
 	invoice, found := spm.keeper.GetInvoice(ctx, invoiceID)
 	if !found {
-		return sdkerrors.Wrapf(types.ErrInvoiceNotFound, "invoice %s not found", invoiceID)
+		return errorsmod.Wrapf(types.ErrInvoiceNotFound, "invoice %s not found", invoiceID)
 	}
 
 	// Check if all conditions are met
@@ -185,7 +186,7 @@ func (spm *SmartPaymentManager) ApproveInvoice(ctx sdk.Context, invoiceID string
 	// Get approval workflow
 	workflow, found := spm.getApprovalWorkflow(ctx, invoiceID)
 	if !found {
-		return sdkerrors.Wrap(types.ErrInvoiceNotFound, "approval workflow not found")
+		return errorsmod.Wrap(types.ErrInvoiceNotFound, "approval workflow not found")
 	}
 
 	// Find the approver
@@ -198,16 +199,16 @@ func (spm *SmartPaymentManager) ApproveInvoice(ctx sdk.Context, invoiceID string
 	}
 
 	if approverIndex == -1 {
-		return sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "address not authorized to approve this invoice")
+		return errorsmod.Wrap(errorsmod.ErrUnauthorized, "address not authorized to approve this invoice")
 	}
 
 	// Check if already approved or rejected
 	approver := &workflow.RequiredApprovers[approverIndex]
 	if approver.ApprovedAt != nil {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invoice already approved by this address")
+		return errorsmod.Wrap(errorsmod.ErrInvalidRequest, "invoice already approved by this address")
 	}
 	if approver.RejectedAt != nil {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "invoice already rejected by this address")
+		return errorsmod.Wrap(errorsmod.ErrInvalidRequest, "invoice already rejected by this address")
 	}
 
 	// Verify signature
@@ -275,7 +276,7 @@ func (spm *SmartPaymentManager) ProcessScheduledPayments(ctx sdk.Context) error 
 func (spm *SmartPaymentManager) ReleaseEscrow(ctx sdk.Context, invoiceID string) error {
 	escrowConfig, found := spm.getEscrowConfig(ctx, invoiceID)
 	if !found {
-		return sdkerrors.Wrap(types.ErrInvoiceNotFound, "escrow configuration not found")
+		return errorsmod.Wrap(types.ErrInvoiceNotFound, "escrow configuration not found")
 	}
 
 	// Check if all release conditions are met
@@ -285,7 +286,7 @@ func (spm *SmartPaymentManager) ReleaseEscrow(ctx sdk.Context, invoiceID string)
 	}
 
 	if !allConditionsMet {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "release conditions not met")
+		return errorsmod.Wrap(errorsmod.ErrInvalidRequest, "release conditions not met")
 	}
 
 	// Release escrow funds
