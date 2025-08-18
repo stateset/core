@@ -18,7 +18,7 @@ COPY . .
 
 # Clean up go.mod and build
 RUN go mod tidy -compat=1.23 || true && \
-    CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o /bin/statesetd ./cmd/cored
+    CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o /bin/statesetd ./cmd/statesetd
 
 # Final stage
 FROM alpine:latest

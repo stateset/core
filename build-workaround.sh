@@ -26,21 +26,21 @@ docker run --rm -v $BUILD_DIR:/app -w /app golang:1.23-alpine sh -c '
   
   # Try to build without updating dependencies
   mkdir -p build
-  go build -mod=readonly -tags "netgo" -ldflags "-w -s" -o build/cored ./cmd/cored || {
+  go build -mod=readonly -tags "netgo" -ldflags "-w -s" -o build/statesetd ./cmd/statesetd || {
     echo "Direct build failed, trying with vendor..."
     
     # If that fails, try vendoring
     go mod vendor
-    go build -mod=vendor -tags "netgo" -ldflags "-w -s" -o build/cored ./cmd/cored
+    go build -mod=vendor -tags "netgo" -ldflags "-w -s" -o build/statesetd ./cmd/statesetd
   }
 '
 
 # Copy the binary back if successful
-if [ -f "$BUILD_DIR/build/cored" ]; then
-  cp -f "$BUILD_DIR/build/cored" ./build/cored
-  echo "Build successful! Binary copied to ./build/cored"
-  chmod +x ./build/cored
-  ls -lah ./build/cored
+if [ -f "$BUILD_DIR/build/statesetd" ]; then
+  cp -f "$BUILD_DIR/build/statesetd" ./build/statesetd
+  echo "Build successful! Binary copied to ./build/statesetd"
+  chmod +x ./build/statesetd
+  ls -lah ./build/statesetd
 else
   echo "Build failed!"
   exit 1

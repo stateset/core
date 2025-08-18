@@ -11,7 +11,7 @@ WORKDIR /app
 COPY . .
 
 # Build the binary without go mod tidy
-RUN CGO_ENABLED=1 go build -tags "netgo ledger" -ldflags "-w -s" -o build/cored ./cmd/cored
+RUN CGO_ENABLED=1 go build -tags "netgo ledger" -ldflags "-w -s" -o build/statesetd ./cmd/statesetd
 
 # Runtime stage
 FROM alpine:latest
@@ -24,12 +24,12 @@ RUN addgroup -g 1000 stateset && \
     adduser -u 1000 -G stateset -s /bin/sh -D stateset
 
 # Create data directory
-RUN mkdir -p /home/stateset/.core && \
+RUN mkdir -p /home/stateset/.stateset && \
     chown -R stateset:stateset /home/stateset
 
 # Copy binary from builder
-COPY --from=builder /app/build/cored /usr/local/bin/cored
-RUN chmod +x /usr/local/bin/cored
+COPY --from=builder /app/build/statesetd /usr/local/bin/statesetd
+RUN chmod +x /usr/local/bin/statesetd
 
 # Switch to non-root user
 USER stateset
@@ -39,4 +39,4 @@ WORKDIR /home/stateset
 EXPOSE 26656 26657 1317 9090 9091
 
 # Set entrypoint
-ENTRYPOINT ["cored"]
+ENTRYPOINT ["statesetd"]

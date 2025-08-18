@@ -32,7 +32,7 @@ go mod tidy
 echo "✅ Updated go modules"
 
 echo "Step 5: Building the project..."
-if go build ./cmd/cored; then
+if go build ./cmd/statesetd; then
     echo "✅ Build successful!"
     echo ""
     echo "🎉 All build issues resolved!"
@@ -50,5 +50,5 @@ fi
 echo ""
 echo "🚀 Next steps:"
 echo "1. Run tests: go test ./..."
-echo "2. Start the blockchain: ./cored start"
+echo "2. Start the blockchain: ./statesetd start"
 echo "3. Deploy to production environment"

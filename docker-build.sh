@@ -6,13 +6,13 @@ docker run --rm -v $(pwd):/app -w /app golang:1.23-alpine sh -c "
   go mod tidy -compat=1.21 && \
   go mod download && \
   mkdir -p build && \
-  go build -o build/cored ./cmd/cored
+  go build -o build/statesetd ./cmd/statesetd
 "
 
 # Check if build succeeded
-if [ -f build/cored ]; then
-  echo "Build successful! Binary is at build/cored"
-  ls -lah build/cored
+if [ -f build/statesetd ]; then
+  echo "Build successful! Binary is at build/statesetd"
+  ls -lah build/statesetd
 else
   echo "Build failed!"
   exit 1

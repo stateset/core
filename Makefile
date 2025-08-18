@@ -69,9 +69,9 @@ all: install
 
 build: go.sum
 ifeq ($(OS),Windows_NT)
-	go build -mod=readonly $(BUILD_FLAGS) -o build/statesetd.exe ./cmd/cored
+	go build -mod=readonly $(BUILD_FLAGS) -o build/statesetd.exe ./cmd/statesetd
 else
-	go build -mod=readonly $(BUILD_FLAGS) -o build/statesetd ./cmd/cored
+	go build -mod=readonly $(BUILD_FLAGS) -o build/statesetd ./cmd/statesetd
 endif
 
 build-reproducible: go.sum
@@ -88,7 +88,7 @@ build-reproducible: go.sum
 	$(DOCKER) rm -f statesetd-extract
 
 install: go.sum
-	go install -mod=readonly $(BUILD_FLAGS) ./cmd/cored
+	go install -mod=readonly $(BUILD_FLAGS) ./cmd/statesetd
 
 ###############################################################################
 ###                          Tools & Dependencies                          ###

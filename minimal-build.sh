@@ -31,20 +31,20 @@ docker exec stateset-builder sh -c '
   go get github.com/cosmos/cosmos-sdk@v0.50.6
   
   # Build with minimal flags
-  go build -mod=mod -o build/cored ./cmd/cored || {
+  go build -mod=mod -o build/statesetd ./cmd/statesetd || {
     echo "Build failed, trying simpler approach..."
     # If fails, just compile the main file
-    cd cmd/cored
-    go build -mod=mod -o ../../build/cored main.go
+    cd cmd/statesetd
+    go build -mod=mod -o ../../build/statesetd main.go
   }
 '
 
 # Check if build succeeded
-docker exec stateset-builder test -f build/cored && {
+docker exec stateset-builder test -f build/statesetd && {
   echo "Build successful!"
-  docker cp stateset-builder:/workspace/build/cored ./build/cored
-  chmod +x ./build/cored
-  ls -lah ./build/cored
+  docker cp stateset-builder:/workspace/build/statesetd ./build/statesetd
+  chmod +x ./build/statesetd
+  ls -lah ./build/statesetd
 } || {
   echo "Build failed!"
 }
