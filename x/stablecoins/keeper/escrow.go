@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "cosmossdk.io/errors"
 	"github.com/stateset/core/x/stablecoins/types"
@@ -236,7 +237,7 @@ func (k Keeper) IsValidStablecoin(ctx sdk.Context, denom string) bool {
 }
 
 // ValidateStablecoinPayment validates a stablecoin payment
-func (k Keeper) ValidateStablecoinPayment(ctx sdk.Context, denom string, amount sdk.Int) error {
+func (k Keeper) ValidateStablecoinPayment(ctx sdk.Context, denom string, amount math.Int) error {
 	// Check if stablecoin exists
 	stablecoin, found := k.GetStablecoin(ctx, denom)
 	if !found {

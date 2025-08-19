@@ -5,6 +5,7 @@ import (
 
 	"github.com/cometbft/cometbft/libs/log"
 
+	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "cosmossdk.io/errors"
@@ -16,8 +17,8 @@ import (
 type (
 	Keeper struct {
 		cdc        codec.BinaryCodec
-		storeKey   sdk.StoreKey
-		memKey     sdk.StoreKey
+		storeKey   storetypes.StoreKey
+		memKey     storetypes.StoreKey
 		paramstore paramtypes.Subspace
 
 		accountKeeper types.AccountKeeper
@@ -28,7 +29,7 @@ type (
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey,
-	memKey sdk.StoreKey,
+	memKey storetypes.StoreKey,
 	ps paramtypes.Subspace,
 	accountKeeper types.AccountKeeper,
 	bankKeeper types.BankKeeper,
@@ -314,15 +315,15 @@ func (k Keeper) BurnStablecoin(ctx sdk.Context, msg *types.MsgBurnStablecoin) er
 
 // ----- Access Control -----
 
-// IsWhitelisted checks if an address is whitelisted for a stablecoin
-func (k Keeper) IsWhitelisted(ctx sdk.Context, denom, address string) bool {
+// CheckIsWhitelisted checks if an address is whitelisted for a stablecoin
+func (k Keeper) CheckIsWhitelisted(ctx sdk.Context, denom, address string) bool {
 	store := ctx.KVStore(k.storeKey)
 	key := append(types.WhitelistKeyPrefix, types.WhitelistKey(denom, address)...)
 	return store.Has(key)
 }
 
-// IsBlacklisted checks if an address is blacklisted for a stablecoin
-func (k Keeper) IsBlacklisted(ctx sdk.Context, denom, address string) bool {
+// CheckIsBlacklisted checks if an address is blacklisted for a stablecoin
+func (k Keeper) CheckIsBlacklisted(ctx sdk.Context, denom, address string) bool {
 	store := ctx.KVStore(k.storeKey)
 	key := append(types.BlacklistKeyPrefix, types.BlacklistKey(denom, address)...)
 	return store.Has(key)
@@ -356,7 +357,7 @@ func (k Keeper) GetStablecoinCount(ctx sdk.Context) uint64 {
 }
 
 // GetStoreKey returns the store key
-func (k Keeper) GetStoreKey() sdk.StoreKey {
+func (k Keeper) GetStoreKey() storetypes.StoreKey {
 	return k.storeKey
 }
 

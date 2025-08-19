@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "cosmossdk.io/errors"
 	"github.com/stateset/core/x/stablecoins/types"
@@ -14,7 +15,7 @@ type EnhancedStablecoin struct {
 	Base               types.Stablecoin         `json:"base"`
 	GlobalCompliance   GlobalComplianceInfo     `json:"global_compliance"`
 	ExchangeRates      []ExchangeRateInfo       `json:"exchange_rates"`
-	LiquidityPools     []LiquidityPool          `json:"liquidity_pools"`
+	LiquidityPools     []EnhancedLiquidityPool          `json:"liquidity_pools"`
 	CrossChainConfig   CrossChainConfiguration  `json:"cross_chain_config"`
 	CommerceFeatures   CommerceFeatureSet       `json:"commerce_features"`
 	AIOptimization     AIOptimizationConfig     `json:"ai_optimization"`
@@ -24,10 +25,10 @@ type EnhancedStablecoin struct {
 // GlobalComplianceInfo contains compliance information for multiple jurisdictions
 type GlobalComplianceInfo struct {
 	Jurisdictions      []JurisdictionCompliance `json:"jurisdictions"`
-	RegulatorReports   []RegulatorReport        `json:"regulator_reports"`
-	AMLConfiguration   AMLConfiguration         `json:"aml_configuration"`
-	KYCRequirements    KYCRequirements          `json:"kyc_requirements"`
-	TaxIntegration     TaxIntegration           `json:"tax_integration"`
+	RegulatorReports   []EnhancedRegulatorReport        `json:"regulator_reports"`
+	AMLConfiguration   EnhancedAMLConfiguration         `json:"aml_configuration"`
+	KYCRequirements    EnhancedKYCRequirements          `json:"kyc_requirements"`
+	TaxIntegration     EnhancedTaxIntegration           `json:"tax_integration"`
 	LastComplianceCheck time.Time               `json:"last_compliance_check"`
 }
 
@@ -66,20 +67,20 @@ type ReportingRequirement struct {
 type ExchangeRateInfo struct {
 	BaseCurrency   string    `json:"base_currency"`
 	TargetCurrency string    `json:"target_currency"`
-	Rate           sdk.Dec   `json:"rate"`
+	Rate           math.LegacyDec   `json:"rate"`
 	Source         string    `json:"source"`
 	LastUpdated    time.Time `json:"last_updated"`
 	Confidence     float64   `json:"confidence"`
-	Spread         sdk.Dec   `json:"spread"`
+	Spread         math.LegacyDec   `json:"spread"`
 }
 
-// LiquidityPool represents a liquidity pool for the stablecoin
-type LiquidityPool struct {
+// EnhancedLiquidityPool represents a liquidity pool for the stablecoin
+type EnhancedLiquidityPool struct {
 	ID               string            `json:"id"`
 	PairCurrencies   []string          `json:"pair_currencies"`
 	TotalLiquidity   sdk.Coins         `json:"total_liquidity"`
 	Volume24h        sdk.Coins         `json:"volume_24h"`
-	FeeRate          sdk.Dec           `json:"fee_rate"`
+	FeeRate          math.LegacyDec           `json:"fee_rate"`
 	Providers        []LiquidityProvider `json:"providers"`
 	RewardsProgram   *RewardsProgram   `json:"rewards_program,omitempty"`
 	Status           string            `json:"status"`
@@ -89,7 +90,7 @@ type LiquidityPool struct {
 type LiquidityProvider struct {
 	Address        string    `json:"address"`
 	Contribution   sdk.Coins `json:"contribution"`
-	SharePercentage sdk.Dec  `json:"share_percentage"`
+	SharePercentage math.LegacyDec  `json:"share_percentage"`
 	RewardsEarned  sdk.Coins `json:"rewards_earned"`
 	JoinedAt       time.Time `json:"joined_at"`
 }
@@ -97,7 +98,7 @@ type LiquidityProvider struct {
 // RewardsProgram represents a liquidity rewards program
 type RewardsProgram struct {
 	Type           string    `json:"type"`
-	RewardRate     sdk.Dec   `json:"reward_rate"`
+	RewardRate     math.LegacyDec   `json:"reward_rate"`
 	Duration       time.Duration `json:"duration"`
 	TotalRewards   sdk.Coins `json:"total_rewards"`
 	RemainingRewards sdk.Coins `json:"remaining_rewards"`
@@ -107,21 +108,21 @@ type RewardsProgram struct {
 
 // CrossChainConfiguration contains cross-chain bridge configurations
 type CrossChainConfiguration struct {
-	SupportedChains    []ChainConfig     `json:"supported_chains"`
+	SupportedChains    []EnhancedChainConfig     `json:"supported_chains"`
 	BridgeContracts    []BridgeContract  `json:"bridge_contracts"`
 	CrossChainLimits   CrossChainLimits  `json:"cross_chain_limits"`
 	SecurityConfig     SecurityConfig    `json:"security_config"`
 }
 
-// ChainConfig represents configuration for a supported chain
-type ChainConfig struct {
+// EnhancedChainConfig represents configuration for a supported chain
+type EnhancedChainConfig struct {
 	ChainID        string            `json:"chain_id"`
 	ChainName      string            `json:"chain_name"`
 	TokenAddress   string            `json:"token_address"`
 	BridgeAddress  string            `json:"bridge_address"`
 	Decimals       uint32            `json:"decimals"`
-	MinAmount      sdk.Int           `json:"min_amount"`
-	MaxAmount      sdk.Int           `json:"max_amount"`
+	MinAmount      math.Int           `json:"min_amount"`
+	MaxAmount      math.Int           `json:"max_amount"`
 	FeeStructure   CrossChainFee     `json:"fee_structure"`
 	IsActive       bool              `json:"is_active"`
 }
@@ -183,10 +184,10 @@ type SmartPaymentsConfig struct {
 // MicroPaymentConfig configures micro-payment features
 type MicroPaymentConfig struct {
 	Enabled        bool      `json:"enabled"`
-	MinAmount      sdk.Int   `json:"min_amount"`
-	BatchingThreshold sdk.Int `json:"batching_threshold"`
+	MinAmount      math.Int   `json:"min_amount"`
+	BatchingThreshold math.Int `json:"batching_threshold"`
 	BatchingDelay  time.Duration `json:"batching_delay"`
-	FeeReduction   sdk.Dec   `json:"fee_reduction"`
+	FeeReduction   math.LegacyDec   `json:"fee_reduction"`
 }
 
 // TradeFinanceIntegration configures trade finance features
@@ -206,7 +207,7 @@ type InsuranceProduct struct {
 	Type            string    `json:"type"`
 	Provider        string    `json:"provider"`
 	CoverageLimit   sdk.Coins `json:"coverage_limit"`
-	Premium         sdk.Dec   `json:"premium"`
+	Premium         math.LegacyDec   `json:"premium"`
 	Terms           string    `json:"terms"`
 	IsActive        bool      `json:"is_active"`
 }
@@ -258,7 +259,7 @@ type ResponseAction struct {
 
 // StablecoinAnalytics contains comprehensive analytics
 type StablecoinAnalytics struct {
-	CirculatingSupply    sdk.Int              `json:"circulating_supply"`
+	CirculatingSupply    math.Int              `json:"circulating_supply"`
 	TotalTransactions    uint64               `json:"total_transactions"`
 	DailyVolume          sdk.Coins            `json:"daily_volume"`
 	WeeklyVolume         sdk.Coins            `json:"weekly_volume"`
@@ -422,10 +423,10 @@ func (k Keeper) ProcessCrossBorderPayment(ctx sdk.Context, denom string, from, t
 }
 
 // OptimizeExchangeRate uses AI to optimize exchange rates
-func (k Keeper) OptimizeExchangeRate(ctx sdk.Context, denom, baseCurrency, targetCurrency string) (sdk.Dec, error) {
+func (k Keeper) OptimizeExchangeRate(ctx sdk.Context, denom, baseCurrency, targetCurrency string) (math.LegacyDec, error) {
 	enhanced, found := k.GetEnhancedStablecoin(ctx, denom)
 	if !found {
-		return sdk.ZeroDec(), errorsmod.Wrapf(types.ErrStablecoinNotFound, "enhanced stablecoin %s not found", denom)
+		return math.LegacyZeroDec(), errorsmod.Wrapf(types.ErrStablecoinNotFound, "enhanced stablecoin %s not found", denom)
 	}
 
 	if !enhanced.AIOptimization.PredictivePricing {
@@ -479,7 +480,7 @@ func (k Keeper) initializeExchangeRates(ctx sdk.Context, denom string, rates []E
 	return nil
 }
 
-func (k Keeper) setupLiquidityPools(ctx sdk.Context, denom string, pools []LiquidityPool) error {
+func (k Keeper) setupLiquidityPools(ctx sdk.Context, denom string, pools []EnhancedLiquidityPool) error {
 	// Implementation for setting up liquidity pools
 	return nil
 }
@@ -527,12 +528,121 @@ func (k Keeper) generateComplianceReport(ctx sdk.Context, denom string, from, to
 	// Implementation for generating compliance reports
 }
 
-func (k Keeper) getCurrentExchangeRate(ctx sdk.Context, base, target string) (sdk.Dec, error) {
+func (k Keeper) getCurrentExchangeRate(ctx sdk.Context, base, target string) (math.LegacyDec, error) {
 	// Implementation for getting current exchange rate
-	return sdk.OneDec(), nil
+	return math.LegacyOneDec(), nil
 }
 
-func (k Keeper) predictOptimalExchangeRate(ctx sdk.Context, enhanced EnhancedStablecoin, base, target string) (sdk.Dec, error) {
+func (k Keeper) predictOptimalExchangeRate(ctx sdk.Context, enhanced EnhancedStablecoin, base, target string) (math.LegacyDec, error) {
 	// Implementation for AI-powered exchange rate prediction
-	return sdk.OneDec(), nil
+	return math.LegacyOneDec(), nil
+}
+// Add missing type definitions
+
+// EnhancedRegulatorReport represents a regulatory report
+type EnhancedRegulatorReport struct {
+	ID           string    `json:"id"`
+	Regulator    string    `json:"regulator"`
+	ReportType   string    `json:"report_type"`
+	SubmittedAt  time.Time `json:"submitted_at"`
+	Status       string    `json:"status"`
+}
+
+// EnhancedAMLConfiguration represents AML configuration
+type EnhancedAMLConfiguration struct {
+	Enabled          bool     `json:"enabled"`
+	RiskLevels       []string `json:"risk_levels"`
+	ScreeningLists   []string `json:"screening_lists"`
+	TransactionLimit sdk.Coins `json:"transaction_limit"`
+}
+
+// EnhancedKYCRequirements represents KYC requirements
+type EnhancedKYCRequirements struct {
+	Level            string   `json:"level"`
+	RequiredDocuments []string `json:"required_documents"`
+	VerificationTime time.Duration `json:"verification_time"`
+}
+
+// EnhancedTaxIntegration represents tax integration
+type EnhancedTaxIntegration struct {
+	Enabled      bool              `json:"enabled"`
+	TaxRates     map[string]float64 `json:"tax_rates"`
+	ReportingFreq time.Duration    `json:"reporting_freq"`
+}
+
+// CrossChainFee represents cross-chain fee structure
+type CrossChainFee struct {
+	FixedFee      sdk.Coins `json:"fixed_fee"`
+	PercentageFee math.LegacyDec `json:"percentage_fee"`
+}
+
+// SecurityAudit represents a security audit
+type SecurityAudit struct {
+	Auditor      string    `json:"auditor"`
+	AuditDate    time.Time `json:"audit_date"`
+	ReportHash   string    `json:"report_hash"`
+	IsApproved   bool      `json:"is_approved"`
+}
+
+// IncidentResponse represents incident response configuration
+type IncidentResponse struct {
+	AutoPause    bool      `json:"auto_pause"`
+	AlertLevel   string    `json:"alert_level"`
+	Contacts     []string  `json:"contacts"`
+}
+
+// MonitoringConfig represents monitoring configuration
+type MonitoringConfig struct {
+	Enabled       bool      `json:"enabled"`
+	MetricsEndpoint string  `json:"metrics_endpoint"`
+	AlertsEndpoint  string  `json:"alerts_endpoint"`
+}
+
+// SupplyChainFinance represents supply chain finance features
+type SupplyChainFinance struct {
+	Enabled          bool      `json:"enabled"`
+	InvoiceFactoring bool      `json:"invoice_factoring"`
+	PaymentTerms     []string  `json:"payment_terms"`
+}
+
+// EscrowServiceConfig represents escrow service configuration
+type EscrowServiceConfig struct {
+	Enabled       bool              `json:"enabled"`
+	AutoRelease   bool              `json:"auto_release"`
+	DisputePeriod time.Duration     `json:"dispute_period"`
+}
+
+// InstallmentPlanConfig represents installment plan configuration
+type InstallmentPlanConfig struct {
+	Enabled        bool              `json:"enabled"`
+	MaxInstallments int              `json:"max_installments"`
+	InterestRate   math.LegacyDec    `json:"interest_rate"`
+}
+
+// LoyaltyProgramConfig represents loyalty program configuration
+type LoyaltyProgramConfig struct {
+	Enabled        bool              `json:"enabled"`
+	RewardRate     math.LegacyDec    `json:"reward_rate"`
+	RewardToken    string            `json:"reward_token"`
+}
+
+// LiquidityMetrics represents liquidity metrics
+type LiquidityMetrics struct {
+	TotalLiquidity sdk.Coins         `json:"total_liquidity"`
+	DepthRatio     float64           `json:"depth_ratio"`
+	SpreadAverage  float64           `json:"spread_average"`
+}
+
+// EfficiencyMetrics represents efficiency metrics
+type EfficiencyMetrics struct {
+	AverageGasCost   math.Int          `json:"average_gas_cost"`
+	TransactionSpeed float64           `json:"transaction_speed"`
+	SuccessRate      float64           `json:"success_rate"`
+}
+
+// ReliabilityMetrics represents reliability metrics
+type ReliabilityMetrics struct {
+	Uptime           float64           `json:"uptime"`
+	ErrorRate        float64           `json:"error_rate"`
+	RecoveryTime     time.Duration     `json:"recovery_time"`
 }

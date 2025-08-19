@@ -6,6 +6,7 @@ import (
 	"math"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "cosmossdk.io/errors"
 	"github.com/stateset/core/x/stablecoins/types"
@@ -25,7 +26,7 @@ type SSUSDStablecoinEngine struct {
 
 // SSUSDPegMaintainer maintains the USD peg for ssUSD
 type SSUSDPegMaintainer struct {
-	targetPrice           sdk.Dec                    `json:"target_price"`
+	targetPrice           sdkmath.LegacyDec                    `json:"target_price"`
 	priceToleranceBPS     int64                     `json:"price_tolerance_bps"` // basis points
 	rebalanceThresholdBPS int64                     `json:"rebalance_threshold_bps"`
 	priceFeeds           map[string]*SSUSDPriceFeed `json:"price_feeds"`
@@ -38,21 +39,21 @@ type SSUSDPegMaintainer struct {
 type SSUSDPriceFeed struct {
 	Provider         string    `json:"provider"`         // "chainlink", "coingecko", "binance", etc.
 	Asset           string    `json:"asset"`            // "USD", "USDC", "USDT"
-	Price           sdk.Dec   `json:"price"`
-	Weight          sdk.Dec   `json:"weight"`           // Weight in price calculation
+	Price           sdkmath.LegacyDec   `json:"price"`
+	Weight          sdkmath.LegacyDec   `json:"weight"`           // Weight in price calculation
 	LastUpdate      time.Time `json:"last_update"`
 	IsActive        bool      `json:"is_active"`
-	DeviationLimit  sdk.Dec   `json:"deviation_limit"`  // Max allowed deviation
+	DeviationLimit  sdkmath.LegacyDec   `json:"deviation_limit"`  // Max allowed deviation
 	UpdateFrequency int64     `json:"update_frequency"` // Update frequency in seconds
 }
 
 // SSUSDRebalanceEvent tracks rebalancing operations
 type SSUSDRebalanceEvent struct {
 	Timestamp       time.Time `json:"timestamp"`
-	PriceBefore     sdk.Dec   `json:"price_before"`
-	PriceAfter      sdk.Dec   `json:"price_after"`
+	PriceBefore     sdkmath.LegacyDec   `json:"price_before"`
+	PriceAfter      sdkmath.LegacyDec   `json:"price_after"`
 	Action          string    `json:"action"`          // "mint", "burn", "adjust_rates"
-	AmountAdjusted  sdk.Int   `json:"amount_adjusted"`
+	AmountAdjusted  sdkmath.Int   `json:"amount_adjusted"`
 	TriggerReason   string    `json:"trigger_reason"`
 	Success         bool      `json:"success"`
 	GasUsed         uint64    `json:"gas_used"`
@@ -73,10 +74,10 @@ type SSUSDLiquidityPool struct {
 	ID              string     `json:"id"`
 	TokenPair       string     `json:"token_pair"`      // e.g., "ssUSD/USDC"
 	TotalLiquidity  sdk.Coins  `json:"total_liquidity"`
-	PoolShare       sdk.Dec    `json:"pool_share"`      // Share of total ssUSD liquidity
-	APY             sdk.Dec    `json:"apy"`
-	TradingFee      sdk.Dec    `json:"trading_fee"`     // Trading fee percentage
-	RewardMultiplier sdk.Dec   `json:"reward_multiplier"`
+	PoolShare       sdkmath.LegacyDec    `json:"pool_share"`      // Share of total ssUSD liquidity
+	APY             sdkmath.LegacyDec    `json:"apy"`
+	TradingFee      sdkmath.LegacyDec    `json:"trading_fee"`     // Trading fee percentage
+	RewardMultiplier sdkmath.LegacyDec   `json:"reward_multiplier"`
 	IsActive        bool       `json:"is_active"`
 	CreatedAt       time.Time  `json:"created_at"`
 	LastUpdate      time.Time  `json:"last_update"`
@@ -86,12 +87,12 @@ type SSUSDLiquidityPool struct {
 type SSUSDLPPosition struct {
 	UserAddress       string    `json:"user_address"`
 	PoolID           string    `json:"pool_id"`
-	LPTokens         sdk.Int   `json:"lp_tokens"`
+	LPTokens         sdkmath.Int   `json:"lp_tokens"`
 	ProvidedLiquidity sdk.Coins `json:"provided_liquidity"`
 	AccruedRewards   sdk.Coins `json:"accrued_rewards"`
 	LastRewardClaim  time.Time `json:"last_reward_claim"`
-	EntryPrice       sdk.Dec   `json:"entry_price"`
-	ImpermanentLoss  sdk.Dec   `json:"impermanent_loss"`
+	EntryPrice       sdkmath.LegacyDec   `json:"entry_price"`
+	ImpermanentLoss  sdkmath.LegacyDec   `json:"impermanent_loss"`
 }
 
 // SSUSDRewardsPool manages rewards distribution
@@ -102,35 +103,35 @@ type SSUSDRewardsPool struct {
 	TotalDistributed  sdk.Coins  `json:"total_distributed"`
 	StartTime         time.Time  `json:"start_time"`
 	EndTime           time.Time  `json:"end_time"`
-	EmissionSchedule  []sdk.Dec  `json:"emission_schedule"`
+	EmissionSchedule  []sdkmath.LegacyDec  `json:"emission_schedule"`
 }
 
 // SSUSDCollateralManager handles collateral backing ssUSD
 type SSUSDCollateralManager struct {
 	collateralTypes    map[string]*SSUSDCollateralType `json:"collateral_types"`
 	totalCollateral    sdk.Coins                       `json:"total_collateral"`
-	collateralRatio    sdk.Dec                         `json:"collateral_ratio"`
+	collateralRatio    sdkmath.LegacyDec                         `json:"collateral_ratio"`
 	liquidationEngine  *SSUSDLiquidationEngine         `json:"liquidation_engine"`
-	diversificationTarget map[string]sdk.Dec           `json:"diversification_target"`
+	diversificationTarget map[string]sdkmath.LegacyDec           `json:"diversification_target"`
 }
 
 // SSUSDCollateralType defines a type of collateral backing ssUSD
 type SSUSDCollateralType struct {
 	Denom              string    `json:"denom"`
-	LTV                sdk.Dec   `json:"ltv"`                // Loan-to-value ratio
-	LiquidationThreshold sdk.Dec `json:"liquidation_threshold"`
-	LiquidationPenalty sdk.Dec   `json:"liquidation_penalty"`
-	MaxAllocation      sdk.Dec   `json:"max_allocation"`     // Max % of total collateral
-	CurrentAllocation  sdk.Dec   `json:"current_allocation"`
-	PriceVolatility    sdk.Dec   `json:"price_volatility"`
+	LTV                sdkmath.LegacyDec   `json:"ltv"`                // Loan-to-value ratio
+	LiquidationThreshold sdkmath.LegacyDec `json:"liquidation_threshold"`
+	LiquidationPenalty sdkmath.LegacyDec   `json:"liquidation_penalty"`
+	MaxAllocation      sdkmath.LegacyDec   `json:"max_allocation"`     // Max % of total collateral
+	CurrentAllocation  sdkmath.LegacyDec   `json:"current_allocation"`
+	PriceVolatility    sdkmath.LegacyDec   `json:"price_volatility"`
 	IsActive          bool      `json:"is_active"`
-	RiskWeight        sdk.Dec   `json:"risk_weight"`
+	RiskWeight        sdkmath.LegacyDec   `json:"risk_weight"`
 }
 
 // SSUSDLiquidationEngine handles liquidations
 type SSUSDLiquidationEngine struct {
 	liquidationQueue    []SSUSDLiquidationPosition `json:"liquidation_queue"`
-	liquidationRewards  sdk.Dec                    `json:"liquidation_rewards"`
+	liquidationRewards  sdkmath.LegacyDec                    `json:"liquidation_rewards"`
 	gracePeriod         time.Duration              `json:"grace_period"`
 	auctionDuration     time.Duration              `json:"auction_duration"`
 }
@@ -140,8 +141,8 @@ type SSUSDLiquidationPosition struct {
 	PositionID       string    `json:"position_id"`
 	Owner           string    `json:"owner"`
 	CollateralAmount sdk.Coins `json:"collateral_amount"`
-	DebtAmount      sdk.Int   `json:"debt_amount"`
-	LiquidationPrice sdk.Dec  `json:"liquidation_price"`
+	DebtAmount      sdkmath.Int   `json:"debt_amount"`
+	LiquidationPrice sdkmath.LegacyDec  `json:"liquidation_price"`
 	AuctionStartTime time.Time `json:"auction_start_time"`
 	Status          string    `json:"status"` // "pending", "active", "completed"
 }
@@ -158,10 +159,10 @@ type SSUSDYieldOptimizer struct {
 type SSUSDYieldStrategy struct {
 	ID                string    `json:"id"`
 	Name             string    `json:"name"`
-	TargetAPY        sdk.Dec   `json:"target_apy"`
+	TargetAPY        sdkmath.LegacyDec   `json:"target_apy"`
 	RiskLevel        string    `json:"risk_level"`  // "low", "medium", "high"
 	AllocatedFunds   sdk.Coins `json:"allocated_funds"`
-	CurrentAPY       sdk.Dec   `json:"current_apy"`
+	CurrentAPY       sdkmath.LegacyDec   `json:"current_apy"`
 	Strategy         string    `json:"strategy"`    // "lending", "staking", "liquidity_mining"
 	IsActive         bool      `json:"is_active"`
 	LastOptimization time.Time `json:"last_optimization"`
@@ -169,10 +170,10 @@ type SSUSDYieldStrategy struct {
 
 // SSUSDYieldDistribution defines how yields are distributed
 type SSUSDYieldDistribution struct {
-	HolderRewards    sdk.Dec `json:"holder_rewards"`     // % to ssUSD holders
-	LPRewards        sdk.Dec `json:"lp_rewards"`         // % to liquidity providers
-	ProtocolReserve  sdk.Dec `json:"protocol_reserve"`   // % to protocol reserve
-	BuybackBurn      sdk.Dec `json:"buyback_burn"`       // % for buyback and burn
+	HolderRewards    sdkmath.LegacyDec `json:"holder_rewards"`     // % to ssUSD holders
+	LPRewards        sdkmath.LegacyDec `json:"lp_rewards"`         // % to liquidity providers
+	ProtocolReserve  sdkmath.LegacyDec `json:"protocol_reserve"`   // % to protocol reserve
+	BuybackBurn      sdkmath.LegacyDec `json:"buyback_burn"`       // % for buyback and burn
 }
 
 // SSUSDRiskManager manages risk for the ssUSD ecosystem
@@ -191,8 +192,8 @@ type SSUSDRiskMetrics struct {
 	PegRisk              float64   `json:"peg_risk"`
 	ConcentrationRisk     float64   `json:"concentration_risk"`
 	LastStressTest       time.Time `json:"last_stress_test"`
-	VaR95                sdk.Dec   `json:"var_95"`
-	ExpectedShortfall    sdk.Dec   `json:"expected_shortfall"`
+	VaR95                sdkmath.LegacyDec   `json:"var_95"`
+	ExpectedShortfall    sdkmath.LegacyDec   `json:"expected_shortfall"`
 }
 
 // SSUSDStressTestResult represents results of stress testing
@@ -200,9 +201,9 @@ type SSUSDStressTestResult struct {
 	TestID            string            `json:"test_id"`
 	TestDate          time.Time         `json:"test_date"`
 	Scenario          string            `json:"scenario"`
-	PriceShock        sdk.Dec           `json:"price_shock"`
-	LiquidityImpact   sdk.Dec           `json:"liquidity_impact"`
-	CollateralImpact  sdk.Dec           `json:"collateral_impact"`
+	PriceShock        sdkmath.LegacyDec           `json:"price_shock"`
+	LiquidityImpact   sdkmath.LegacyDec           `json:"liquidity_impact"`
+	CollateralImpact  sdkmath.LegacyDec           `json:"collateral_impact"`
 	PegMaintenance    bool              `json:"peg_maintenance"`
 	RecoveryTime      time.Duration     `json:"recovery_time"`
 	TestResults       map[string]string `json:"test_results"`
@@ -223,8 +224,8 @@ type SSUSDCrossChainBridge struct {
 	supportedChains    map[string]*SSUSDChainConfig  `json:"supported_chains"`
 	bridgeReserves     map[string]sdk.Coins          `json:"bridge_reserves"`
 	pendingTransfers   map[string]*SSUSDCrossChainTx `json:"pending_transfers"`
-	dailyLimits        map[string]sdk.Int            `json:"daily_limits"`
-	transferFees       map[string]sdk.Dec            `json:"transfer_fees"`
+	dailyLimits        map[string]sdkmath.Int            `json:"daily_limits"`
+	transferFees       map[string]sdkmath.LegacyDec            `json:"transfer_fees"`
 }
 
 // SSUSDChainConfig represents configuration for a supported chain
@@ -234,7 +235,7 @@ type SSUSDChainConfig struct {
 	BridgeContract   string    `json:"bridge_contract"`
 	SSUSDContract    string    `json:"ssusd_contract"`
 	MinConfirmations int       `json:"min_confirmations"`
-	MaxTransferAmount sdk.Int  `json:"max_transfer_amount"`
+	MaxTransferAmount sdkmath.Int  `json:"max_transfer_amount"`
 	IsActive         bool      `json:"is_active"`
 	LastUpdate       time.Time `json:"last_update"`
 }
@@ -246,8 +247,8 @@ type SSUSDCrossChainTx struct {
 	ToChain          string    `json:"to_chain"`
 	FromAddress      string    `json:"from_address"`
 	ToAddress        string    `json:"to_address"`
-	Amount           sdk.Int   `json:"amount"`
-	Fee              sdk.Int   `json:"fee"`
+	Amount           sdkmath.Int   `json:"amount"`
+	Fee              sdkmath.Int   `json:"fee"`
 	Status           string    `json:"status"` // "pending", "confirmed", "failed"
 	TxHash           string    `json:"tx_hash"`
 	Confirmations    int       `json:"confirmations"`
@@ -259,20 +260,20 @@ type SSUSDCrossChainTx struct {
 type SSUSDRebaseController struct {
 	rebaseEnabled     bool                   `json:"rebase_enabled"`
 	rebaseFrequency   time.Duration         `json:"rebase_frequency"`
-	maxRebaseAmount   sdk.Dec               `json:"max_rebase_amount"`
-	rebaseThreshold   sdk.Dec               `json:"rebase_threshold"`
+	maxRebaseAmount   sdkmath.LegacyDec               `json:"max_rebase_amount"`
+	rebaseThreshold   sdkmath.LegacyDec               `json:"rebase_threshold"`
 	lastRebase        time.Time             `json:"last_rebase"`
 	rebaseHistory     []SSUSDRebaseEvent    `json:"rebase_history"`
-	supplyCap         sdk.Int               `json:"supply_cap"`
+	supplyCap         sdkmath.Int               `json:"supply_cap"`
 }
 
 // SSUSDRebaseEvent tracks rebase operations
 type SSUSDRebaseEvent struct {
 	Timestamp         time.Time `json:"timestamp"`
-	SupplyBefore      sdk.Int   `json:"supply_before"`
-	SupplyAfter       sdk.Int   `json:"supply_after"`
-	RebasePercentage  sdk.Dec   `json:"rebase_percentage"`
-	TriggerPrice      sdk.Dec   `json:"trigger_price"`
+	SupplyBefore      sdkmath.Int   `json:"supply_before"`
+	SupplyAfter       sdkmath.Int   `json:"supply_after"`
+	RebasePercentage  sdkmath.LegacyDec   `json:"rebase_percentage"`
+	TriggerPrice      sdkmath.LegacyDec   `json:"trigger_price"`
 	TriggerReason     string    `json:"trigger_reason"`
 	Success           bool      `json:"success"`
 }
@@ -280,7 +281,7 @@ type SSUSDRebaseEvent struct {
 // SSUSDFeeDistribution manages fee distribution
 type SSUSDFeeDistribution struct {
 	CollectedFees     sdk.Coins            `json:"collected_fees"`
-	DistributionRules map[string]sdk.Dec   `json:"distribution_rules"`
+	DistributionRules map[string]sdkmath.LegacyDec   `json:"distribution_rules"`
 	LastDistribution  time.Time            `json:"last_distribution"`
 	PendingDistribution sdk.Coins          `json:"pending_distribution"`
 }
@@ -301,14 +302,14 @@ type SSUSDConservativeReserve struct {
 	TreasuryBills   SSUSDTreasuryBills  `json:"treasury_bills"`   // 70%
 	GovernmentMMFs  SSUSDGovernmentMMFs `json:"government_mmfs"`  // 15%
 	OvernightRepos  SSUSDOvernightRepos `json:"overnight_repos"`  // 5%
-	TotalValue      sdk.Dec             `json:"total_value"`
+	TotalValue      sdkmath.LegacyDec             `json:"total_value"`
 	LastUpdate      time.Time           `json:"last_update"`
 }
 
 // SSUSDCashReserve represents FDIC-insured deposits
 type SSUSDCashReserve struct {
-	Amount          sdk.Dec   `json:"amount"`
-	Allocation      sdk.Dec   `json:"allocation"`      // 10%
+	Amount          sdkmath.LegacyDec   `json:"amount"`
+	Allocation      sdkmath.LegacyDec   `json:"allocation"`      // 10%
 	BankDeposits    []SSUSDBankDeposit `json:"bank_deposits"`
 	FDICInsured     bool      `json:"fdic_insured"`
 	RiskLevel       string    `json:"risk_level"`      // "minimal"
@@ -319,16 +320,16 @@ type SSUSDBankDeposit struct {
 	BankName        string    `json:"bank_name"`
 	RoutingNumber   string    `json:"routing_number"`
 	AccountNumber   string    `json:"account_number"`
-	Amount          sdk.Dec   `json:"amount"`
-	InterestRate    sdk.Dec   `json:"interest_rate"`
+	Amount          sdkmath.LegacyDec   `json:"amount"`
+	InterestRate    sdkmath.LegacyDec   `json:"interest_rate"`
 	FDICInsured     bool      `json:"fdic_insured"`
 	LastUpdate      time.Time `json:"last_update"`
 }
 
 // SSUSDTreasuryBills represents U.S. T-Bills with ≤93 days maturity
 type SSUSDTreasuryBills struct {
-	Amount          sdk.Dec     `json:"amount"`
-	Allocation      sdk.Dec     `json:"allocation"`    // 70%
+	Amount          sdkmath.LegacyDec     `json:"amount"`
+	Allocation      sdkmath.LegacyDec     `json:"allocation"`    // 70%
 	TBills          []SSUSDTBill `json:"t_bills"`
 	AverageMaturity int64       `json:"average_maturity"` // days
 	RiskLevel       string      `json:"risk_level"`       // "minimal"
@@ -337,17 +338,17 @@ type SSUSDTreasuryBills struct {
 // SSUSDTBill represents a single Treasury Bill
 type SSUSDTBill struct {
 	CUSIP           string    `json:"cusip"`
-	FaceValue       sdk.Dec   `json:"face_value"`
-	PurchasePrice   sdk.Dec   `json:"purchase_price"`
+	FaceValue       sdkmath.LegacyDec   `json:"face_value"`
+	PurchasePrice   sdkmath.LegacyDec   `json:"purchase_price"`
 	MaturityDate    time.Time `json:"maturity_date"`
-	YieldRate       sdk.Dec   `json:"yield_rate"`
+	YieldRate       sdkmath.LegacyDec   `json:"yield_rate"`
 	DaysToMaturity  int64     `json:"days_to_maturity"`
 }
 
 // SSUSDGovernmentMMFs represents government-only money market funds
 type SSUSDGovernmentMMFs struct {
-	Amount          sdk.Dec      `json:"amount"`
-	Allocation      sdk.Dec      `json:"allocation"`    // 15%
+	Amount          sdkmath.LegacyDec      `json:"amount"`
+	Allocation      sdkmath.LegacyDec      `json:"allocation"`    // 15%
 	MMFFunds        []SSUSDMMFFund `json:"mmf_funds"`
 	WAM             int64        `json:"wam"`           // Weighted Average Maturity
 	RiskLevel       string       `json:"risk_level"`    // "minimal"
@@ -357,29 +358,29 @@ type SSUSDGovernmentMMFs struct {
 type SSUSDMMFFund struct {
 	FundName        string    `json:"fund_name"`
 	FundSymbol      string    `json:"fund_symbol"`
-	SharesHeld      sdk.Dec   `json:"shares_held"`
-	NAVPerShare     sdk.Dec   `json:"nav_per_share"`
-	YieldRate       sdk.Dec   `json:"yield_rate"`
+	SharesHeld      sdkmath.LegacyDec   `json:"shares_held"`
+	NAVPerShare     sdkmath.LegacyDec   `json:"nav_per_share"`
+	YieldRate       sdkmath.LegacyDec   `json:"yield_rate"`
 	GovernmentOnly  bool      `json:"government_only"`
 	LastUpdate      time.Time `json:"last_update"`
 }
 
 // SSUSDOvernightRepos represents tri-party repo agreements
 type SSUSDOvernightRepos struct {
-	Amount          sdk.Dec     `json:"amount"`
-	Allocation      sdk.Dec     `json:"allocation"`    // 5%
+	Amount          sdkmath.LegacyDec     `json:"amount"`
+	Allocation      sdkmath.LegacyDec     `json:"allocation"`    // 5%
 	RepoAgreements  []SSUSDRepo `json:"repo_agreements"`
-	AverageRate     sdk.Dec     `json:"average_rate"`
+	AverageRate     sdkmath.LegacyDec     `json:"average_rate"`
 	RiskLevel       string      `json:"risk_level"`    // "low"
 }
 
 // SSUSDRepo represents a single repo agreement
 type SSUSDRepo struct {
 	CounterpartyID  string    `json:"counterparty_id"`
-	Principal       sdk.Dec   `json:"principal"`
+	Principal       sdkmath.LegacyDec   `json:"principal"`
 	CollateralType  string    `json:"collateral_type"`
-	CollateralValue sdk.Dec   `json:"collateral_value"`
-	RepoRate        sdk.Dec   `json:"repo_rate"`
+	CollateralValue sdkmath.LegacyDec   `json:"collateral_value"`
+	RepoRate        sdkmath.LegacyDec   `json:"repo_rate"`
 	MaturityDate    time.Time `json:"maturity_date"`
 	TriParty        bool      `json:"tri_party"`
 }
@@ -387,7 +388,7 @@ type SSUSDRepo struct {
 // SSUSDIssueRequest represents a request to issue (mint) ssUSD
 type SSUSDIssueRequest struct {
 	Requester       string    `json:"requester"`
-	Amount          sdk.Int   `json:"amount"`
+	Amount          sdkmath.Int   `json:"amount"`
 	ReservePayment  sdk.Coins `json:"reserve_payment"`  // Payment in reserve assets
 	RequestTime     time.Time `json:"request_time"`
 }
@@ -395,7 +396,7 @@ type SSUSDIssueRequest struct {
 // SSUSDRedeemRequest represents a request to redeem (burn) ssUSD
 type SSUSDRedeemRequest struct {
 	Requester       string    `json:"requester"`
-	SSUSDAmount     sdk.Int   `json:"ssusd_amount"`
+	SSUSDAmount     sdkmath.Int   `json:"ssusd_amount"`
 	PreferredAsset  string    `json:"preferred_asset"`  // Preferred reserve asset for redemption
 	RequestTime     time.Time `json:"request_time"`
 }
@@ -405,7 +406,7 @@ func NewSSUSDStablecoinEngine(keeper *Keeper) *SSUSDStablecoinEngine {
 	return &SSUSDStablecoinEngine{
 		keeper: keeper,
 		pegMaintainer: &SSUSDPegMaintainer{
-			targetPrice:           sdk.OneDec(), // $1.00
+			targetPrice:           sdkmath.LegacyOneDec(), // $1.00
 			priceToleranceBPS:     50,           // 0.5%
 			rebalanceThresholdBPS: 100,          // 1%
 			priceFeeds:           make(map[string]*SSUSDPriceFeed),
@@ -419,7 +420,7 @@ func NewSSUSDStablecoinEngine(keeper *Keeper) *SSUSDStablecoinEngine {
 		},
 		collateralManager: &SSUSDCollateralManager{
 			collateralTypes:    make(map[string]*SSUSDCollateralType),
-			diversificationTarget: make(map[string]sdk.Dec),
+			diversificationTarget: make(map[string]sdkmath.LegacyDec),
 		},
 		yieldOptimizer: &SSUSDYieldOptimizer{
 			strategies:        make(map[string]*SSUSDYieldStrategy),
@@ -433,14 +434,14 @@ func NewSSUSDStablecoinEngine(keeper *Keeper) *SSUSDStablecoinEngine {
 			supportedChains:  make(map[string]*SSUSDChainConfig),
 			bridgeReserves:   make(map[string]sdk.Coins),
 			pendingTransfers: make(map[string]*SSUSDCrossChainTx),
-			dailyLimits:      make(map[string]sdk.Int),
-			transferFees:     make(map[string]sdk.Dec),
+			dailyLimits:      make(map[string]sdkmath.Int),
+			transferFees:     make(map[string]sdkmath.LegacyDec),
 		},
 		rebaseController: &SSUSDRebaseController{
 			rebaseEnabled:    true,
 			rebaseFrequency:  24 * time.Hour,
-			maxRebaseAmount:  sdk.NewDecWithPrec(5, 2), // 5%
-			rebaseThreshold:  sdk.NewDecWithPrec(1, 2), // 1%
+			maxRebaseAmount:  sdkmath.LegacyNewDecWithPrec(5, 2), // 5%
+			rebaseThreshold:  sdkmath.LegacyNewDecWithPrec(1, 2), // 1%
 		},
 	}
 }
@@ -453,8 +454,8 @@ func (engine *SSUSDStablecoinEngine) InitializeSSUSD(ctx sdk.Context) error {
 		// Define ssUSD with enhanced configuration
 		pegInfo := &types.PegInfo{
 			TargetAsset:          "USD",
-			TargetPrice:          sdk.OneDec(),
-			PriceTolerance:       sdk.NewDecWithPrec(5, 3), // 0.5%
+			TargetPrice:          sdkmath.LegacyOneDec(),
+			PriceTolerance:       sdkmath.LegacyNewDecWithPrec(5, 3), // 0.5%
 			OracleSources:        []string{"chainlink", "band", "internal"},
 			RebalancingFrequency: "daily",
 		}
@@ -463,39 +464,39 @@ func (engine *SSUSDStablecoinEngine) InitializeSSUSD(ctx sdk.Context) error {
 			ReserveAssets: []*types.ReserveAsset{
 				{
 					Denom:  "us_cash_token",        // U.S. Dollar Cash (FDIC-insured deposits)
-					Amount: sdk.ZeroInt(),
-					Weight: sdk.NewDecWithPrec(10, 2), // 10%
-					Price:  sdk.OneDec(),
+					Amount: sdkmath.ZeroInt(),
+					Weight: sdkmath.LegacyNewDecWithPrec(10, 2), // 10%
+					Price:  sdkmath.LegacyOneDec(),
 				},
 				{
 					Denom:  "treasury_bill_token",  // Treasury Bills (≤93 days maturity)
-					Amount: sdk.ZeroInt(),
-					Weight: sdk.NewDecWithPrec(70, 2), // 70%
-					Price:  sdk.OneDec(),
+					Amount: sdkmath.ZeroInt(),
+					Weight: sdkmath.LegacyNewDecWithPrec(70, 2), // 70%
+					Price:  sdkmath.LegacyOneDec(),
 				},
 				{
 					Denom:  "mmf_token",           // Government-only money market funds
-					Amount: sdk.ZeroInt(),
-					Weight: sdk.NewDecWithPrec(15, 2), // 15%
-					Price:  sdk.OneDec(),
+					Amount: sdkmath.ZeroInt(),
+					Weight: sdkmath.LegacyNewDecWithPrec(15, 2), // 15%
+					Price:  sdkmath.LegacyOneDec(),
 				},
 				{
 					Denom:  "repo_token",          // Tri-party repo agreements
-					Amount: sdk.ZeroInt(),
-					Weight: sdk.NewDecWithPrec(5, 2), // 5%
-					Price:  sdk.OneDec(),
+					Amount: sdkmath.ZeroInt(),
+					Weight: sdkmath.LegacyNewDecWithPrec(5, 2), // 5%
+					Price:  sdkmath.LegacyOneDec(),
 				},
 			},
-			TotalReserveValue: sdk.ZeroDec(),
-			ReserveRatio:      sdk.NewDecWithPrec(100, 2), // 100% for 1:1 backing
-			MinReserveRatio:   sdk.NewDecWithPrec(100, 2), // 100% minimum for stable backing
+			TotalReserveValue: sdkmath.LegacyZeroDec(),
+			ReserveRatio:      sdkmath.LegacyNewDecWithPrec(100, 2), // 100% for 1:1 backing
+			MinReserveRatio:   sdkmath.LegacyNewDecWithPrec(100, 2), // 100% minimum for stable backing
 		}
 
 		feeInfo := &types.FeeInfo{
-			MintFee:        sdk.NewDecWithPrec(1, 3),  // 0.1%
-			BurnFee:        sdk.NewDecWithPrec(1, 3),  // 0.1%
-			TransferFee:    sdk.NewDecWithPrec(5, 4),  // 0.05%
-			RedemptionFee:  sdk.NewDecWithPrec(2, 3),  // 0.2%
+			MintFee:        sdkmath.LegacyNewDecWithPrec(1, 3),  // 0.1%
+			BurnFee:        sdkmath.LegacyNewDecWithPrec(1, 3),  // 0.1%
+			TransferFee:    sdkmath.LegacyNewDecWithPrec(5, 4),  // 0.05%
+			RedemptionFee:  sdkmath.LegacyNewDecWithPrec(2, 3),  // 0.2%
 			FeeRecipient:   "", // Module account
 		}
 
@@ -572,28 +573,28 @@ func (engine *SSUSDStablecoinEngine) initializePriceFeeds(ctx sdk.Context) {
 		"chainlink_usd": {
 			Provider:        "chainlink",
 			Asset:          "USD",
-			Price:          sdk.OneDec(),
-			Weight:         sdk.NewDecWithPrec(40, 2), // 40%
+			Price:          sdkmath.LegacyOneDec(),
+			Weight:         sdkmath.LegacyNewDecWithPrec(40, 2), // 40%
 			IsActive:       true,
-			DeviationLimit: sdk.NewDecWithPrec(2, 2), // 2%
+			DeviationLimit: sdkmath.LegacyNewDecWithPrec(2, 2), // 2%
 			UpdateFrequency: 300, // 5 minutes
 		},
 		"band_usd": {
 			Provider:        "band",
 			Asset:          "USD",
-			Price:          sdk.OneDec(),
-			Weight:         sdk.NewDecWithPrec(30, 2), // 30%
+			Price:          sdkmath.LegacyOneDec(),
+			Weight:         sdkmath.LegacyNewDecWithPrec(30, 2), // 30%
 			IsActive:       true,
-			DeviationLimit: sdk.NewDecWithPrec(2, 2), // 2%
+			DeviationLimit: sdkmath.LegacyNewDecWithPrec(2, 2), // 2%
 			UpdateFrequency: 300, // 5 minutes
 		},
 		"internal_twap": {
 			Provider:        "internal",
 			Asset:          "USD",
-			Price:          sdk.OneDec(),
-			Weight:         sdk.NewDecWithPrec(30, 2), // 30%
+			Price:          sdkmath.LegacyOneDec(),
+			Weight:         sdkmath.LegacyNewDecWithPrec(30, 2), // 30%
 			IsActive:       true,
-			DeviationLimit: sdk.NewDecWithPrec(3, 2), // 3%
+			DeviationLimit: sdkmath.LegacyNewDecWithPrec(3, 2), // 3%
 			UpdateFrequency: 60, // 1 minute
 		},
 	}
@@ -606,54 +607,54 @@ func (engine *SSUSDStablecoinEngine) initializeCollateralTypes(ctx sdk.Context) 
 	collateralTypes := map[string]*SSUSDCollateralType{
 		"uusdc": {
 			Denom:               "uusdc",
-			LTV:                 sdk.NewDecWithPrec(90, 2), // 90%
-			LiquidationThreshold: sdk.NewDecWithPrec(95, 2), // 95%
-			LiquidationPenalty:  sdk.NewDecWithPrec(5, 2),  // 5%
-			MaxAllocation:       sdk.NewDecWithPrec(40, 2), // 40%
-			PriceVolatility:     sdk.NewDecWithPrec(1, 2),  // 1%
+			LTV:                 sdkmath.LegacyNewDecWithPrec(90, 2), // 90%
+			LiquidationThreshold: sdkmath.LegacyNewDecWithPrec(95, 2), // 95%
+			LiquidationPenalty:  sdkmath.LegacyNewDecWithPrec(5, 2),  // 5%
+			MaxAllocation:       sdkmath.LegacyNewDecWithPrec(40, 2), // 40%
+			PriceVolatility:     sdkmath.LegacyNewDecWithPrec(1, 2),  // 1%
 			IsActive:           true,
-			RiskWeight:         sdk.NewDecWithPrec(10, 2),  // 10%
+			RiskWeight:         sdkmath.LegacyNewDecWithPrec(10, 2),  // 10%
 		},
 		"uusdt": {
 			Denom:               "uusdt",
-			LTV:                 sdk.NewDecWithPrec(90, 2), // 90%
-			LiquidationThreshold: sdk.NewDecWithPrec(95, 2), // 95%
-			LiquidationPenalty:  sdk.NewDecWithPrec(5, 2),  // 5%
-			MaxAllocation:       sdk.NewDecWithPrec(30, 2), // 30%
-			PriceVolatility:     sdk.NewDecWithPrec(1, 2),  // 1%
+			LTV:                 sdkmath.LegacyNewDecWithPrec(90, 2), // 90%
+			LiquidationThreshold: sdkmath.LegacyNewDecWithPrec(95, 2), // 95%
+			LiquidationPenalty:  sdkmath.LegacyNewDecWithPrec(5, 2),  // 5%
+			MaxAllocation:       sdkmath.LegacyNewDecWithPrec(30, 2), // 30%
+			PriceVolatility:     sdkmath.LegacyNewDecWithPrec(1, 2),  // 1%
 			IsActive:           true,
-			RiskWeight:         sdk.NewDecWithPrec(10, 2),  // 10%
+			RiskWeight:         sdkmath.LegacyNewDecWithPrec(10, 2),  // 10%
 		},
 		"uatom": {
 			Denom:               "uatom",
-			LTV:                 sdk.NewDecWithPrec(70, 2), // 70%
-			LiquidationThreshold: sdk.NewDecWithPrec(80, 2), // 80%
-			LiquidationPenalty:  sdk.NewDecWithPrec(10, 2), // 10%
-			MaxAllocation:       sdk.NewDecWithPrec(20, 2), // 20%
-			PriceVolatility:     sdk.NewDecWithPrec(20, 2), // 20%
+			LTV:                 sdkmath.LegacyNewDecWithPrec(70, 2), // 70%
+			LiquidationThreshold: sdkmath.LegacyNewDecWithPrec(80, 2), // 80%
+			LiquidationPenalty:  sdkmath.LegacyNewDecWithPrec(10, 2), // 10%
+			MaxAllocation:       sdkmath.LegacyNewDecWithPrec(20, 2), // 20%
+			PriceVolatility:     sdkmath.LegacyNewDecWithPrec(20, 2), // 20%
 			IsActive:           true,
-			RiskWeight:         sdk.NewDecWithPrec(30, 2),  // 30%
+			RiskWeight:         sdkmath.LegacyNewDecWithPrec(30, 2),  // 30%
 		},
 		"ustake": {
 			Denom:               "ustake",
-			LTV:                 sdk.NewDecWithPrec(60, 2), // 60%
-			LiquidationThreshold: sdk.NewDecWithPrec(75, 2), // 75%
-			LiquidationPenalty:  sdk.NewDecWithPrec(15, 2), // 15%
-			MaxAllocation:       sdk.NewDecWithPrec(10, 2), // 10%
-			PriceVolatility:     sdk.NewDecWithPrec(30, 2), // 30%
+			LTV:                 sdkmath.LegacyNewDecWithPrec(60, 2), // 60%
+			LiquidationThreshold: sdkmath.LegacyNewDecWithPrec(75, 2), // 75%
+			LiquidationPenalty:  sdkmath.LegacyNewDecWithPrec(15, 2), // 15%
+			MaxAllocation:       sdkmath.LegacyNewDecWithPrec(10, 2), // 10%
+			PriceVolatility:     sdkmath.LegacyNewDecWithPrec(30, 2), // 30%
 			IsActive:           true,
-			RiskWeight:         sdk.NewDecWithPrec(40, 2),  // 40%
+			RiskWeight:         sdkmath.LegacyNewDecWithPrec(40, 2),  // 40%
 		},
 	}
 
 	engine.collateralManager.collateralTypes = collateralTypes
 	
 	// Set diversification targets
-	engine.collateralManager.diversificationTarget = map[string]sdk.Dec{
-		"uusdc":  sdk.NewDecWithPrec(40, 2), // 40%
-		"uusdt":  sdk.NewDecWithPrec(30, 2), // 30%
-		"uatom":  sdk.NewDecWithPrec(20, 2), // 20%
-		"ustake": sdk.NewDecWithPrec(10, 2), // 10%
+	engine.collateralManager.diversificationTarget = map[string]sdkmath.LegacyDec{
+		"uusdc":  sdkmath.LegacyNewDecWithPrec(40, 2), // 40%
+		"uusdt":  sdkmath.LegacyNewDecWithPrec(30, 2), // 30%
+		"uatom":  sdkmath.LegacyNewDecWithPrec(20, 2), // 20%
+		"ustake": sdkmath.LegacyNewDecWithPrec(10, 2), // 10%
 	}
 }
 
@@ -664,10 +665,10 @@ func (engine *SSUSDStablecoinEngine) initializeLiquidityPools(ctx sdk.Context) {
 			ID:               "ssusd_usdc",
 			TokenPair:        "ssUSD/USDC",
 			TotalLiquidity:   sdk.NewCoins(),
-			PoolShare:        sdk.NewDecWithPrec(40, 2), // 40%
-			APY:              sdk.NewDecWithPrec(8, 2),  // 8%
-			TradingFee:       sdk.NewDecWithPrec(3, 3),  // 0.3%
-			RewardMultiplier: sdk.NewDecWithPrec(120, 2), // 1.2x
+			PoolShare:        sdkmath.LegacyNewDecWithPrec(40, 2), // 40%
+			APY:              sdkmath.LegacyNewDecWithPrec(8, 2),  // 8%
+			TradingFee:       sdkmath.LegacyNewDecWithPrec(3, 3),  // 0.3%
+			RewardMultiplier: sdkmath.LegacyNewDecWithPrec(120, 2), // 1.2x
 			IsActive:         true,
 			CreatedAt:        time.Now(),
 		},
@@ -675,10 +676,10 @@ func (engine *SSUSDStablecoinEngine) initializeLiquidityPools(ctx sdk.Context) {
 			ID:               "ssusd_usdt",
 			TokenPair:        "ssUSD/USDT",
 			TotalLiquidity:   sdk.NewCoins(),
-			PoolShare:        sdk.NewDecWithPrec(30, 2), // 30%
-			APY:              sdk.NewDecWithPrec(7, 2),  // 7%
-			TradingFee:       sdk.NewDecWithPrec(3, 3),  // 0.3%
-			RewardMultiplier: sdk.NewDecWithPrec(110, 2), // 1.1x
+			PoolShare:        sdkmath.LegacyNewDecWithPrec(30, 2), // 30%
+			APY:              sdkmath.LegacyNewDecWithPrec(7, 2),  // 7%
+			TradingFee:       sdkmath.LegacyNewDecWithPrec(3, 3),  // 0.3%
+			RewardMultiplier: sdkmath.LegacyNewDecWithPrec(110, 2), // 1.1x
 			IsActive:         true,
 			CreatedAt:        time.Now(),
 		},
@@ -686,10 +687,10 @@ func (engine *SSUSDStablecoinEngine) initializeLiquidityPools(ctx sdk.Context) {
 			ID:               "ssusd_atom",
 			TokenPair:        "ssUSD/ATOM",
 			TotalLiquidity:   sdk.NewCoins(),
-			PoolShare:        sdk.NewDecWithPrec(20, 2), // 20%
-			APY:              sdk.NewDecWithPrec(12, 2), // 12%
-			TradingFee:       sdk.NewDecWithPrec(5, 3),  // 0.5%
-			RewardMultiplier: sdk.NewDecWithPrec(150, 2), // 1.5x
+			PoolShare:        sdkmath.LegacyNewDecWithPrec(20, 2), // 20%
+			APY:              sdkmath.LegacyNewDecWithPrec(12, 2), // 12%
+			TradingFee:       sdkmath.LegacyNewDecWithPrec(5, 3),  // 0.5%
+			RewardMultiplier: sdkmath.LegacyNewDecWithPrec(150, 2), // 1.5x
 			IsActive:         true,
 			CreatedAt:        time.Now(),
 		},
@@ -697,10 +698,10 @@ func (engine *SSUSDStablecoinEngine) initializeLiquidityPools(ctx sdk.Context) {
 			ID:               "ssusd_stake",
 			TokenPair:        "ssUSD/STAKE",
 			TotalLiquidity:   sdk.NewCoins(),
-			PoolShare:        sdk.NewDecWithPrec(10, 2), // 10%
-			APY:              sdk.NewDecWithPrec(15, 2), // 15%
-			TradingFee:       sdk.NewDecWithPrec(5, 3),  // 0.5%
-			RewardMultiplier: sdk.NewDecWithPrec(180, 2), // 1.8x
+			PoolShare:        sdkmath.LegacyNewDecWithPrec(10, 2), // 10%
+			APY:              sdkmath.LegacyNewDecWithPrec(15, 2), // 15%
+			TradingFee:       sdkmath.LegacyNewDecWithPrec(5, 3),  // 0.5%
+			RewardMultiplier: sdkmath.LegacyNewDecWithPrec(180, 2), // 1.8x
 			IsActive:         true,
 			CreatedAt:        time.Now(),
 		},
@@ -715,7 +716,7 @@ func (engine *SSUSDStablecoinEngine) initializeYieldStrategies(ctx sdk.Context) 
 		"stable_lending": {
 			ID:               "stable_lending",
 			Name:            "Stable Asset Lending",
-			TargetAPY:       sdk.NewDecWithPrec(6, 2), // 6%
+			TargetAPY:       sdkmath.LegacyNewDecWithPrec(6, 2), // 6%
 			RiskLevel:       "low",
 			AllocatedFunds:  sdk.NewCoins(),
 			Strategy:        "lending",
@@ -725,7 +726,7 @@ func (engine *SSUSDStablecoinEngine) initializeYieldStrategies(ctx sdk.Context) 
 		"liquidity_mining": {
 			ID:               "liquidity_mining",
 			Name:            "Liquidity Mining",
-			TargetAPY:       sdk.NewDecWithPrec(10, 2), // 10%
+			TargetAPY:       sdkmath.LegacyNewDecWithPrec(10, 2), // 10%
 			RiskLevel:       "medium",
 			AllocatedFunds:  sdk.NewCoins(),
 			Strategy:        "liquidity_mining",
@@ -735,7 +736,7 @@ func (engine *SSUSDStablecoinEngine) initializeYieldStrategies(ctx sdk.Context) 
 		"cross_chain_yield": {
 			ID:               "cross_chain_yield",
 			Name:            "Cross-Chain Yield Farming",
-			TargetAPY:       sdk.NewDecWithPrec(15, 2), // 15%
+			TargetAPY:       sdkmath.LegacyNewDecWithPrec(15, 2), // 15%
 			RiskLevel:       "high",
 			AllocatedFunds:  sdk.NewCoins(),
 			Strategy:        "staking",
@@ -748,21 +749,21 @@ func (engine *SSUSDStablecoinEngine) initializeYieldStrategies(ctx sdk.Context) 
 
 	// Set yield distribution rules
 	engine.yieldOptimizer.distributionRules = &SSUSDYieldDistribution{
-		HolderRewards:   sdk.NewDecWithPrec(60, 2), // 60%
-		LPRewards:       sdk.NewDecWithPrec(25, 2), // 25%
-		ProtocolReserve: sdk.NewDecWithPrec(10, 2), // 10%
-		BuybackBurn:     sdk.NewDecWithPrec(5, 2),  // 5%
+		HolderRewards:   sdkmath.LegacyNewDecWithPrec(60, 2), // 60%
+		LPRewards:       sdkmath.LegacyNewDecWithPrec(25, 2), // 25%
+		ProtocolReserve: sdkmath.LegacyNewDecWithPrec(10, 2), // 10%
+		BuybackBurn:     sdkmath.LegacyNewDecWithPrec(5, 2),  // 5%
 	}
 }
 
 // GetSSUSDPrice returns the current price of ssUSD
-func (engine *SSUSDStablecoinEngine) GetSSUSDPrice(ctx sdk.Context) sdk.Dec {
+func (engine *SSUSDStablecoinEngine) GetSSUSDPrice(ctx sdk.Context) sdkmath.LegacyDec {
 	if engine.pegMaintainer.emergencyMode {
 		return engine.pegMaintainer.targetPrice
 	}
 
-	totalWeight := sdk.ZeroDec()
-	weightedPrice := sdk.ZeroDec()
+	totalWeight := sdkmath.LegacyZeroDec()
+	weightedPrice := sdkmath.LegacyZeroDec()
 
 	for _, feed := range engine.pegMaintainer.priceFeeds {
 		if feed.IsActive && time.Since(feed.LastUpdate) < time.Duration(feed.UpdateFrequency)*time.Second {
@@ -779,7 +780,7 @@ func (engine *SSUSDStablecoinEngine) GetSSUSDPrice(ctx sdk.Context) sdk.Dec {
 }
 
 // UpdateSSUSDPrice updates the price feeds for ssUSD
-func (engine *SSUSDStablecoinEngine) UpdateSSUSDPrice(ctx sdk.Context, provider string, price sdk.Dec) error {
+func (engine *SSUSDStablecoinEngine) UpdateSSUSDPrice(ctx sdk.Context, provider string, price sdkmath.LegacyDec) error {
 	feed, exists := engine.pegMaintainer.priceFeeds[provider]
 	if !exists {
 		return errorsmod.Wrapf(types.ErrInvalidPriceFeed, "price feed not found: %s", provider)
@@ -804,7 +805,7 @@ func (engine *SSUSDStablecoinEngine) UpdateSSUSDPrice(ctx sdk.Context, provider 
 	newPrice := engine.GetSSUSDPrice(ctx)
 	priceDeviation := newPrice.Sub(engine.pegMaintainer.targetPrice).Quo(engine.pegMaintainer.targetPrice).Abs()
 	
-	if priceDeviation.GT(sdk.NewDecWithPrec(engine.pegMaintainer.rebalanceThresholdBPS, 4)) {
+	if priceDeviation.GT(sdkmath.LegacyNewDecWithPrec(engine.pegMaintainer.rebalanceThresholdBPS, 4)) {
 		return engine.triggerRebalance(ctx, newPrice, priceDeviation)
 	}
 
@@ -822,28 +823,28 @@ func (engine *SSUSDStablecoinEngine) UpdateSSUSDPrice(ctx sdk.Context, provider 
 }
 
 // triggerRebalance triggers a rebalancing operation
-func (engine *SSUSDStablecoinEngine) triggerRebalance(ctx sdk.Context, currentPrice, deviation sdk.Dec) error {
+func (engine *SSUSDStablecoinEngine) triggerRebalance(ctx sdk.Context, currentPrice, deviation sdkmath.LegacyDec) error {
 	// Prevent frequent rebalancing
 	if time.Since(engine.pegMaintainer.lastRebalance) < time.Hour {
 		return nil
 	}
 
 	action := "none"
-	var amountAdjusted sdk.Int
+	var amountAdjusted sdkmath.Int
 
 	// Determine rebalancing action based on price deviation
 	if currentPrice.GT(engine.pegMaintainer.targetPrice) {
 		// Price too high, increase supply
 		action = "mint"
 		// Calculate mint amount based on deviation (simplified)
-		supplyIncrease := deviation.Mul(sdk.NewDec(1000000)) // Scale factor
-		amountAdjusted = sdk.NewIntFromBigInt(supplyIncrease.BigInt())
+		supplyIncrease := deviation.Mul(sdkmath.LegacyNewDec(1000000)) // Scale factor
+		amountAdjusted = sdkmath.NewIntFromBigInt(supplyIncrease.BigInt())
 	} else {
 		// Price too low, decrease supply
 		action = "burn"
 		// Calculate burn amount based on deviation
-		supplyDecrease := deviation.Mul(sdk.NewDec(1000000)) // Scale factor
-		amountAdjusted = sdk.NewIntFromBigInt(supplyDecrease.BigInt())
+		supplyDecrease := deviation.Mul(sdkmath.LegacyNewDec(1000000)) // Scale factor
+		amountAdjusted = sdkmath.NewIntFromBigInt(supplyDecrease.BigInt())
 	}
 
 	// Record rebalance event
@@ -876,7 +877,7 @@ func (engine *SSUSDStablecoinEngine) triggerRebalance(ctx sdk.Context, currentPr
 
 // OptimizeYield optimizes yield generation for ssUSD
 func (engine *SSUSDStablecoinEngine) OptimizeYield(ctx sdk.Context) error {
-	totalYield := sdk.ZeroDec()
+	totalYield := sdkmath.LegacyZeroDec()
 	
 	for strategyID, strategy := range engine.yieldOptimizer.strategies {
 		if !strategy.IsActive {
@@ -898,7 +899,7 @@ func (engine *SSUSDStablecoinEngine) OptimizeYield(ctx sdk.Context) error {
 }
 
 // distributeYields distributes generated yields
-func (engine *SSUSDStablecoinEngine) distributeYields(ctx sdk.Context, totalYield sdk.Dec) error {
+func (engine *SSUSDStablecoinEngine) distributeYields(ctx sdk.Context, totalYield sdkmath.LegacyDec) error {
 	rules := engine.yieldOptimizer.distributionRules
 	
 	// Calculate distribution amounts
@@ -947,12 +948,12 @@ func (engine *SSUSDStablecoinEngine) GetSSUSDMetrics(ctx sdk.Context) (*SSUSDMet
 
 // SSUSDMetrics represents comprehensive metrics for ssUSD
 type SSUSDMetrics struct {
-	CurrentPrice      sdk.Dec     `json:"current_price"`
-	TargetPrice       sdk.Dec     `json:"target_price"`
-	TotalSupply       sdk.Int     `json:"total_supply"`
-	CollateralRatio   sdk.Dec     `json:"collateral_ratio"`
+	CurrentPrice      sdkmath.LegacyDec     `json:"current_price"`
+	TargetPrice       sdkmath.LegacyDec     `json:"target_price"`
+	TotalSupply       sdkmath.Int     `json:"total_supply"`
+	CollateralRatio   sdkmath.LegacyDec     `json:"collateral_ratio"`
 	TotalLiquidity    sdk.Coins   `json:"total_liquidity"`
-	AverageAPY        sdk.Dec     `json:"average_apy"`
+	AverageAPY        sdkmath.LegacyDec     `json:"average_apy"`
 	RiskScore         float64     `json:"risk_score"`
 	ActivePools       int64       `json:"active_pools"`
 	CrossChainSupport int64       `json:"cross_chain_support"`
@@ -960,9 +961,9 @@ type SSUSDMetrics struct {
 }
 
 // calculateAverageAPY calculates the weighted average APY
-func (engine *SSUSDStablecoinEngine) calculateAverageAPY() sdk.Dec {
-	totalWeight := sdk.ZeroDec()
-	weightedAPY := sdk.ZeroDec()
+func (engine *SSUSDStablecoinEngine) calculateAverageAPY() sdkmath.LegacyDec {
+	totalWeight := sdkmath.LegacyZeroDec()
+	weightedAPY := sdkmath.LegacyZeroDec()
 
 	for _, pool := range engine.liquidityManager.pools {
 		if pool.IsActive {
@@ -973,7 +974,7 @@ func (engine *SSUSDStablecoinEngine) calculateAverageAPY() sdk.Dec {
 	}
 
 	if totalWeight.IsZero() {
-		return sdk.ZeroDec()
+		return sdkmath.LegacyZeroDec()
 	}
 
 	return weightedAPY.Quo(totalWeight)
@@ -998,7 +999,7 @@ func (engine *SSUSDStablecoinEngine) IssueSSUSD(ctx sdk.Context, request SSUSDIs
 	}
 
 	// Ensure 1:1 backing - reserve value must equal or exceed ssUSD amount
-	ssUSDValue := sdk.NewDecFromInt(request.Amount).QuoInt64(1000000) // Convert from micro units
+	ssUSDValue := sdkmath.LegacyNewDecFromInt(request.Amount).QuoInt64(1000000) // Convert from micro units
 	if reserveValue.LT(ssUSDValue) {
 		return errorsmod.Wrapf(types.ErrInsufficientCollateral, 
 			"reserve value %s insufficient for ssUSD amount %s", 
@@ -1090,7 +1091,7 @@ func (engine *SSUSDStablecoinEngine) RedeemSSUSD(ctx sdk.Context, request SSUSDR
 	}
 
 	// Calculate reserve value to redeem (1:1 backing)
-	redeemValue := sdk.NewDecFromInt(request.SSUSDAmount).QuoInt64(1000000) // Convert from micro units
+	redeemValue := sdkmath.LegacyNewDecFromInt(request.SSUSDAmount).QuoInt64(1000000) // Convert from micro units
 
 	// Calculate reserve assets to redeem based on current composition
 	reserveAssets, err := engine.calculateRedemptionAssets(ctx, redeemValue, request.PreferredAsset)
@@ -1145,18 +1146,18 @@ func (engine *SSUSDStablecoinEngine) RedeemSSUSD(ctx sdk.Context, request SSUSDR
 }
 
 // calculateReserveValue calculates the USD value of reserve assets
-func (engine *SSUSDStablecoinEngine) calculateReserveValue(ctx sdk.Context, reserves sdk.Coins) (sdk.Dec, error) {
-	totalValue := sdk.ZeroDec()
+func (engine *SSUSDStablecoinEngine) calculateReserveValue(ctx sdk.Context, reserves sdk.Coins) (sdkmath.LegacyDec, error) {
+	totalValue := sdkmath.LegacyZeroDec()
 
 	for _, coin := range reserves {
 		// Get price for each asset
 		price, err := engine.getAssetPrice(ctx, coin.Denom)
 		if err != nil {
-			return sdk.ZeroDec(), err
+			return sdkmath.LegacyZeroDec(), err
 		}
 
 		// Calculate value: amount * price
-		assetValue := sdk.NewDecFromInt(coin.Amount).Mul(price)
+		assetValue := sdkmath.LegacyNewDecFromInt(coin.Amount).Mul(price)
 		totalValue = totalValue.Add(assetValue)
 	}
 
@@ -1180,11 +1181,11 @@ func (engine *SSUSDStablecoinEngine) validateReserveComposition(ctx sdk.Context,
 	newTotalValue := reserves.TotalValue.Add(paymentValue)
 
 	// Define target allocations based on conservative composition
-	targetAllocations := map[string]sdk.Dec{
-		"us_cash":         sdk.NewDecWithPrec(10, 2), // 10%
-		"treasury_bills":  sdk.NewDecWithPrec(70, 2), // 70%
-		"government_mmfs": sdk.NewDecWithPrec(15, 2), // 15%
-		"overnight_repos": sdk.NewDecWithPrec(5, 2),  // 5%
+	targetAllocations := map[string]sdkmath.LegacyDec{
+		"us_cash":         sdkmath.LegacyNewDecWithPrec(10, 2), // 10%
+		"treasury_bills":  sdkmath.LegacyNewDecWithPrec(70, 2), // 70%
+		"government_mmfs": sdkmath.LegacyNewDecWithPrec(15, 2), // 15%
+		"overnight_repos": sdkmath.LegacyNewDecWithPrec(5, 2),  // 5%
 	}
 
 	// Check if payment maintains proper allocation ratios
@@ -1215,7 +1216,7 @@ func (engine *SSUSDStablecoinEngine) updateReserveComposition(ctx sdk.Context, a
 			return err
 		}
 
-		coinValue := sdk.NewDecFromInt(coin.Amount).Mul(assetValue)
+		coinValue := sdkmath.LegacyNewDecFromInt(coin.Amount).Mul(assetValue)
 		assetType := engine.getAssetType(coin.Denom)
 
 		// Update the appropriate reserve component
@@ -1259,7 +1260,7 @@ func (engine *SSUSDStablecoinEngine) updateReserveComposition(ctx sdk.Context, a
 }
 
 // calculateRedemptionAssets calculates which reserve assets to redeem
-func (engine *SSUSDStablecoinEngine) calculateRedemptionAssets(ctx sdk.Context, redeemValue sdk.Dec, preferredAsset string) (sdk.Coins, error) {
+func (engine *SSUSDStablecoinEngine) calculateRedemptionAssets(ctx sdk.Context, redeemValue sdkmath.LegacyDec, preferredAsset string) (sdk.Coins, error) {
 	reserves, err := engine.GetConservativeReserves(ctx)
 	if err != nil {
 		return nil, err
@@ -1270,7 +1271,7 @@ func (engine *SSUSDStablecoinEngine) calculateRedemptionAssets(ctx sdk.Context, 
 	// If preferred asset is specified and available, prioritize it
 	if preferredAsset != "" {
 		assetType := engine.getAssetType(preferredAsset)
-		var availableAmount sdk.Dec
+		var availableAmount sdkmath.LegacyDec
 
 		switch assetType {
 		case "us_cash":
@@ -1290,7 +1291,7 @@ func (engine *SSUSDStablecoinEngine) calculateRedemptionAssets(ctx sdk.Context, 
 				return nil, err
 			}
 			amount := redeemValue.Quo(price)
-			redemptionAssets = sdk.NewCoins(sdk.NewCoin(preferredAsset, sdk.NewIntFromBigInt(amount.BigInt())))
+			redemptionAssets = sdk.NewCoins(sdk.NewCoin(preferredAsset, sdkmath.NewIntFromBigInt(amount.BigInt())))
 			return redemptionAssets, nil
 		}
 	}
@@ -1306,7 +1307,7 @@ func (engine *SSUSDStablecoinEngine) calculateRedemptionAssets(ctx sdk.Context, 
 	// Redeem from each reserve type proportionally
 	assetTypes := []struct {
 		denom  string
-		amount sdk.Dec
+		amount sdkmath.LegacyDec
 	}{
 		{"us_cash_token", reserves.CashReserves.Amount},
 		{"treasury_bill_token", reserves.TreasuryBills.Amount},
@@ -1332,13 +1333,13 @@ func (engine *SSUSDStablecoinEngine) calculateRedemptionAssets(ctx sdk.Context, 
 		}
 
 		amount := assetRedeemValue.Quo(price)
-		if amount.GT(sdk.ZeroDec()) {
-			coin := sdk.NewCoin(asset.denom, sdk.NewIntFromBigInt(amount.BigInt()))
+		if amount.GT(sdkmath.LegacyZeroDec()) {
+			coin := sdk.NewCoin(asset.denom, sdkmath.NewIntFromBigInt(amount.BigInt()))
 			redemptionAssets = redemptionAssets.Add(coin)
 			remainingValue = remainingValue.Sub(assetRedeemValue)
 		}
 
-		if remainingValue.LTE(sdk.ZeroDec()) {
+		if remainingValue.LTE(sdkmath.LegacyZeroDec()) {
 			break
 		}
 	}
@@ -1347,17 +1348,17 @@ func (engine *SSUSDStablecoinEngine) calculateRedemptionAssets(ctx sdk.Context, 
 }
 
 // getAssetPrice gets the current price of an asset in USD
-func (engine *SSUSDStablecoinEngine) getAssetPrice(ctx sdk.Context, denom string) (sdk.Dec, error) {
+func (engine *SSUSDStablecoinEngine) getAssetPrice(ctx sdk.Context, denom string) (sdkmath.LegacyDec, error) {
 	// This would integrate with your price oracle system
 	// For now, returning simplified prices
 	switch denom {
 	case "us_cash_token", "treasury_bill_token", "mmf_token":
-		return sdk.OneDec(), nil // $1.00 for USD-denominated assets
+		return sdkmath.LegacyOneDec(), nil // $1.00 for USD-denominated assets
 	case "repo_token":
-		return sdk.OneDec(), nil // $1.00 for repo agreements
+		return sdkmath.LegacyOneDec(), nil // $1.00 for repo agreements
 	default:
 		// For other assets, you'd query the price oracle
-		return sdk.OneDec(), nil
+		return sdkmath.LegacyOneDec(), nil
 	}
 }
 
@@ -1387,30 +1388,30 @@ func (engine *SSUSDStablecoinEngine) GetConservativeReserves(ctx sdk.Context) (*
 		// Initialize with default values
 		return &SSUSDConservativeReserve{
 			CashReserves: SSUSDCashReserve{
-				Amount:      sdk.ZeroDec(),
-				Allocation:  sdk.NewDecWithPrec(10, 2), // 10%
+				Amount:      sdkmath.LegacyZeroDec(),
+				Allocation:  sdkmath.LegacyNewDecWithPrec(10, 2), // 10%
 				FDICInsured: true,
 				RiskLevel:   "minimal",
 			},
 			TreasuryBills: SSUSDTreasuryBills{
-				Amount:          sdk.ZeroDec(),
-				Allocation:      sdk.NewDecWithPrec(70, 2), // 70%
+				Amount:          sdkmath.LegacyZeroDec(),
+				Allocation:      sdkmath.LegacyNewDecWithPrec(70, 2), // 70%
 				AverageMaturity: 45, // 45 days average
 				RiskLevel:       "minimal",
 			},
 			GovernmentMMFs: SSUSDGovernmentMMFs{
-				Amount:     sdk.ZeroDec(),
-				Allocation: sdk.NewDecWithPrec(15, 2), // 15%
+				Amount:     sdkmath.LegacyZeroDec(),
+				Allocation: sdkmath.LegacyNewDecWithPrec(15, 2), // 15%
 				WAM:        30, // 30 days weighted average maturity
 				RiskLevel:  "minimal",
 			},
 			OvernightRepos: SSUSDOvernightRepos{
-				Amount:      sdk.ZeroDec(),
-				Allocation:  sdk.NewDecWithPrec(5, 2), // 5%
-				AverageRate: sdk.NewDecWithPrec(525, 4), // 5.25%
+				Amount:      sdkmath.LegacyZeroDec(),
+				Allocation:  sdkmath.LegacyNewDecWithPrec(5, 2), // 5%
+				AverageRate: sdkmath.LegacyNewDecWithPrec(525, 4), // 5.25%
 				RiskLevel:   "low",
 			},
-			TotalValue: sdk.ZeroDec(),
+			TotalValue: sdkmath.LegacyZeroDec(),
 			LastUpdate: time.Now(),
 		}, nil
 	}

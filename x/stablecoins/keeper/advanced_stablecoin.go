@@ -6,6 +6,7 @@ import (
 	"math"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stateset/core/x/stablecoins/types"
 )
@@ -33,7 +34,7 @@ type PriceOracle struct {
 type PriceFeed struct {
 	Source      string    `json:"source"`
 	Symbol      string    `json:"symbol"`
-	Price       sdk.Dec   `json:"price"`
+	Price       sdkmath.LegacyDec   `json:"price"`
 	Confidence  float64   `json:"confidence"`
 	LastUpdate  time.Time `json:"last_update"`
 	IsActive    bool      `json:"is_active"`
@@ -42,8 +43,8 @@ type PriceFeed struct {
 // PricePoint represents a historical price point
 type PricePoint struct {
 	Timestamp time.Time `json:"timestamp"`
-	Price     sdk.Dec   `json:"price"`
-	Volume    sdk.Int   `json:"volume"`
+	Price     sdkmath.LegacyDec   `json:"price"`
+	Volume    sdkmath.Int   `json:"volume"`
 	Source    string    `json:"source"`
 }
 
@@ -51,18 +52,18 @@ type PricePoint struct {
 type VolatilityTracker struct {
 	ShortTermVol  float64   `json:"short_term_vol"`
 	LongTermVol   float64   `json:"long_term_vol"`
-	VaR95         sdk.Dec   `json:"var_95"`
+	VaR95         sdkmath.LegacyDec   `json:"var_95"`
 	LastUpdate    time.Time `json:"last_update"`
 }
 
 // StabilityPool manages collateral and stability mechanisms
 type StabilityPool struct {
 	TotalCollateral    sdk.Coins              `json:"total_collateral"`
-	CollateralRatio    sdk.Dec                `json:"collateral_ratio"`
-	MinCollateralRatio sdk.Dec                `json:"min_collateral_ratio"`
-	StabilityFee       sdk.Dec                `json:"stability_fee"`
-	LiquidationPenalty sdk.Dec                `json:"liquidation_penalty"`
-	ReserveFactors     map[string]sdk.Dec     `json:"reserve_factors"`
+	CollateralRatio    sdkmath.LegacyDec                `json:"collateral_ratio"`
+	MinCollateralRatio sdkmath.LegacyDec                `json:"min_collateral_ratio"`
+	StabilityFee       sdkmath.LegacyDec                `json:"stability_fee"`
+	LiquidationPenalty sdkmath.LegacyDec                `json:"liquidation_penalty"`
+	ReserveFactors     map[string]sdkmath.LegacyDec     `json:"reserve_factors"`
 	PositionsByUser    map[string][]Position  `json:"positions_by_user"`
 }
 
@@ -71,11 +72,11 @@ type Position struct {
 	ID                string    `json:"id"`
 	Owner             string    `json:"owner"`
 	CollateralType    string    `json:"collateral_type"`
-	CollateralAmount  sdk.Int   `json:"collateral_amount"`
-	DebtAmount        sdk.Int   `json:"debt_amount"`
-	CollateralRatio   sdk.Dec   `json:"collateral_ratio"`
+	CollateralAmount  sdkmath.Int   `json:"collateral_amount"`
+	DebtAmount        sdkmath.Int   `json:"debt_amount"`
+	CollateralRatio   sdkmath.LegacyDec   `json:"collateral_ratio"`
 	LastUpdate        time.Time `json:"last_update"`
-	LiquidationPrice  sdk.Dec   `json:"liquidation_price"`
+	LiquidationPrice  sdkmath.LegacyDec   `json:"liquidation_price"`
 	IsLiquidatable    bool      `json:"is_liquidatable"`
 }
 
@@ -92,8 +93,8 @@ type LiquidityPool struct {
 	ID                string    `json:"id"`
 	TokenPair         string    `json:"token_pair"`
 	TotalLiquidity    sdk.Coins `json:"total_liquidity"`
-	APY               sdk.Dec   `json:"apy"`
-	TotalStaked       sdk.Int   `json:"total_staked"`
+	APY               sdkmath.LegacyDec   `json:"apy"`
+	TotalStaked       sdkmath.Int   `json:"total_staked"`
 	RewardTokens      []string  `json:"reward_tokens"`
 	PoolStartTime     time.Time `json:"pool_start_time"`
 	PoolEndTime       time.Time `json:"pool_end_time"`
@@ -115,8 +116,8 @@ type StakingPosition struct {
 	ID               string    `json:"id"`
 	User             string    `json:"user"`
 	PoolID           string    `json:"pool_id"`
-	StakedAmount     sdk.Int   `json:"staked_amount"`
-	RewardDebt       sdk.Int   `json:"reward_debt"`
+	StakedAmount     sdkmath.Int   `json:"staked_amount"`
+	RewardDebt       sdkmath.Int   `json:"reward_debt"`
 	PendingRewards   sdk.Coins `json:"pending_rewards"`
 	LastClaimTime    time.Time `json:"last_claim_time"`
 	StakingStartTime time.Time `json:"staking_start_time"`
@@ -124,9 +125,9 @@ type StakingPosition struct {
 
 // AlgorithmicPeg manages algorithmic price stability
 type AlgorithmicPeg struct {
-	TargetPrice       sdk.Dec            `json:"target_price"`
-	CurrentPrice      sdk.Dec            `json:"current_price"`
-	PriceDeviation    sdk.Dec            `json:"price_deviation"`
+	TargetPrice       sdkmath.LegacyDec            `json:"target_price"`
+	CurrentPrice      sdkmath.LegacyDec            `json:"current_price"`
+	PriceDeviation    sdkmath.LegacyDec            `json:"price_deviation"`
 	RebaseHistory     []RebaseEvent      `json:"rebase_history"`
 	StabilityActions  []StabilityAction  `json:"stability_actions"`
 	Controller        *PIDController     `json:"controller"`
@@ -135,9 +136,9 @@ type AlgorithmicPeg struct {
 // RebaseEvent represents a rebase operation
 type RebaseEvent struct {
 	Timestamp       time.Time `json:"timestamp"`
-	PriceBefore     sdk.Dec   `json:"price_before"`
-	PriceAfter      sdk.Dec   `json:"price_after"`
-	SupplyChange    sdk.Dec   `json:"supply_change"`
+	PriceBefore     sdkmath.LegacyDec   `json:"price_before"`
+	PriceAfter      sdkmath.LegacyDec   `json:"price_after"`
+	SupplyChange    sdkmath.LegacyDec   `json:"supply_change"`
 	RebaseType      string    `json:"rebase_type"` // "expansion", "contraction"
 }
 
@@ -145,7 +146,7 @@ type RebaseEvent struct {
 type StabilityAction struct {
 	Timestamp   time.Time `json:"timestamp"`
 	ActionType  string    `json:"action_type"` // "mint", "burn", "adjust_rate"
-	Amount      sdk.Int   `json:"amount"`
+	Amount      sdkmath.Int   `json:"amount"`
 	Reason      string    `json:"reason"`
 	Success     bool      `json:"success"`
 }
@@ -165,9 +166,9 @@ type CrossChainBridge struct {
 	SupportedChains    map[string]*ChainConfig    `json:"supported_chains"`
 	PendingTransfers   map[string]*CrossChainTx   `json:"pending_transfers"`
 	BridgeLiquidity    map[string]sdk.Coins       `json:"bridge_liquidity"`
-	TransferFees       map[string]sdk.Dec         `json:"transfer_fees"`
-	DailyLimits        map[string]sdk.Int         `json:"daily_limits"`
-	TotalVolumeToday   map[string]sdk.Int         `json:"total_volume_today"`
+	TransferFees       map[string]sdkmath.LegacyDec         `json:"transfer_fees"`
+	DailyLimits        map[string]sdkmath.Int         `json:"daily_limits"`
+	TotalVolumeToday   map[string]sdkmath.Int         `json:"total_volume_today"`
 }
 
 // ChainConfig represents configuration for a supported chain
@@ -187,8 +188,8 @@ type CrossChainTx struct {
 	ToChain          string    `json:"to_chain"`
 	FromAddress      string    `json:"from_address"`
 	ToAddress        string    `json:"to_address"`
-	Amount           sdk.Int   `json:"amount"`
-	Fee              sdk.Int   `json:"fee"`
+	Amount           sdkmath.Int   `json:"amount"`
+	Fee              sdkmath.Int   `json:"fee"`
 	Status           string    `json:"status"` // "pending", "confirmed", "failed"
 	TxHash           string    `json:"tx_hash"`
 	Timestamp        time.Time `json:"timestamp"`
@@ -197,7 +198,7 @@ type CrossChainTx struct {
 
 // RiskManagementEngine handles risk assessment and management
 type RiskManagementEngine struct {
-	RiskThresholds    map[string]sdk.Dec        `json:"risk_thresholds"`
+	RiskThresholds    map[string]sdkmath.LegacyDec        `json:"risk_thresholds"`
 	SystemRiskScore   float64                   `json:"system_risk_score"`
 	UserRiskProfiles  map[string]*RiskProfile   `json:"user_risk_profiles"`
 	RiskMetrics       *SystemRiskMetrics        `json:"risk_metrics"`
@@ -207,19 +208,19 @@ type RiskManagementEngine struct {
 type RiskProfile struct {
 	UserAddress      string    `json:"user_address"`
 	RiskScore        float64   `json:"risk_score"`
-	PositionSize     sdk.Int   `json:"position_size"`
-	LeverageRatio    sdk.Dec   `json:"leverage_ratio"`
-	VaR              sdk.Dec   `json:"var"`
+	PositionSize     sdkmath.Int   `json:"position_size"`
+	LeverageRatio    sdkmath.LegacyDec   `json:"leverage_ratio"`
+	VaR              sdkmath.LegacyDec   `json:"var"`
 	LastUpdate       time.Time `json:"last_update"`
 	RiskCategory     string    `json:"risk_category"` // "low", "medium", "high"
 }
 
 // SystemRiskMetrics tracks overall system risk
 type SystemRiskMetrics struct {
-	TotalSystemCollateral  sdk.Int   `json:"total_system_collateral"`
-	TotalSystemDebt        sdk.Int   `json:"total_system_debt"`
-	AverageCollateralRatio sdk.Dec   `json:"average_collateral_ratio"`
-	SystemUtilizationRate  sdk.Dec   `json:"system_utilization_rate"`
+	TotalSystemCollateral  sdkmath.Int   `json:"total_system_collateral"`
+	TotalSystemDebt        sdkmath.Int   `json:"total_system_debt"`
+	AverageCollateralRatio sdkmath.LegacyDec   `json:"average_collateral_ratio"`
+	SystemUtilizationRate  sdkmath.LegacyDec   `json:"system_utilization_rate"`
 	ConcentrationRisk      float64   `json:"concentration_risk"`
 	LiquidityRisk          float64   `json:"liquidity_risk"`
 	LastUpdate             time.Time `json:"last_update"`
@@ -235,7 +236,7 @@ func NewAdvancedStablecoinEngine(keeper *Keeper) *AdvancedStablecoinEngine {
 			volatilityTracker: &VolatilityTracker{},
 		},
 		stabilityPool: &StabilityPool{
-			ReserveFactors:  make(map[string]sdk.Dec),
+			ReserveFactors:  make(map[string]sdkmath.LegacyDec),
 			PositionsByUser: make(map[string][]Position),
 		},
 		yieldFarming: &YieldFarmingEngine{
@@ -254,12 +255,12 @@ func NewAdvancedStablecoinEngine(keeper *Keeper) *AdvancedStablecoinEngine {
 			SupportedChains:  make(map[string]*ChainConfig),
 			PendingTransfers: make(map[string]*CrossChainTx),
 			BridgeLiquidity:  make(map[string]sdk.Coins),
-			TransferFees:     make(map[string]sdk.Dec),
-			DailyLimits:      make(map[string]sdk.Int),
-			TotalVolumeToday: make(map[string]sdk.Int),
+			TransferFees:     make(map[string]sdkmath.LegacyDec),
+			DailyLimits:      make(map[string]sdkmath.Int),
+			TotalVolumeToday: make(map[string]sdkmath.Int),
 		},
 		riskEngine: &RiskManagementEngine{
-			RiskThresholds:   make(map[string]sdk.Dec),
+			RiskThresholds:   make(map[string]sdkmath.LegacyDec),
 			UserRiskProfiles: make(map[string]*RiskProfile),
 			RiskMetrics:      &SystemRiskMetrics{},
 		},
@@ -267,7 +268,7 @@ func NewAdvancedStablecoinEngine(keeper *Keeper) *AdvancedStablecoinEngine {
 }
 
 // UpdatePrice updates the stablecoin price and triggers stability mechanisms
-func (ase *AdvancedStablecoinEngine) UpdatePrice(ctx sdk.Context, newPrice sdk.Dec, source string) error {
+func (ase *AdvancedStablecoinEngine) UpdatePrice(ctx sdk.Context, newPrice sdkmath.LegacyDec, source string) error {
 	// Update price oracle
 	ase.priceOracle.priceFeeders[source] = PriceFeed{
 		Source:     source,
@@ -288,7 +289,7 @@ func (ase *AdvancedStablecoinEngine) UpdatePrice(ctx sdk.Context, newPrice sdk.D
 	ase.algorithmicPeg.PriceDeviation = deviation
 
 	// Trigger stability actions if needed
-	if deviation.Abs().GT(sdk.NewDecWithPrec(5, 2)) { // 5% deviation threshold
+	if deviation.Abs().GT(sdkmath.LegacyNewDecWithPrec(5, 2)) { // 5% deviation threshold
 		return ase.triggerStabilityAction(ctx, deviation)
 	}
 
@@ -316,7 +317,7 @@ func (ase *AdvancedStablecoinEngine) CreateLiquidityPool(ctx sdk.Context, poolCo
 	// Initialize pool
 	poolConfig.IsActive = true
 	poolConfig.PoolStartTime = time.Now()
-	poolConfig.TotalStaked = sdk.ZeroInt()
+	poolConfig.TotalStaked = sdkmath.ZeroInt()
 	
 	// Add to active pools
 	ase.yieldFarming.ActivePools[poolConfig.ID] = poolConfig
@@ -335,7 +336,7 @@ func (ase *AdvancedStablecoinEngine) CreateLiquidityPool(ctx sdk.Context, poolCo
 }
 
 // StakeTokens stakes tokens in a liquidity pool
-func (ase *AdvancedStablecoinEngine) StakeTokens(ctx sdk.Context, userAddress string, poolID string, amount sdk.Int) error {
+func (ase *AdvancedStablecoinEngine) StakeTokens(ctx sdk.Context, userAddress string, poolID string, amount sdkmath.Int) error {
 	// Get pool
 	pool, exists := ase.yieldFarming.ActivePools[poolID]
 	if !exists || !pool.IsActive {
@@ -348,7 +349,7 @@ func (ase *AdvancedStablecoinEngine) StakeTokens(ctx sdk.Context, userAddress st
 		User:             userAddress,
 		PoolID:           poolID,
 		StakedAmount:     amount,
-		RewardDebt:       sdk.ZeroInt(),
+		RewardDebt:       sdkmath.ZeroInt(),
 		PendingRewards:   sdk.NewCoins(),
 		LastClaimTime:    time.Now(),
 		StakingStartTime: time.Now(),
@@ -402,7 +403,7 @@ func (ase *AdvancedStablecoinEngine) CalculateRewards(ctx sdk.Context, userAddre
 			
 			// Calculate rewards per block
 			if stakingBlocks > 0 {
-				rewards := schedule.RewardPerBlock.MulInt(sdk.NewInt(stakingBlocks))
+				rewards := schedule.RewardPerBlock.MulInt(sdkmath.NewInt(stakingBlocks))
 				totalRewards = totalRewards.Add(rewards...)
 			}
 		}
@@ -412,7 +413,7 @@ func (ase *AdvancedStablecoinEngine) CalculateRewards(ctx sdk.Context, userAddre
 }
 
 // ExecuteCrossChainTransfer initiates a cross-chain stablecoin transfer
-func (ase *AdvancedStablecoinEngine) ExecuteCrossChainTransfer(ctx sdk.Context, fromAddress, toAddress, toChain string, amount sdk.Int) error {
+func (ase *AdvancedStablecoinEngine) ExecuteCrossChainTransfer(ctx sdk.Context, fromAddress, toAddress, toChain string, amount sdkmath.Int) error {
 	// Validate destination chain
 	chainConfig, exists := ase.crossChainBridge.SupportedChains[toChain]
 	if !exists || !chainConfig.IsActive {
@@ -479,9 +480,9 @@ func (ase *AdvancedStablecoinEngine) AssessUserRisk(ctx sdk.Context, userAddress
 		}, nil
 	}
 
-	totalPositionSize := sdk.ZeroInt()
-	totalCollateral := sdk.ZeroInt()
-	totalDebt := sdk.ZeroInt()
+	totalPositionSize := sdkmath.ZeroInt()
+	totalCollateral := sdkmath.ZeroInt()
+	totalDebt := sdkmath.ZeroInt()
 	
 	for _, position := range positions {
 		totalPositionSize = totalPositionSize.Add(position.CollateralAmount)
@@ -490,7 +491,7 @@ func (ase *AdvancedStablecoinEngine) AssessUserRisk(ctx sdk.Context, userAddress
 	}
 
 	// Calculate leverage ratio
-	leverageRatio := sdk.NewDecFromInt(totalDebt).Quo(sdk.NewDecFromInt(totalCollateral))
+	leverageRatio := sdkmath.LegacyNewDecFromInt(totalDebt).Quo(sdkmath.LegacyNewDecFromInt(totalCollateral))
 	
 	// Calculate risk score (0-100)
 	riskScore := 0.0
@@ -501,8 +502,8 @@ func (ase *AdvancedStablecoinEngine) AssessUserRisk(ctx sdk.Context, userAddress
 	// Factor 2: Position size relative to total system (30% weight)
 	systemCollateral := ase.riskEngine.RiskMetrics.TotalSystemCollateral
 	positionSizeRisk := 0.0
-	if systemCollateral.GT(sdk.ZeroInt()) {
-		positionWeight := sdk.NewDecFromInt(totalPositionSize).Quo(sdk.NewDecFromInt(systemCollateral))
+	if systemCollateral.GT(sdkmath.ZeroInt()) {
+		positionWeight := sdkmath.LegacyNewDecFromInt(totalPositionSize).Quo(sdkmath.LegacyNewDecFromInt(systemCollateral))
 		positionSizeRisk = math.Min(positionWeight.MustFloat64()*300, 30) // High concentration = high risk
 	}
 	
@@ -524,7 +525,7 @@ func (ase *AdvancedStablecoinEngine) AssessUserRisk(ctx sdk.Context, userAddress
 		RiskScore:     riskScore,
 		PositionSize:  totalPositionSize,
 		LeverageRatio: leverageRatio,
-		VaR:           sdk.NewDecWithPrec(int64(riskScore*100), 4), // Simplified VaR calculation
+		VaR:           sdkmath.LegacyNewDecWithPrec(int64(riskScore*100), 4), // Simplified VaR calculation
 		LastUpdate:    time.Now(),
 		RiskCategory:  riskCategory,
 	}
@@ -537,13 +538,13 @@ func (ase *AdvancedStablecoinEngine) AssessUserRisk(ctx sdk.Context, userAddress
 
 // Helper functions
 
-func (ase *AdvancedStablecoinEngine) calculateWeightedPrice() sdk.Dec {
+func (ase *AdvancedStablecoinEngine) calculateWeightedPrice() sdkmath.LegacyDec {
 	if len(ase.priceOracle.priceFeeders) == 0 {
-		return sdk.OneDec() // Default to $1.00
+		return sdkmath.LegacyOneDec() // Default to $1.00
 	}
 
 	totalWeight := 0.0
-	weightedSum := sdk.ZeroDec()
+	weightedSum := sdkmath.LegacyZeroDec()
 
 	for _, feed := range ase.priceOracle.priceFeeders {
 		if feed.IsActive && time.Since(feed.LastUpdate) < time.Hour {
@@ -554,13 +555,13 @@ func (ase *AdvancedStablecoinEngine) calculateWeightedPrice() sdk.Dec {
 	}
 
 	if totalWeight == 0 {
-		return sdk.OneDec()
+		return sdkmath.LegacyOneDec()
 	}
 
 	return weightedSum.QuoInt64(int64(totalWeight))
 }
 
-func (ase *AdvancedStablecoinEngine) triggerStabilityAction(ctx sdk.Context, deviation sdk.Dec) error {
+func (ase *AdvancedStablecoinEngine) triggerStabilityAction(ctx sdk.Context, deviation sdkmath.LegacyDec) error {
 	// Use PID controller to determine action
 	currentError := deviation.MustFloat64()
 	
@@ -588,13 +589,13 @@ func (ase *AdvancedStablecoinEngine) triggerStabilityAction(ctx sdk.Context, dev
 
 	if controlOutput > 0.02 { // Expansion needed
 		action.ActionType = "mint"
-		action.Amount = sdk.NewInt(int64(math.Abs(controlOutput) * 1000000)) // Scale appropriately
+		action.Amount = sdkmath.NewInt(int64(math.Abs(controlOutput) * 1000000)) // Scale appropriately
 	} else if controlOutput < -0.02 { // Contraction needed
 		action.ActionType = "burn"
-		action.Amount = sdk.NewInt(int64(math.Abs(controlOutput) * 1000000))
+		action.Amount = sdkmath.NewInt(int64(math.Abs(controlOutput) * 1000000))
 	} else {
 		action.ActionType = "adjust_rate"
-		action.Amount = sdk.ZeroInt()
+		action.Amount = sdkmath.ZeroInt()
 	}
 
 	// Execute the action (implementation would depend on specific mechanisms)
@@ -620,12 +621,12 @@ func (ase *AdvancedStablecoinEngine) triggerStabilityAction(ctx sdk.Context, dev
 	return nil
 }
 
-func (ase *AdvancedStablecoinEngine) updateVolatilityMetrics(currentPrice sdk.Dec) {
+func (ase *AdvancedStablecoinEngine) updateVolatilityMetrics(currentPrice sdkmath.LegacyDec) {
 	// Add price point to history
 	pricePoint := PricePoint{
 		Timestamp: time.Now(),
 		Price:     currentPrice,
-		Volume:    sdk.ZeroInt(), // Would be populated with actual volume data
+		Volume:    sdkmath.ZeroInt(), // Would be populated with actual volume data
 		Source:    "weighted_average",
 	}
 	
@@ -668,8 +669,8 @@ func (ase *AdvancedStablecoinEngine) updateVolatilityMetrics(currentPrice sdk.De
 }
 
 func (ase *AdvancedStablecoinEngine) updateRiskMetrics(ctx sdk.Context) {
-	totalCollateral := sdk.ZeroInt()
-	totalDebt := sdk.ZeroInt()
+	totalCollateral := sdkmath.ZeroInt()
+	totalDebt := sdkmath.ZeroInt()
 	positionCount := 0
 
 	// Aggregate across all users
@@ -685,9 +686,9 @@ func (ase *AdvancedStablecoinEngine) updateRiskMetrics(ctx sdk.Context) {
 	metrics.TotalSystemCollateral = totalCollateral
 	metrics.TotalSystemDebt = totalDebt
 	
-	if totalCollateral.GT(sdk.ZeroInt()) {
-		metrics.AverageCollateralRatio = sdk.NewDecFromInt(totalCollateral).Quo(sdk.NewDecFromInt(totalDebt))
-		metrics.SystemUtilizationRate = sdk.NewDecFromInt(totalDebt).Quo(sdk.NewDecFromInt(totalCollateral))
+	if totalCollateral.GT(sdkmath.ZeroInt()) {
+		metrics.AverageCollateralRatio = sdkmath.LegacyNewDecFromInt(totalCollateral).Quo(sdkmath.LegacyNewDecFromInt(totalDebt))
+		metrics.SystemUtilizationRate = sdkmath.LegacyNewDecFromInt(totalDebt).Quo(sdkmath.LegacyNewDecFromInt(totalCollateral))
 	}
 
 	metrics.LastUpdate = time.Now()

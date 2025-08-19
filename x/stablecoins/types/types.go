@@ -69,6 +69,20 @@ type MsgCreateStablecoin struct {
 	Metadata           string             `json:"metadata"`
 }
 
+// ProtoMessage implements proto.Message
+func (*MsgCreateStablecoin) ProtoMessage() {}
+
+// Reset implements proto.Message
+func (m *MsgCreateStablecoin) Reset() {
+	*m = MsgCreateStablecoin{}
+}
+
+// String implements proto.Message
+func (m *MsgCreateStablecoin) String() string {
+	bz := ModuleCdc.MustMarshalJSON(m)
+	return string(sdk.MustSortJSON(bz))
+}
+
 // PegInfo represents peg information for a stablecoin
 type PegInfo struct {
 	PegType      string   `json:"peg_type"`
@@ -101,3 +115,94 @@ type AccessControlInfo struct {
 	AuthorizedMinters  []string `json:"authorized_minters"`
 	AuthorizedBurners  []string `json:"authorized_burners"`
 }
+
+// MsgUpdateStablecoin message structure for updating stablecoin parameters
+type MsgUpdateStablecoin struct {
+	Creator       string             `json:"creator"`
+	Denom         string             `json:"denom"`
+	Name          string             `json:"name"`
+	Description   string             `json:"description"`
+	PegInfo       *PegInfo           `json:"peg_info"`
+	FeeInfo       *FeeInfo           `json:"fee_info"`
+	AccessControl *AccessControlInfo `json:"access_control"`
+	Metadata      string             `json:"metadata"`
+}
+
+// ProtoMessage implements proto.Message
+func (*MsgUpdateStablecoin) ProtoMessage() {}
+
+// Reset implements proto.Message
+func (m *MsgUpdateStablecoin) Reset() {
+	*m = MsgUpdateStablecoin{}
+}
+
+// String implements proto.Message
+func (m *MsgUpdateStablecoin) String() string {
+	bz := ModuleCdc.MustMarshalJSON(m)
+	return string(sdk.MustSortJSON(bz))
+}
+
+// MsgMintStablecoin message structure for minting stablecoins
+type MsgMintStablecoin struct {
+	Creator   string   `json:"creator"`
+	Denom     string   `json:"denom"`
+	Amount    math.Int `json:"amount"`
+	Recipient string   `json:"recipient"`
+}
+
+// ProtoMessage implements proto.Message
+func (*MsgMintStablecoin) ProtoMessage() {}
+
+// Reset implements proto.Message
+func (m *MsgMintStablecoin) Reset() {
+	*m = MsgMintStablecoin{}
+}
+
+// String implements proto.Message
+func (m *MsgMintStablecoin) String() string {
+	bz := ModuleCdc.MustMarshalJSON(m)
+	return string(sdk.MustSortJSON(bz))
+}
+
+// MsgBurnStablecoin message structure for burning stablecoins
+type MsgBurnStablecoin struct {
+	Creator string   `json:"creator"`
+	Denom   string   `json:"denom"`
+	Amount  math.Int `json:"amount"`
+}
+
+// ProtoMessage implements proto.Message
+func (*MsgBurnStablecoin) ProtoMessage() {}
+
+// Reset implements proto.Message
+func (m *MsgBurnStablecoin) Reset() {
+	*m = MsgBurnStablecoin{}
+}
+
+// String implements proto.Message
+func (m *MsgBurnStablecoin) String() string {
+	bz := ModuleCdc.MustMarshalJSON(m)
+	return string(sdk.MustSortJSON(bz))
+}
+
+// MsgPauseStablecoin message structure for pausing stablecoins
+type MsgPauseStablecoin struct {
+	Creator string `json:"creator"`
+	Denom   string `json:"denom"`
+	Paused  bool   `json:"paused"`
+}
+
+// ProtoMessage implements proto.Message
+func (*MsgPauseStablecoin) ProtoMessage() {}
+
+// Reset implements proto.Message
+func (m *MsgPauseStablecoin) Reset() {
+	*m = MsgPauseStablecoin{}
+}
+
+// String implements proto.Message
+func (m *MsgPauseStablecoin) String() string {
+	bz := ModuleCdc.MustMarshalJSON(m)
+	return string(sdk.MustSortJSON(bz))
+}
+

@@ -75,7 +75,7 @@ func (gs GenesisState) Validate() error {
 	mintRequestIndexMap := make(map[string]struct{})
 
 	for _, elem := range gs.MintRequestList {
-		index := string(MintRequestKey(elem.Id))
+		index := string(MintRequestKey(fmt.Sprintf("%d", elem.Id)))
 		if _, ok := mintRequestIndexMap[index]; ok {
 			return fmt.Errorf("duplicated index for mintRequest")
 		}
@@ -86,7 +86,7 @@ func (gs GenesisState) Validate() error {
 	burnRequestIndexMap := make(map[string]struct{})
 
 	for _, elem := range gs.BurnRequestList {
-		index := string(BurnRequestKey(elem.Id))
+		index := string(BurnRequestKey(fmt.Sprintf("%d", elem.Id)))
 		if _, ok := burnRequestIndexMap[index]; ok {
 			return fmt.Errorf("duplicated index for burnRequest")
 		}

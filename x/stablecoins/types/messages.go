@@ -2,11 +2,11 @@ package types
 
 import (
 	"strings"
-	"time"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "cosmossdk.io/errors"
 	"cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 )
 
 // Params represents module parameters
@@ -100,23 +100,23 @@ func (msg *MsgCreateStablecoin) ValidateBasic() error {
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
-		return sdkerrors.Wrap(ErrInvalidStablecoinDenom, "denom cannot be empty")
+		return errorsmod.Wrap(ErrInvalidStablecoinDenom, "denom cannot be empty")
 	}
 
 	if strings.TrimSpace(msg.Name) == "" {
-		return sdkerrors.Wrap(ErrInvalidName, "name cannot be empty")
+		return errorsmod.Wrap(ErrInvalidName, "name cannot be empty")
 	}
 
 	if strings.TrimSpace(msg.Symbol) == "" {
-		return sdkerrors.Wrap(ErrInvalidSymbol, "symbol cannot be empty")
+		return errorsmod.Wrap(ErrInvalidSymbol, "symbol cannot be empty")
 	}
 
 	if msg.Decimals > 18 {
-		return sdkerrors.Wrap(ErrInvalidDecimalPlaces, "decimals cannot exceed 18")
+		return errorsmod.Wrap(ErrInvalidDecimalPlaces, "decimals cannot exceed 18")
 	}
 
 	if msg.MaxSupply.IsNil() || !msg.MaxSupply.IsPositive() {
-		return sdkerrors.Wrap(ErrInvalidAmount, "max supply must be positive")
+		return errorsmod.Wrap(ErrInvalidAmount, "max supply must be positive")
 	}
 
 	return nil
@@ -175,7 +175,7 @@ func (msg *MsgUpdateStablecoin) ValidateBasic() error {
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
-		return sdkerrors.Wrap(ErrInvalidStablecoinDenom, "denom cannot be empty")
+		return errorsmod.Wrap(ErrInvalidStablecoinDenom, "denom cannot be empty")
 	}
 
 	return nil
@@ -226,11 +226,11 @@ func (msg *MsgMintStablecoin) ValidateBasic() error {
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
-		return sdkerrors.Wrap(ErrInvalidStablecoinDenom, "denom cannot be empty")
+		return errorsmod.Wrap(ErrInvalidStablecoinDenom, "denom cannot be empty")
 	}
 
 	if msg.Amount.IsNil() || !msg.Amount.IsPositive() {
-		return sdkerrors.Wrap(ErrInvalidAmount, "amount must be positive")
+		return errorsmod.Wrap(ErrInvalidAmount, "amount must be positive")
 	}
 
 	_, err = sdk.AccAddressFromBech32(msg.Recipient)
@@ -284,11 +284,11 @@ func (msg *MsgBurnStablecoin) ValidateBasic() error {
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
-		return sdkerrors.Wrap(ErrInvalidStablecoinDenom, "denom cannot be empty")
+		return errorsmod.Wrap(ErrInvalidStablecoinDenom, "denom cannot be empty")
 	}
 
 	if msg.Amount.IsNil() || !msg.Amount.IsPositive() {
-		return sdkerrors.Wrap(ErrInvalidAmount, "amount must be positive")
+		return errorsmod.Wrap(ErrInvalidAmount, "amount must be positive")
 	}
 
 	return nil
@@ -300,14 +300,12 @@ var _ sdk.Msg = &MsgPauseStablecoin{}
 func NewMsgPauseStablecoin(
 	creator string,
 	denom string,
-	operation string,
-	reason string,
+	paused bool,
 ) *MsgPauseStablecoin {
 	return &MsgPauseStablecoin{
-		Creator:   creator,
-		Denom:    denom,
-		Operation: operation,
-		Reason:   reason,
+		Creator: creator,
+		Denom:   denom,
+		Paused:  paused,
 	}
 }
 
@@ -339,19 +337,7 @@ func (msg *MsgPauseStablecoin) ValidateBasic() error {
 	}
 
 	if strings.TrimSpace(msg.Denom) == "" {
-		return sdkerrors.Wrap(ErrInvalidStablecoinDenom, "denom cannot be empty")
-	}
-
-	validOperations := []string{"mint", "burn", "transfer", "all"}
-	valid := false
-	for _, op := range validOperations {
-		if msg.Operation == op {
-			valid = true
-			break
-		}
-	}
-	if !valid {
-		return sdkerrors.Wrap(ErrOperationNotAllowed, "invalid operation type")
+		return errorsmod.Wrap(ErrInvalidStablecoinDenom, "denom cannot be empty")
 	}
 
 	return nil
@@ -361,45 +347,24 @@ func (msg *MsgPauseStablecoin) ValidateBasic() error {
 // For brevity, I'll implement a few more key ones
 
 // Helper function to create a new stablecoin with default values
+// NewStablecoin creates a new Stablecoin instance
+// TODO: This function needs to be updated to match the Stablecoin struct definition
 func NewStablecoin(
 	denom string,
 	name string,
 	symbol string,
-	decimals uint32,
-	description string,
-	issuer string,
-	admin string,
-	maxSupply math.Int,
-	pegInfo *PegInfo,
-	reserveInfo *ReserveInfo,
-	stabilityMechanism string,
-	feeInfo *FeeInfo,
-	accessControl *AccessControlInfo,
-	metadata string,
+	creator string,
 ) Stablecoin {
 	return Stablecoin{
-		Denom:                  denom,
-		Name:                   name,
-		Symbol:                 symbol,
-		Decimals:               decimals,
-		Description:            description,
-		Issuer:                 issuer,
-		Admin:                  admin,
-		TotalSupply:            sdk.ZeroInt(),
-		MaxSupply:              maxSupply,
-		PegInfo:                pegInfo,
-		ReserveInfo:            reserveInfo,
-		Active:                 true,
-		MintPaused:             false,
-		BurnPaused:             false,
-		TransferPaused:         false,
-		Metadata:               metadata,
-		CreatedAt:              time.Now(),
-		UpdatedAt:              time.Now(),
-		CollateralizationRatio: "1.00",
-		StabilityMechanism:     stabilityMechanism,
-		FeeInfo:                feeInfo,
-		AccessControl:          accessControl,
+		Denom:           denom,
+		Name:            name,
+		Symbol:          symbol,
+		TotalSupply:     sdk.NewCoins(),
+		Paused:          false,
+		CollateralRatio: math.LegacyNewDec(1),
+		Creator:         creator,
+		MintingEnabled:  true,
+		BurningEnabled:  true,
 	}
 }
 
@@ -413,6 +378,20 @@ const (
 // MsgInitializeSSUSD initializes the ssUSD stablecoin
 type MsgInitializeSSUSD struct {
 	Creator string `json:"creator"`
+}
+
+// ProtoMessage implements proto.Message
+func (*MsgInitializeSSUSD) ProtoMessage() {}
+
+// Reset implements proto.Message
+func (m *MsgInitializeSSUSD) Reset() {
+	*m = MsgInitializeSSUSD{}
+}
+
+// String implements proto.Message
+func (m *MsgInitializeSSUSD) String() string {
+	bz := ModuleCdc.MustMarshalJSON(m)
+	return string(sdk.MustSortJSON(bz))
 }
 
 var _ sdk.Msg = &MsgInitializeSSUSD{}
@@ -459,6 +438,20 @@ type MsgIssueSSUSD struct {
 	ReservePayment sdk.Coins `json:"reserve_payment"`
 }
 
+// ProtoMessage implements proto.Message
+func (*MsgIssueSSUSD) ProtoMessage() {}
+
+// Reset implements proto.Message
+func (m *MsgIssueSSUSD) Reset() {
+	*m = MsgIssueSSUSD{}
+}
+
+// String implements proto.Message
+func (m *MsgIssueSSUSD) String() string {
+	bz := ModuleCdc.MustMarshalJSON(m)
+	return string(sdk.MustSortJSON(bz))
+}
+
 var _ sdk.Msg = &MsgIssueSSUSD{}
 
 func NewMsgIssueSSUSD(creator string, amount math.Int, reservePayment sdk.Coins) *MsgIssueSSUSD {
@@ -497,11 +490,11 @@ func (msg *MsgIssueSSUSD) ValidateBasic() error {
 	}
 
 	if msg.Amount.IsNil() || !msg.Amount.IsPositive() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "amount must be positive")
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "amount must be positive")
 	}
 
 	if !msg.ReservePayment.IsValid() || msg.ReservePayment.IsZero() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidCoins, "reserve payment must be valid and non-zero")
+		return errorsmod.Wrap(sdkerrors.ErrInvalidCoins, "reserve payment must be valid and non-zero")
 	}
 
 	// Validate reserve asset types
@@ -528,6 +521,20 @@ type MsgRedeemSSUSD struct {
 	Creator        string  `json:"creator"`
 	SSUSDAmount    math.Int `json:"ssusd_amount"`
 	PreferredAsset string  `json:"preferred_asset"`
+}
+
+// ProtoMessage implements proto.Message
+func (*MsgRedeemSSUSD) ProtoMessage() {}
+
+// Reset implements proto.Message
+func (m *MsgRedeemSSUSD) Reset() {
+	*m = MsgRedeemSSUSD{}
+}
+
+// String implements proto.Message
+func (m *MsgRedeemSSUSD) String() string {
+	bz := ModuleCdc.MustMarshalJSON(m)
+	return string(sdk.MustSortJSON(bz))
 }
 
 var _ sdk.Msg = &MsgRedeemSSUSD{}
@@ -568,7 +575,7 @@ func (msg *MsgRedeemSSUSD) ValidateBasic() error {
 	}
 
 	if msg.SSUSDAmount.IsNil() || !msg.SSUSDAmount.IsPositive() {
-		return sdkerrors.Wrap(sdkerrors.ErrInvalidRequest, "ssUSD amount must be positive")
+		return errorsmod.Wrap(sdkerrors.ErrInvalidRequest, "ssUSD amount must be positive")
 	}
 
 	// Validate preferred asset if specified

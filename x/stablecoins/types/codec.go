@@ -4,7 +4,6 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
 func RegisterCodec(cdc *codec.LegacyAmino) {
@@ -13,13 +12,14 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgMintStablecoin{}, "stablecoins/MintStablecoin", nil)
 	cdc.RegisterConcrete(&MsgBurnStablecoin{}, "stablecoins/BurnStablecoin", nil)
 	cdc.RegisterConcrete(&MsgPauseStablecoin{}, "stablecoins/PauseStablecoin", nil)
-	cdc.RegisterConcrete(&MsgUnpauseStablecoin{}, "stablecoins/UnpauseStablecoin", nil)
-	cdc.RegisterConcrete(&MsgUpdatePriceData{}, "stablecoins/UpdatePriceData", nil)
-	cdc.RegisterConcrete(&MsgUpdateReserves{}, "stablecoins/UpdateReserves", nil)
-	cdc.RegisterConcrete(&MsgWhitelistAddress{}, "stablecoins/WhitelistAddress", nil)
-	cdc.RegisterConcrete(&MsgBlacklistAddress{}, "stablecoins/BlacklistAddress", nil)
-	cdc.RegisterConcrete(&MsgRemoveFromWhitelist{}, "stablecoins/RemoveFromWhitelist", nil)
-	cdc.RegisterConcrete(&MsgRemoveFromBlacklist{}, "stablecoins/RemoveFromBlacklist", nil)
+	// TODO: Define these message types
+	// cdc.RegisterConcrete(&MsgUnpauseStablecoin{}, "stablecoins/UnpauseStablecoin", nil)
+	// cdc.RegisterConcrete(&MsgUpdatePriceData{}, "stablecoins/UpdatePriceData", nil)
+	// cdc.RegisterConcrete(&MsgUpdateReserves{}, "stablecoins/UpdateReserves", nil)
+	// cdc.RegisterConcrete(&MsgWhitelistAddress{}, "stablecoins/WhitelistAddress", nil)
+	// cdc.RegisterConcrete(&MsgBlacklistAddress{}, "stablecoins/BlacklistAddress", nil)
+	// cdc.RegisterConcrete(&MsgRemoveFromWhitelist{}, "stablecoins/RemoveFromWhitelist", nil)
+	// cdc.RegisterConcrete(&MsgRemoveFromBlacklist{}, "stablecoins/RemoveFromBlacklist", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -29,16 +29,18 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgMintStablecoin{},
 		&MsgBurnStablecoin{},
 		&MsgPauseStablecoin{},
-		&MsgUnpauseStablecoin{},
-		&MsgUpdatePriceData{},
-		&MsgUpdateReserves{},
-		&MsgWhitelistAddress{},
-		&MsgBlacklistAddress{},
-		&MsgRemoveFromWhitelist{},
-		&MsgRemoveFromBlacklist{},
+		// TODO: Define these message types
+		// &MsgUnpauseStablecoin{},
+		// &MsgUpdatePriceData{},
+		// &MsgUpdateReserves{},
+		// &MsgWhitelistAddress{},
+		// &MsgBlacklistAddress{},
+		// &MsgRemoveFromWhitelist{},
+		// &MsgRemoveFromBlacklist{},
 	)
 
-	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
+	// TODO: Uncomment when _Msg_serviceDesc is generated
+	// msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
 
 var (
