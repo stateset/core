@@ -206,3 +206,13 @@ func (m *MsgPauseStablecoin) String() string {
 	return string(sdk.MustSortJSON(bz))
 }
 
+// StablecoinSupply represents the supply information of a stablecoin
+type StablecoinSupply struct {
+	Denom              string    `json:"denom"`
+	TotalSupply        sdk.Coins `json:"total_supply"`
+	CirculatingSupply  sdk.Coins `json:"circulating_supply"`
+	LockedSupply       sdk.Coins `json:"locked_supply"`
+	ReserveBalance     sdk.Coins `json:"reserve_balance"`
+	CollateralizationRatio math.LegacyDec `json:"collateralization_ratio"`
+}
+

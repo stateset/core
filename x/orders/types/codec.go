@@ -14,6 +14,10 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgFulfillOrder{}, "orders/FulfillOrder", nil)
 	cdc.RegisterConcrete(&MsgRefundOrder{}, "orders/RefundOrder", nil)
 	cdc.RegisterConcrete(&MsgUpdateOrderStatus{}, "orders/UpdateOrderStatus", nil)
+	cdc.RegisterConcrete(&MsgPayWithStablecoin{}, "orders/PayWithStablecoin", nil)
+	cdc.RegisterConcrete(&MsgConfirmStablecoinPayment{}, "orders/ConfirmStablecoinPayment", nil)
+	cdc.RegisterConcrete(&MsgRefundStablecoinPayment{}, "orders/RefundStablecoinPayment", nil)
+	cdc.RegisterConcrete(&MsgReleaseEscrow{}, "orders/ReleaseEscrow", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
@@ -24,6 +28,10 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgFulfillOrder{},
 		&MsgRefundOrder{},
 		&MsgUpdateOrderStatus{},
+		&MsgPayWithStablecoin{},
+		&MsgConfirmStablecoinPayment{},
+		&MsgRefundStablecoinPayment{},
+		&MsgReleaseEscrow{},
 	)
 
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)

@@ -5,7 +5,7 @@ import (
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	errorsmod "cosmossdk.io/errors"
-	"google.golang.org/protobuf/types/known/timestamppb"
+	sdkerrors "cosmossdk.io/errors"
 )
 
 // Stablecoin payment message types
