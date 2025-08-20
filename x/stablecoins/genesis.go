@@ -52,6 +52,19 @@ func InitGenesis(ctx sdk.Context, k keeper.Keeper, genState types.GenesisState) 
 
 	// this line is used by starport scaffolding # genesis/module/init
 	k.SetParams(ctx, genState.Params)
+
+	// Initialize ssUSD stablecoin automatically if not present
+	_, found := k.GetStablecoin(ctx, "ssusd")
+	if !found {
+		// Create ssUSD engine and initialize
+		ssusdEngine := keeper.NewSSUSDStablecoinEngine(&k)
+		if err := ssusdEngine.InitializeSSUSD(ctx); err != nil {
+			// Log error but don't panic - ssUSD can be initialized later
+			ctx.Logger().Error("Failed to initialize ssUSD stablecoin", "error", err)
+		} else {
+			ctx.Logger().Info("Successfully initialized ssUSD stablecoin")
+		}
+	}
 }
 
 // ExportGenesis returns the capability module's exported genesis.
