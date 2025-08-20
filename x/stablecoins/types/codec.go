@@ -12,6 +12,17 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgMintStablecoin{}, "stablecoins/MintStablecoin", nil)
 	cdc.RegisterConcrete(&MsgBurnStablecoin{}, "stablecoins/BurnStablecoin", nil)
 	cdc.RegisterConcrete(&MsgPauseStablecoin{}, "stablecoins/PauseStablecoin", nil)
+	
+	// Working capital messages
+	cdc.RegisterConcrete(&MsgRequestWorkingCapital{}, "stablecoins/RequestWorkingCapital", nil)
+	cdc.RegisterConcrete(&MsgApproveWorkingCapital{}, "stablecoins/ApproveWorkingCapital", nil)
+	cdc.RegisterConcrete(&MsgDisburseWorkingCapital{}, "stablecoins/DisburseWorkingCapital", nil)
+	cdc.RegisterConcrete(&MsgRepayWorkingCapital{}, "stablecoins/RepayWorkingCapital", nil)
+	cdc.RegisterConcrete(&MsgCreateCapitalPool{}, "stablecoins/CreateCapitalPool", nil)
+	cdc.RegisterConcrete(&MsgFundCapitalPool{}, "stablecoins/FundCapitalPool", nil)
+	cdc.RegisterConcrete(&MsgCreateCreditLine{}, "stablecoins/CreateCreditLine", nil)
+	cdc.RegisterConcrete(&MsgDrawFromCreditLine{}, "stablecoins/DrawFromCreditLine", nil)
+	
 	// TODO: Define these message types
 	// cdc.RegisterConcrete(&MsgUnpauseStablecoin{}, "stablecoins/UnpauseStablecoin", nil)
 	// cdc.RegisterConcrete(&MsgUpdatePriceData{}, "stablecoins/UpdatePriceData", nil)
@@ -29,6 +40,17 @@ func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 		&MsgMintStablecoin{},
 		&MsgBurnStablecoin{},
 		&MsgPauseStablecoin{},
+		
+		// Working capital messages
+		&MsgRequestWorkingCapital{},
+		&MsgApproveWorkingCapital{},
+		&MsgDisburseWorkingCapital{},
+		&MsgRepayWorkingCapital{},
+		&MsgCreateCapitalPool{},
+		&MsgFundCapitalPool{},
+		&MsgCreateCreditLine{},
+		&MsgDrawFromCreditLine{},
+		
 		// TODO: Define these message types
 		// &MsgUnpauseStablecoin{},
 		// &MsgUpdatePriceData{},

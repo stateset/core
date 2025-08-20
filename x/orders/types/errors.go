@@ -32,4 +32,15 @@ var (
 	ErrEscrowReleaseFailed    = sdkerrors.Register(ModuleName, 1207, "escrow release failed")
 	ErrInsufficientConfirmations = sdkerrors.Register(ModuleName, 1208, "insufficient payment confirmations")
 	ErrEscrowTimeout          = sdkerrors.Register(ModuleName, 1209, "escrow timeout exceeded")
+	
+	// Order financing errors
+	ErrInvalidAddress         = sdkerrors.Register(ModuleName, 1300, "invalid address")
+	ErrInvalidOrderId         = sdkerrors.Register(ModuleName, 1301, "invalid order ID")
+	ErrInvalidFinancingType   = sdkerrors.Register(ModuleName, 1302, "invalid financing type")
+	ErrInvalidDenom           = sdkerrors.Register(ModuleName, 1303, "invalid denomination")
+	ErrInvalidTerm            = sdkerrors.Register(ModuleName, 1304, "invalid term")
+	ErrInvalidRate            = sdkerrors.Register(ModuleName, 1305, "invalid rate")
+	ErrInvalidPoolId          = sdkerrors.Register(ModuleName, 1306, "invalid pool ID")
+	ErrFinancingNotFound      = sdkerrors.Register(ModuleName, 1307, "financing not found")
+	ErrFinancingAlreadyExists = sdkerrors.Register(ModuleName, 1308, "financing already exists for order")
 )
