@@ -1,19 +1,26 @@
 use cosmwasm_std::{
     entry_point, to_binary, BankMsg, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
+    Event, Uint128, Coin, Addr,
 };
+use cw2::set_contract_version;
 
 use crate::error::ContractError;
 use crate::msg::{ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{config, config_read, State};
 
+// Contract metadata
+const CONTRACT_NAME: &str = "crates.io:stateset-option";
+const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+
 // Instantiate the Smart Contract for a Simple Option
 #[entry_point]
 pub fn instantiate(
-    deps: DepsMut, // Mutable Deps
+    deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    msg: InstantiateMsg, // InstantiateMsg from msg.rs crate
+    msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     
     if msg.expires <= env.block.height {
@@ -33,10 +40,24 @@ pub fn instantiate(
         expires: msg.expires, // expiration for the option
     };
 
+    // Validate counter offer is not empty
+    if msg.counter_offer.is_empty() {
+        return Err(ContractError::InvalidCounterOffer {});
+    }
+    
+    // Validate collateral is not empty
+    if info.funds.is_empty() {
+        return Err(ContractError::InvalidCollateral {});
+    }
+    
     // Save the State defined in state.rs crate to the state
     config(deps.storage).save(&state)?;
 
-    Ok(Response::default())
+    Ok(Response::new()
+        .add_event(Event::new("option_created")
+            .add_attribute("creator", &info.sender)
+            .add_attribute("expires", msg.expires.to_string())
+            .add_attribute("collateral_count", info.funds.len().to_string())))
 }
 
 
@@ -80,10 +101,11 @@ pub fn execute_transfer(
     // save the state to storage
     config(deps.storage).save(&state)?;
 
-    let mut res = Response::new();
-    res.add_attribute("action", "transfer");
-    res.add_attribute("owner", recipient);
-    Ok(res)
+    Ok(Response::new()
+        .add_event(Event::new("option_transferred")
+            .add_attribute("action", "transfer")
+            .add_attribute("from", &info.sender)
+            .add_attribute("to", &recipient)))
 }
 
 // execute function
@@ -125,22 +147,24 @@ pub fn execute_execute(
 
     // Generate a Response from the Network
     // release counter_offer to creator
-    let mut res = Response::new();
-    res.add_message(BankMsg::Send {
-        to_address: state.creator.to_string(),
-        amount: state.counter_offer,
-    });
-
-    // release collateral to sender
-    res.add_message(BankMsg::Send {
-        to_address: state.owner.to_string(),
-        amount: state.collateral,
-    });
+    let res = Response::new()
+        .add_message(BankMsg::Send {
+            to_address: state.creator.to_string(),
+            amount: state.counter_offer.clone(),
+        })
+        .add_message(BankMsg::Send {
+            to_address: state.owner.to_string(),
+            amount: state.collateral.clone(),
+        })
+        .add_event(Event::new("option_executed")
+            .add_attribute("action", "execute")
+            .add_attribute("executor", &info.sender)
+            .add_attribute("creator", &state.creator)
+            .add_attribute("owner", &state.owner));
 
     // delete the option
     config(deps.storage).remove();
 
-    res.add_attribute("action", "execute");
     Ok(res)
 }
 
@@ -165,16 +189,19 @@ pub fn execute_burn(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Respon
     }
 
     // release collateral to creator
-    let mut res = Response::new();
-    res.add_message(BankMsg::Send {
-        to_address: state.creator.to_string(),
-        amount: state.collateral,
-    });
+    let res = Response::new()
+        .add_message(BankMsg::Send {
+            to_address: state.creator.to_string(),
+            amount: state.collateral.clone(),
+        })
+        .add_event(Event::new("option_burned")
+            .add_attribute("action", "burn")
+            .add_attribute("executor", &info.sender)
+            .add_attribute("creator", &state.creator));
 
     // delete the option
     config(deps.storage).remove();
 
-    res.add_attribute("action", "burn");
     Ok(res)
 }
 

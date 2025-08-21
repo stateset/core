@@ -2,7 +2,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     attr, to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Order, Response, StdResult,
-    SubMsg,
+    SubMsg, Event,
 };
 use cw2::set_contract_version;
 use workgroup::{
@@ -26,12 +26,22 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub fn instantiate(
     deps: DepsMut,
     env: Env,
-    _info: MessageInfo,
+    info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-    create(deps, msg.admin, msg.members, env.block.height)?;
-    Ok(Response::default())
+    
+    let member_count = msg.members.len();
+    let total_weight: u64 = msg.members.iter().map(|m| m.weight).sum();
+    
+    create(deps, msg.admin.clone(), msg.members, env.block.height)?;
+    
+    Ok(Response::new()
+        .add_event(Event::new("workgroup_instantiated")
+            .add_attribute("admin", msg.admin.unwrap_or_else(|| "none".to_string()))
+            .add_attribute("member_count", member_count.to_string())
+            .add_attribute("total_weight", total_weight.to_string())
+            .add_attribute("creator", &info.sender)))
 }
 
 // create is the instantiation logic with set_contract_version removed so it can more
@@ -98,6 +108,7 @@ pub fn execute_update_members(
         attr("added", add.len().to_string()),
         attr("removed", remove.len().to_string()),
         attr("sender", &info.sender),
+        attr("total_weight_after", total.to_string()),
     ];
 
     // make the local update

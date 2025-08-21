@@ -8,3 +8,7 @@ data/
 # Backup files
 *.backup
 *.original
+
+scripts/
+stateset-data/
+MAINNET_READINESS.md

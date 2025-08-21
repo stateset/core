@@ -31,4 +31,12 @@ pub enum ContractError {
     // ContractError::FundsSendWithBurn
     #[error("do not send funds with burn")]
     FundsSentWithBurn {},
+    
+    // ContractError::InvalidCounterOffer
+    #[error("counter offer cannot be empty")]
+    InvalidCounterOffer {},
+    
+    // ContractError::InvalidCollateral
+    #[error("collateral cannot be empty")]
+    InvalidCollateral {},
 }

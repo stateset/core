@@ -41,4 +41,35 @@ pub enum ContractError {
     // Contract is paused
     #[error("Contract is currently paused")]
     ContractPaused {},
+    
+    // Rate limit exceeded
+    #[error("Rate limit exceeded: max {max_operations} operations per {time_window} seconds")]
+    RateLimitExceeded {
+        max_operations: u32,
+        time_window: u64,
+    },
+    
+    // Reentrancy detected
+    #[error("Reentrancy detected - operation already in progress")]
+    ReentrancyDetected {},
+    
+    // Amount too low
+    #[error("Amount {got} is below minimum {min}")]
+    AmountTooLow { min: String, got: String },
+    
+    // Amount too high
+    #[error("Amount {got} exceeds maximum {max}")]
+    AmountTooHigh { max: String, got: String },
+    
+    // Address blacklisted
+    #[error("Address {address} is blacklisted")]
+    AddressBlacklisted { address: String },
+    
+    // Already paused
+    #[error("Contract is already paused")]
+    AlreadyPaused {},
+    
+    // Not paused
+    #[error("Contract is not paused")]
+    NotPaused {},
 }

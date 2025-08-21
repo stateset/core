@@ -87,9 +87,9 @@ pub fn execute_receive(
     }
 }
 
-// Validation helper function
+// Validation helper function with comprehensive checks
 fn validate_create_msg(msg: &CreateMsg) -> Result<(), ContractError> {
-    // Validate ID length
+    // Validate ID format and length
     if msg.id.is_empty() || msg.id.len() > MAX_ESCROW_ID_LENGTH {
         return Err(ContractError::InvalidInput {
             field: "id".to_string(),
@@ -97,7 +97,15 @@ fn validate_create_msg(msg: &CreateMsg) -> Result<(), ContractError> {
         });
     }
     
-    // Validate title length
+    // Validate ID contains only alphanumeric and underscore
+    if !msg.id.chars().all(|c| c.is_alphanumeric() || c == '_') {
+        return Err(ContractError::InvalidInput {
+            field: "id".to_string(),
+            msg: "ID must contain only alphanumeric characters and underscores".to_string(),
+        });
+    }
+    
+    // Validate title length and content
     if msg.title.len() > MAX_TITLE_LENGTH {
         return Err(ContractError::InvalidInput {
             field: "title".to_string(),
