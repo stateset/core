@@ -1,26 +1,23 @@
 package app
 
 import (
+	math "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "cosmossdk.io/errors"
+	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
-	channelkeeper "github.com/cosmos/ibc-go/v8/modules/core/04-channel/keeper"
 	ibcante "github.com/cosmos/ibc-go/v8/modules/core/ante"
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
-	// Temporarily commented out due to dependency conflicts
-	// wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
-	// wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"
+	circuitkeeper "github.com/stateset/core/x/circuit/keeper"
 )
 
-// HandlerOptions extends the SDK's AnteHandler options by requiring the IBC
-// channel keeper.
+// HandlerOptions extends the SDK's AnteHandler options by requiring the IBC keeper.
 type HandlerOptions struct {
 	ante.HandlerOptions
 
-	IBCChannelkeeper  channelkeeper.Keeper
-	TxCounterStoreKey sdk.StoreKey
+	IBCKeeper     *ibckeeper.Keeper
+	CircuitKeeper *circuitkeeper.Keeper
 	// WasmConfig        wasmTypes.WasmConfig // Temporarily commented out due to dependency conflicts
 }
 
@@ -32,26 +29,22 @@ func NewMinCommissionDecorator() MinCommissionDecorator {
 
 func (MinCommissionDecorator) AnteHandle(
 	ctx sdk.Context, tx sdk.Tx,
-	simulate bool, next sdk.AnteHandler) (newCtx sdk.Context, err error) {
+	simulate bool, next sdk.AnteHandler) (sdk.Context, error) {
 	msgs := tx.GetMsgs()
-	minCommissionRate := sdk.NewDecWithPrec(5, 2)
+	minCommissionRate := math.LegacyNewDecWithPrec(5, 2)
 	for _, m := range msgs {
 		switch msg := m.(type) {
 		case *stakingtypes.MsgCreateValidator:
-			// prevent new validators joining the set with
-			// commission set below 5%
 			c := msg.Commission
 			if c.Rate.LT(minCommissionRate) {
-				return ctx, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "commission can't be lower than 5%")
+				return ctx, sdkerrors.ErrUnauthorized.Wrap("commission can't be lower than 5%")
 			}
 		case *stakingtypes.MsgEditValidator:
-			// if commission rate is nil, it means only
-			// other fields are affected - skip
 			if msg.CommissionRate == nil {
 				continue
 			}
 			if msg.CommissionRate.LT(minCommissionRate) {
-				return ctx, sdkerrors.Wrap(sdkerrors.ErrUnauthorized, "commission can't be lower than 5%")
+				return ctx, sdkerrors.ErrUnauthorized.Wrap("commission can't be lower than 5%")
 			}
 		default:
 			continue
@@ -60,46 +53,48 @@ func (MinCommissionDecorator) AnteHandle(
 	return next(ctx, tx, simulate)
 }
 
-// NewAnteHandler returns an AnteHandler that checks and increments sequence
-// numbers, checks signatures & account numbers, and deducts fees from the first
-// signer.
+// NewAnteHandler returns an ante handler configured for the application.
 func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	if options.AccountKeeper == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "account keeper is required for ante builder")
+		return nil, sdkerrors.ErrLogic.Wrap("account keeper is required for ante builder")
 	}
 
 	if options.BankKeeper == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "bank keeper is required for ante builder")
+		return nil, sdkerrors.ErrLogic.Wrap("bank keeper is required for ante builder")
 	}
 
 	if options.SignModeHandler == nil {
-		return nil, sdkerrors.Wrap(sdkerrors.ErrLogic, "sign mode handler is required for ante builder")
+		return nil, sdkerrors.ErrLogic.Wrap("sign mode handler is required for ante builder")
 	}
 
-	var sigGasConsumer = options.SigGasConsumer
+	sigGasConsumer := options.SigGasConsumer
 	if sigGasConsumer == nil {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
 
 	anteDecorators := []sdk.AnteDecorator{
-		ante.NewSetUpContextDecorator(), // outermost AnteDecorator. SetUpContext must be called first
+		ante.NewSetUpContextDecorator(),
 		NewMinCommissionDecorator(),
-		// wasmkeeper.NewLimitSimulationGasDecorator(options.WasmConfig.SimulationGasLimit), // Temporarily commented out due to dependency conflicts
-		// wasmkeeper.NewCountTXDecorator(options.TxCounterStoreKey), // Temporarily commented out due to dependency conflicts
-		ante.NewRejectExtensionOptionsDecorator(),
-		ante.NewMempoolFeeDecorator(),
+		ante.NewExtensionOptionsDecorator(options.ExtensionOptionChecker),
 		ante.NewValidateBasicDecorator(),
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper),
-		// SetPubKeyDecorator must be called before all signature verification decorators
+		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, sigGasConsumer),
 		ante.NewSigVerificationDecorator(options.AccountKeeper, options.SignModeHandler),
 		ante.NewIncrementSequenceDecorator(options.AccountKeeper),
-		ibcante.NewAnteDecorator(options.IBCChannelkeeper),
+	}
+
+	// Add circuit breaker security decorator
+	if options.CircuitKeeper != nil {
+		anteDecorators = append(anteDecorators, NewCombinedSecurityDecorator(options.CircuitKeeper))
+	}
+
+	if options.IBCKeeper != nil {
+		anteDecorators = append(anteDecorators, ibcante.NewRedundantRelayDecorator(options.IBCKeeper))
 	}
 
 	return sdk.ChainAnteDecorators(anteDecorators...), nil

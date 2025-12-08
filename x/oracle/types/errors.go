@@ -1,19 +1,27 @@
 package types
 
 import (
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
+)
+
+const (
+	moduleName = ModuleName
 )
 
 var (
-	ErrUnauthorized         = sdkerrors.Register(ModuleName, 1100, "unauthorized")
-	ErrOracleAlreadyExists  = sdkerrors.Register(ModuleName, 1101, "oracle provider already exists")
-	ErrOracleNotFound       = sdkerrors.Register(ModuleName, 1102, "oracle provider not found")
-	ErrInvalidPrice         = sdkerrors.Register(ModuleName, 1103, "invalid price")
-	ErrPriceNotAvailable    = sdkerrors.Register(ModuleName, 1104, "price not available")
-	ErrPriceTooOld          = sdkerrors.Register(ModuleName, 1105, "price too old")
-	ErrInsufficientProviders = sdkerrors.Register(ModuleName, 1106, "insufficient oracle providers")
-	ErrExcessiveDeviation   = sdkerrors.Register(ModuleName, 1107, "excessive price deviation")
-	ErrInvalidAsset         = sdkerrors.Register(ModuleName, 1108, "invalid asset")
-	ErrInvalidProvider      = sdkerrors.Register(ModuleName, 1109, "invalid provider")
-	ErrEmergencyMode        = sdkerrors.Register(ModuleName, 1110, "oracle in emergency mode")
+	ErrInvalidAuthority    = errorsmod.Register(moduleName, 1, "invalid authority")
+	ErrUnauthorized        = errorsmod.Register(moduleName, 2, "unauthorized")
+	ErrInvalidDenom        = errorsmod.Register(moduleName, 3, "invalid denom")
+	ErrInvalidPrice        = errorsmod.Register(moduleName, 4, "invalid price")
+	ErrPriceNotFound       = errorsmod.Register(moduleName, 5, "price not found")
+	ErrPriceStale          = errorsmod.Register(moduleName, 6, "price is stale")
+	ErrDeviationTooLarge   = errorsmod.Register(moduleName, 7, "price deviation exceeds maximum")
+	ErrUpdateTooFrequent   = errorsmod.Register(moduleName, 8, "price update too frequent")
+	ErrProviderNotFound    = errorsmod.Register(moduleName, 9, "oracle provider not found")
+	ErrProviderInactive    = errorsmod.Register(moduleName, 10, "oracle provider is inactive")
+	ErrProviderSlashed     = errorsmod.Register(moduleName, 11, "oracle provider has been slashed")
+	ErrConfigNotFound      = errorsmod.Register(moduleName, 12, "oracle config not found")
+	ErrConfigDisabled      = errorsmod.Register(moduleName, 13, "oracle config is disabled")
+	ErrMaxProvidersReached = errorsmod.Register(moduleName, 14, "maximum oracle providers reached")
+	ErrInvalidProvider     = errorsmod.Register(moduleName, 15, "invalid oracle provider")
 )

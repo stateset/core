@@ -6,7 +6,7 @@
 
 Before building and running the Stateset blockchain node, ensure you have the following dependencies installed:
 
-- **Go 1.21+**: [Download and install Go](https://golang.org/dl/)
+- **Go 1.23+**: [Download and install Go](https://golang.org/dl/)
 - **Git**: For cloning the repository
 - **Make**: For using build scripts (optional)
 
@@ -16,7 +16,7 @@ Before building and running the Stateset blockchain node, ensure you have the fo
 go version
 ```
 
-You should see output similar to `go version go1.21.0 linux/amd64`.
+You should see output similar to `go version go1.23.0 linux/amd64`.
 
 ## Building the Blockchain Node
 
@@ -35,6 +35,8 @@ go mod tidy
 ```
 
 ### 3. Build the Node Binary
+
+> **Note:** `make build` and `make install` will now verify that your local toolchain meets the Go ≥1.23 requirement before compiling.
 
 #### Using Make (Recommended)
 
@@ -57,6 +59,10 @@ go install ./cmd/cored
 ```
 
 After successful compilation, you should have a `statesetd` binary in your current directory (or in your `$GOPATH/bin` if you used `go install`).
+
+## CLI Reference
+
+A quick command reference for module transactions and queries lives in [docs/cli-guide.md](docs/cli-guide.md). Keep it handy while operating a node.
 
 ### 4. Verify the Build
 

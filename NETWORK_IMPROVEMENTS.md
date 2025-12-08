@@ -46,7 +46,7 @@ The StateSet blockchain has been transformed into a global distributed intellige
   - Vesting schedules for stakeholders
   - Slashing protection (5% rate)
 
-### 2. ssUSD Stablecoin Module (`x/ssusd`) - NEW
+### 2. ssUSD Stablecoin Engine (`x/stablecoins`)
 - **Purpose**: USD-pegged stablecoin for commerce
 - **Key Features**:
   - STST-collateralized minting (150% minimum ratio)
@@ -255,7 +255,7 @@ type PaymentRoute struct {
 
 ### Unit Tests
 ```bash
-go test ./x/ssusd/...
+go test ./x/stablecoins/...
 go test ./x/compliance/...
 ```
 
@@ -273,9 +273,9 @@ make test-stress LOAD=10000
 
 ### Testnet
 ```bash
-statesetd tx gov submit-proposal software-upgrade ssusd-v1 \
-  --title="Deploy ssUSD Module" \
-  --description="Add ssUSD stablecoin functionality" \
+statesetd tx gov submit-proposal software-upgrade stablecoins-v1 \
+  --title="Deploy stablecoin engine" \
+  --description="Activate ssUSD functionality from the stablecoins module" \
   --upgrade-height=1000000
 ```
 

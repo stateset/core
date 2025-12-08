@@ -1,21 +1,32 @@
 package types
 
 const (
+	// ModuleName defines the module name
 	ModuleName = "oracle"
-	StoreKey   = ModuleName
-	RouterKey  = ModuleName
+
+	// StoreKey is the primary module store key
+	StoreKey = ModuleName
+
+	// RouterKey is the message routing key for the oracle module
+	RouterKey = ModuleName
+
+	// QuerierRoute is the legacy querier route for the oracle module
 	QuerierRoute = ModuleName
-	MemStoreKey = "mem_oracle"
+
+	// Event types emitted by the oracle module.
+	EventTypePriceUpdated = "price_updated"
+
+	// Attribute keys for oracle events.
+	AttributeKeyDenom  = "denom"
+	AttributeKeyPrice  = "price"
+	AttributeKeySource = "source"
 )
 
-func KeyPrefix(p string) []byte {
-	return []byte(p)
+var (
+	PriceKeyPrefix = []byte{0x01}
+)
+
+func PriceStoreKey(denom string) []byte {
+	key := append([]byte{}, PriceKeyPrefix...)
+	return append(key, []byte(denom)...)
 }
-
-const (
-	PriceFeedKey = "PriceFeed/value/"
-	PriceFeedCountKey = "PriceFeed/count/"
-	OracleProviderKey = "OracleProvider/value/"
-	AggregatedPriceKey = "AggregatedPrice/value/"
-	PriceHistoryKey = "PriceHistory/value/"
-)

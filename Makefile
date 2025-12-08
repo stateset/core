@@ -6,6 +6,7 @@ LEDGER_ENABLED ?= true
 SDK_PACK := $(shell go list -m github.com/cosmos/cosmos-sdk | sed  's/ /\@/g')
 BINDIR ?= $(GOPATH)/bin
 BUILDDIR ?= $(CURDIR)/build
+MIN_GO_VERSION := 1.23
 
 # Build tags
 build_tags = netgo
@@ -61,13 +62,36 @@ ldflags := $(strip $(ldflags))
 
 BUILD_FLAGS := -tags "$(build_tags)" -ldflags '$(ldflags)'
 
+define check_go_version
+	@required=$(MIN_GO_VERSION); \
+	current=$$(go env GOVERSION 2>/dev/null || echo); \
+	if [ -z "$$current" ]; then \
+		echo "Go not found. Install Go $$required or newer."; exit 1; \
+	fi; \
+	current=$${current#go}; \
+	required_major=$${required%%.*}; \
+	required_minor=$${required#*.}; \
+	required_minor=$${required_minor%%.*}; \
+	current_major=$${current%%.*}; \
+	current_minor=$${current#*.}; \
+	current_minor=$${current_minor%%.*}; \
+	if [ $$current_major -lt $$required_major ] || { [ $$current_major -eq $$required_major ] && [ $$current_minor -lt $$required_minor ]; }; then \
+		echo "Go $$current detected. Please install Go $$required or newer."; \
+		exit 1; \
+	fi
+endef
+
+.PHONY: check-go-version
+check-go-version:
+	$(call check_go_version)
+
 ###############################################################################
 ###                                  Build                                 ###
 ###############################################################################
 
 all: install
 
-build: go.sum
+build: check-go-version go.sum
 ifeq ($(OS),Windows_NT)
 	go build -mod=readonly $(BUILD_FLAGS) -o build/statesetd.exe ./cmd/statesetd
 else
@@ -87,7 +111,7 @@ build-reproducible: go.sum
 	$(DOCKER) cp statesetd-extract:/usr/bin/statesetd $(BUILDDIR)/statesetd-linux-amd64
 	$(DOCKER) rm -f statesetd-extract
 
-install: go.sum
+install: check-go-version go.sum
 	go install -mod=readonly $(BUILD_FLAGS) ./cmd/statesetd
 
 ###############################################################################
@@ -117,22 +141,22 @@ godocs:
 ###                           Tests & Simulation                           ###
 ###############################################################################
 
-test: test-unit
-test-all: test-unit test-ledger test-race test-cover
+test: check-go-version test-unit
+test-all: check-go-version test-unit test-ledger test-race test-cover
 
-test-unit:
+test-unit: check-go-version
 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./...
 
-test-race:
+test-race: check-go-version
 	@VERSION=$(VERSION) go test -mod=readonly -race -tags='ledger test_ledger_mock' ./...
 
-test-ledger:
+test-ledger: check-go-version
 	@VERSION=$(VERSION) go test -mod=readonly -tags='cgo ledger test_ledger_mock' ./...
 
-test-cover:
+test-cover: check-go-version
 	@go test -mod=readonly -timeout 30m -race -coverprofile=coverage.txt -covermode=atomic -tags='ledger test_ledger_mock' ./...
 
-benchmark:
+benchmark: check-go-version
 	@go test -mod=readonly -bench=. ./...
 
 ###############################################################################
