@@ -1,0 +1,33 @@
+package types
+
+import errorsmod "cosmossdk.io/errors"
+
+var (
+	ErrCircuitNotFound          = errorsmod.Register(ModuleName, 1, "circuit not found")
+	ErrCircuitAlreadyExists     = errorsmod.Register(ModuleName, 2, "circuit already exists")
+	ErrCircuitInactive          = errorsmod.Register(ModuleName, 3, "circuit is inactive")
+	ErrInvalidVerificationKey   = errorsmod.Register(ModuleName, 4, "invalid verification key")
+	ErrInvalidProof             = errorsmod.Register(ModuleName, 5, "invalid proof data")
+	ErrInvalidPublicInputs      = errorsmod.Register(ModuleName, 6, "invalid public inputs")
+	ErrProofVerificationFailed  = errorsmod.Register(ModuleName, 7, "proof verification failed")
+	ErrProofNotFound            = errorsmod.Register(ModuleName, 8, "proof not found")
+	ErrProofAlreadyVerified     = errorsmod.Register(ModuleName, 9, "proof already verified")
+	ErrInvalidDataCommitment    = errorsmod.Register(ModuleName, 10, "invalid data commitment")
+	ErrDataCommitmentMismatch   = errorsmod.Register(ModuleName, 11, "data commitment mismatch")
+	ErrSymbolicRuleViolation    = errorsmod.Register(ModuleName, 12, "symbolic rule violation")
+	ErrRuleNotFound             = errorsmod.Register(ModuleName, 13, "symbolic rule not found")
+	ErrRuleAlreadyExists        = errorsmod.Register(ModuleName, 14, "symbolic rule already exists")
+	ErrInvalidRuleDefinition    = errorsmod.Register(ModuleName, 15, "invalid rule definition")
+	ErrRecursiveProofNotFound   = errorsmod.Register(ModuleName, 16, "recursive sub-proof not found")
+	ErrRecursiveProofInvalid    = errorsmod.Register(ModuleName, 17, "recursive sub-proof is invalid")
+	ErrMaxRecursionDepthExceeded = errorsmod.Register(ModuleName, 18, "maximum recursion depth exceeded")
+	ErrInvalidProofSystem       = errorsmod.Register(ModuleName, 19, "invalid proof system")
+	ErrUnauthorized             = errorsmod.Register(ModuleName, 20, "unauthorized")
+	ErrInvalidPublicInputSchema = errorsmod.Register(ModuleName, 21, "invalid public input schema")
+	ErrChallengeWindowExpired   = errorsmod.Register(ModuleName, 22, "challenge window has expired")
+	ErrInvalidChallenge         = errorsmod.Register(ModuleName, 23, "invalid challenge proof")
+	ErrProofAlreadyChallenged   = errorsmod.Register(ModuleName, 24, "proof already challenged")
+	ErrConstraintNotSatisfied   = errorsmod.Register(ModuleName, 25, "constraint not satisfied")
+	ErrEmptyProofData           = errorsmod.Register(ModuleName, 26, "proof data cannot be empty")
+	ErrEmptyCircuitName         = errorsmod.Register(ModuleName, 27, "circuit name cannot be empty")
+)

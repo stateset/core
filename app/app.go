@@ -118,6 +118,9 @@ import (
 	metrics "github.com/stateset/core/x/metrics"
 	metricskeeper "github.com/stateset/core/x/metrics/keeper"
 	metricstypes "github.com/stateset/core/x/metrics/types"
+	zkpverify "github.com/stateset/core/x/zkpverify"
+	zkpverifykeeper "github.com/stateset/core/x/zkpverify/keeper"
+	zkpverifytypes "github.com/stateset/core/x/zkpverify/types"
 	// this line is used by starport scaffolding # stargate/app/moduleImport
 	// Temporarily commented out due to dependency conflicts
 	// "github.com/CosmWasm/wasmd/x/wasm"
@@ -251,6 +254,7 @@ func initModuleBasics() {
 		settlement.AppModuleBasic{},
 		circuit.AppModuleBasic{},
 		metrics.AppModuleBasic{},
+		zkpverify.AppModuleBasic{},
 		// this line is used by starport scaffolding # stargate/app/moduleBasic
 		// wasm.AppModuleBasic{}, // Temporarily commented out due to dependency conflicts
 	)
@@ -298,6 +302,7 @@ type App struct {
 	SettlementKeeper      settlementkeeper.Keeper
 	CircuitKeeper         circuitkeeper.Keeper
 	MetricsKeeper         metricskeeper.Keeper
+	ZkpVerifyKeeper       zkpverifykeeper.Keeper
 
 	// make scoped keepers public for test purposes
 	ScopedIBCKeeper      capabilitykeeper.ScopedKeeper
@@ -338,7 +343,7 @@ func New(
 		govtypes.StoreKey, paramstypes.StoreKey, ibcexported.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey, consensusparamtypes.StoreKey,
 		oracletypes.StoreKey, compliancetypes.StoreKey, treasurytypes.StoreKey, paymentstypes.StoreKey, stablecointypes.StoreKey, settlementtypes.StoreKey,
-		circuittypes.StoreKey, metricstypes.StoreKey,
+		circuittypes.StoreKey, metricstypes.StoreKey, zkpverifytypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 		// wasm.StoreKey, // Temporarily commented out due to dependency conflicts
 	)
@@ -547,6 +552,13 @@ func New(
 		keys[metricstypes.StoreKey],
 	)
 
+	// ZKP Verify keeper for STARK proof verification (validium-style)
+	app.ZkpVerifyKeeper = zkpverifykeeper.NewKeeper(
+		appCodec,
+		keys[zkpverifytypes.StoreKey],
+		oracleAuthority, // Uses governance authority for circuit registration
+	)
+
 	// this line is used by starport scaffolding # stargate/app/keeperDefinition
 	// Temporarily commented out due to dependency conflicts
 	/*
@@ -632,6 +644,7 @@ func New(
 		settlement.NewAppModule(app.SettlementKeeper),
 		circuit.NewAppModule(app.CircuitKeeper),
 		metrics.NewAppModule(app.MetricsKeeper),
+		zkpverify.NewAppModule(app.ZkpVerifyKeeper),
 		// this line is used by starport scaffolding # stargate/app/appModule
 		// wasm.NewAppModule(appCodec, &app.wasmKeeper, app.StakingKeeper), // Temporarily commented out
 	)
@@ -645,10 +658,12 @@ func New(
 		evidencetypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName,
 		feegrant.ModuleName, circuittypes.ModuleName, metricstypes.ModuleName, // Circuit runs early to check pauses, metrics tracks block time
 		oracletypes.ModuleName, compliancetypes.ModuleName, treasurytypes.ModuleName, paymentstypes.ModuleName, stablecointypes.ModuleName, settlementtypes.ModuleName,
+		zkpverifytypes.ModuleName, // ZKP verification runs after other business logic modules
 	)
 
 	app.mm.SetOrderEndBlockers(crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, consensusparamtypes.ModuleName,
 		oracletypes.ModuleName, compliancetypes.ModuleName, treasurytypes.ModuleName, paymentstypes.ModuleName, stablecointypes.ModuleName, settlementtypes.ModuleName,
+		zkpverifytypes.ModuleName, // ZKP verification at end of block
 		circuittypes.ModuleName, metricstypes.ModuleName, // Metrics checks alerts at end of block
 	)
 
@@ -679,6 +694,7 @@ func New(
 		paymentstypes.ModuleName,
 		stablecointypes.ModuleName,
 		settlementtypes.ModuleName,
+		zkpverifytypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis
 		// wasm.ModuleName, // Temporarily commented out
