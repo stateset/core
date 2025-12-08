@@ -536,6 +536,7 @@ func New(
 		keys[settlementtypes.StoreKey],
 		app.BankKeeper,
 		app.ComplianceKeeper,
+		app.AccountKeeper,
 		oracleAuthority,
 	)
 

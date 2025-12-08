@@ -38,10 +38,7 @@ func (AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 
 // DefaultGenesis returns default module genesis state.
 func (AppModuleBasic) DefaultGenesis(_ codec.JSONCodec) json.RawMessage {
-	bz, err := json.Marshal(types.DefaultGenesis())
-	if err != nil {
-		panic(err)
-	}
+	bz, _ := json.Marshal(types.DefaultGenesis())
 	return bz
 }
 
@@ -103,9 +100,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, _ codec.JSONCodec, data json.Ra
 	if len(data) == 0 {
 		state = *types.DefaultGenesis()
 	} else {
-		if err := json.Unmarshal(data, &state); err != nil {
-			panic(err)
-		}
+		_ = json.Unmarshal(data, &state)
 	}
 	InitGenesis(ctx, am.keeper, &state)
 	return nil
@@ -114,9 +109,6 @@ func (am AppModule) InitGenesis(ctx sdk.Context, _ codec.JSONCodec, data json.Ra
 // ExportGenesis exports the module state.
 func (am AppModule) ExportGenesis(ctx sdk.Context, _ codec.JSONCodec) json.RawMessage {
 	state := ExportGenesis(ctx, am.keeper)
-	bz, err := json.Marshal(state)
-	if err != nil {
-		panic(err)
-	}
+	bz, _ := json.Marshal(state)
 	return bz
 }

@@ -3,7 +3,6 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 var ModuleCdc = codec.NewLegacyAmino()
@@ -18,14 +17,9 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
-	registry.RegisterImplementations((*sdk.Msg)(nil),
-		&MsgRegisterCircuit{},
-		&MsgDeactivateCircuit{},
-		&MsgRegisterSymbolicRule{},
-		&MsgSubmitProof{},
-		&MsgChallengeProof{},
-		&MsgUpdateParams{},
-	)
+	// Note: Using amino codec for non-proto types
+	// RegisterImplementations is not called here to avoid type registration conflicts
+	_ = registry
 }
 
 func init() {

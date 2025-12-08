@@ -3,6 +3,8 @@ package types
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"strings"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
@@ -19,6 +21,65 @@ func mustGetSigner(bech32 string) []sdk.AccAddress {
 		return []sdk.AccAddress{}
 	}
 	return []sdk.AccAddress{addr}
+}
+
+// blacklistedHosts contains hosts that are not allowed for webhook URLs
+var blacklistedHosts = []string{
+	"localhost",
+	"127.0.0.1",
+	"0.0.0.0",
+	"::1",
+	"169.254.", // Link-local
+	"10.",      // Private network
+	"172.16.",  // Private network
+	"172.17.",
+	"172.18.",
+	"172.19.",
+	"172.20.",
+	"172.21.",
+	"172.22.",
+	"172.23.",
+	"172.24.",
+	"172.25.",
+	"172.26.",
+	"172.27.",
+	"172.28.",
+	"172.29.",
+	"172.30.",
+	"172.31.",
+	"192.168.", // Private network
+}
+
+// ValidateWebhookURL validates a webhook URL for security
+func ValidateWebhookURL(webhookURL string) error {
+	if webhookURL == "" {
+		return nil // Empty URL is allowed (optional)
+	}
+
+	parsed, err := url.Parse(webhookURL)
+	if err != nil {
+		return errorsmod.Wrapf(ErrInvalidWebhookURL, "failed to parse URL: %v", err)
+	}
+
+	// Must be HTTPS
+	if parsed.Scheme != "https" {
+		return errorsmod.Wrap(ErrWebhookURLNotHTTPS, "webhook URL must use HTTPS scheme")
+	}
+
+	// Check against blacklisted hosts
+	host := strings.ToLower(parsed.Hostname())
+	for _, blacklisted := range blacklistedHosts {
+		if strings.HasPrefix(host, blacklisted) || host == blacklisted {
+			return errorsmod.Wrapf(ErrWebhookURLBlacklisted, "host %s is not allowed", host)
+		}
+	}
+
+	// Must have a valid host
+	if host == "" {
+		return errorsmod.Wrap(ErrInvalidWebhookURL, "webhook URL must have a valid host")
+	}
+
+	return nil
 }
 
 const (
@@ -492,6 +553,16 @@ func (m MsgClaimChannel) ValidateBasic() error {
 	if !m.Amount.IsValid() || m.Amount.IsZero() {
 		return errorsmod.Wrap(ErrInvalidAmount, "amount must be positive")
 	}
+	if m.Nonce == 0 {
+		return errorsmod.Wrap(ErrInvalidNonce, "nonce must be greater than zero")
+	}
+	if m.Signature == "" {
+		return errorsmod.Wrap(ErrInvalidSignature, "signature is required")
+	}
+	// Validate signature format (hex-encoded)
+	if len(m.Signature) < 64 {
+		return errorsmod.Wrap(ErrInvalidSignature, "signature too short")
+	}
 	return nil
 }
 
@@ -557,6 +628,10 @@ func (m MsgRegisterMerchant) ValidateBasic() error {
 	if m.FeeRateBps > 10000 {
 		return errorsmod.Wrap(ErrInvalidSettlement, "fee rate must be <= 10000 bps (100%)")
 	}
+	// Validate webhook URL if provided
+	if err := ValidateWebhookURL(m.WebhookUrl); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -603,6 +678,15 @@ func (m MsgUpdateMerchant) ValidateBasic() error {
 	}
 	if _, err := sdk.AccAddressFromBech32(m.Merchant); err != nil {
 		return errorsmod.Wrap(ErrInvalidSettlement, "invalid merchant address")
+	}
+	// Validate webhook URL if provided (non-empty means update)
+	if m.WebhookUrl != "" {
+		if err := ValidateWebhookURL(m.WebhookUrl); err != nil {
+			return err
+		}
+	}
+	if m.FeeRateBps > 10000 {
+		return errorsmod.Wrap(ErrInvalidSettlement, "fee rate must be <= 10000 bps (100%)")
 	}
 	return nil
 }

@@ -27,6 +27,9 @@ func (m *MsgRegisterCircuit) Reset()         { *m = MsgRegisterCircuit{} }
 func (m *MsgRegisterCircuit) String() string { return "MsgRegisterCircuit" }
 func (m *MsgRegisterCircuit) ProtoMessage()  {}
 
+// TypeURL returns the type URL for this message (implements proto.Message)
+func (m *MsgRegisterCircuit) TypeURL() string { return "/zkpverify.MsgRegisterCircuit" }
+
 func (msg MsgRegisterCircuit) GetSigners() []sdk.AccAddress {
 	addr, _ := sdk.AccAddressFromBech32(msg.Authority)
 	return []sdk.AccAddress{addr}
@@ -54,6 +57,9 @@ type MsgDeactivateCircuit struct {
 func (m *MsgDeactivateCircuit) Reset()         { *m = MsgDeactivateCircuit{} }
 func (m *MsgDeactivateCircuit) String() string { return "MsgDeactivateCircuit" }
 func (m *MsgDeactivateCircuit) ProtoMessage()  {}
+
+// TypeURL returns the type URL for this message (implements proto.Message)
+func (m *MsgDeactivateCircuit) TypeURL() string { return "/zkpverify.MsgDeactivateCircuit" }
 
 func (msg MsgDeactivateCircuit) GetSigners() []sdk.AccAddress {
 	addr, _ := sdk.AccAddressFromBech32(msg.Authority)
@@ -83,6 +89,9 @@ type MsgRegisterSymbolicRule struct {
 func (m *MsgRegisterSymbolicRule) Reset()         { *m = MsgRegisterSymbolicRule{} }
 func (m *MsgRegisterSymbolicRule) String() string { return "MsgRegisterSymbolicRule" }
 func (m *MsgRegisterSymbolicRule) ProtoMessage()  {}
+
+// TypeURL returns the type URL for this message (implements proto.Message)
+func (m *MsgRegisterSymbolicRule) TypeURL() string { return "/zkpverify.MsgRegisterSymbolicRule" }
 
 func (msg MsgRegisterSymbolicRule) GetSigners() []sdk.AccAddress {
 	addr, _ := sdk.AccAddressFromBech32(msg.Authority)
@@ -119,6 +128,9 @@ func (m *MsgSubmitProof) Reset()         { *m = MsgSubmitProof{} }
 func (m *MsgSubmitProof) String() string { return "MsgSubmitProof" }
 func (m *MsgSubmitProof) ProtoMessage()  {}
 
+// TypeURL returns the type URL for this message (implements proto.Message)
+func (m *MsgSubmitProof) TypeURL() string { return "/zkpverify.MsgSubmitProof" }
+
 func (msg MsgSubmitProof) GetSigners() []sdk.AccAddress {
 	addr, _ := sdk.AccAddressFromBech32(msg.Submitter)
 	return []sdk.AccAddress{addr}
@@ -152,6 +164,9 @@ func (m *MsgChallengeProof) Reset()         { *m = MsgChallengeProof{} }
 func (m *MsgChallengeProof) String() string { return "MsgChallengeProof" }
 func (m *MsgChallengeProof) ProtoMessage()  {}
 
+// TypeURL returns the type URL for this message (implements proto.Message)
+func (m *MsgChallengeProof) TypeURL() string { return "/zkpverify.MsgChallengeProof" }
+
 func (msg MsgChallengeProof) GetSigners() []sdk.AccAddress {
 	addr, _ := sdk.AccAddressFromBech32(msg.Challenger)
 	return []sdk.AccAddress{addr}
@@ -179,6 +194,9 @@ type MsgUpdateParams struct {
 func (m *MsgUpdateParams) Reset()         { *m = MsgUpdateParams{} }
 func (m *MsgUpdateParams) String() string { return "MsgUpdateParams" }
 func (m *MsgUpdateParams) ProtoMessage()  {}
+
+// TypeURL returns the type URL for this message (implements proto.Message)
+func (m *MsgUpdateParams) TypeURL() string { return "/zkpverify.MsgUpdateParams" }
 
 func (msg MsgUpdateParams) GetSigners() []sdk.AccAddress {
 	addr, _ := sdk.AccAddressFromBech32(msg.Authority)

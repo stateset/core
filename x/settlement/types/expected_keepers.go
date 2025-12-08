@@ -5,6 +5,7 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 )
 
 // BankKeeper defines the expected bank keeper interface
@@ -26,4 +27,10 @@ type ComplianceKeeper interface {
 // OracleKeeper defines the expected oracle keeper interface (for fee calculations)
 type OracleKeeper interface {
 	GetPriceDec(ctx sdk.Context, denom string) (sdkmath.LegacyDec, error)
+}
+
+// AccountKeeper defines the expected account keeper interface for signature verification
+type AccountKeeper interface {
+	GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI
+	GetPubKey(ctx context.Context, addr sdk.AccAddress) (cryptotypes.PubKey, error)
 }

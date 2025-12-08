@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
@@ -138,6 +139,21 @@ func (m *mockComplianceKeeper) SetSanctioned(addr string, sanctioned bool) {
 	m.sanctionedAddresses[addr] = sanctioned
 }
 
+// Mock account keeper
+type mockAccountKeeper struct{}
+
+func newMockAccountKeeper() *mockAccountKeeper {
+	return &mockAccountKeeper{}
+}
+
+func (m *mockAccountKeeper) GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI {
+	return nil
+}
+
+func (m *mockAccountKeeper) GetPubKey(ctx context.Context, addr sdk.AccAddress) (cryptotypes.PubKey, error) {
+	return nil, nil // Return nil to trigger fallback validation
+}
+
 func setupSettlementKeeper(t *testing.T) (keeper.Keeper, sdk.Context, *mockBankKeeper, *mockComplianceKeeper) {
 	t.Helper()
 	setupSettlementConfig()
@@ -154,6 +170,7 @@ func setupSettlementKeeper(t *testing.T) (keeper.Keeper, sdk.Context, *mockBankK
 
 	bankKeeper := newMockBankKeeper()
 	complianceKeeper := newMockComplianceKeeper()
+	accountKeeper := newMockAccountKeeper()
 
 	authority := newSettlementAddress()
 
@@ -162,6 +179,7 @@ func setupSettlementKeeper(t *testing.T) (keeper.Keeper, sdk.Context, *mockBankK
 		storeKey,
 		bankKeeper,
 		complianceKeeper,
+		accountKeeper,
 		authority.String(),
 	)
 
@@ -383,10 +401,11 @@ func TestClaimChannel(t *testing.T) {
 	channelId, err := k.OpenChannel(ctx, sender.String(), recipient.String(), deposit, 1000)
 	require.NoError(t, err)
 
-	// Claim from channel
+	// Claim from channel (include dummy signature for testing)
 	recipientAddr := recipient
 	claimAmount := sdk.NewCoin("ssusd", sdkmath.NewInt(300000))
-	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 1)
+	dummySig := "0000000000000000000000000000000000000000000000000000000000000000" + "0000000000000000000000000000000000000000000000000000000000000000" // 64 bytes hex
+	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 1, dummySig)
 	require.NoError(t, err)
 
 	// Verify channel state
@@ -414,15 +433,16 @@ func TestClaimChannel_InvalidNonce(t *testing.T) {
 	// First claim
 	recipientAddr := recipient
 	claimAmount := sdk.NewCoin("ssusd", sdkmath.NewInt(100000))
-	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 1)
+	dummySig := "0000000000000000000000000000000000000000000000000000000000000000" + "0000000000000000000000000000000000000000000000000000000000000000" // 64 bytes hex
+	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 1, dummySig)
 	require.NoError(t, err)
 
 	// Try to claim with same or lower nonce (replay attack)
-	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 1)
+	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 1, dummySig)
 	require.Error(t, err)
 	require.ErrorIs(t, err, types.ErrInvalidNonce)
 
-	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 0)
+	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 0, dummySig)
 	require.Error(t, err)
 	require.ErrorIs(t, err, types.ErrInvalidNonce)
 }

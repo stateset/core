@@ -163,7 +163,7 @@ func (m msgServer) ClaimChannel(goCtx context.Context, msg *types.MsgClaimChanne
 		return nil, types.ErrInvalidSettlement
 	}
 
-	if err := m.Keeper.ClaimChannel(ctx, msg.ChannelId, recipientAddr, msg.Amount, msg.Nonce); err != nil {
+	if err := m.Keeper.ClaimChannel(ctx, msg.ChannelId, recipientAddr, msg.Amount, msg.Nonce, msg.Signature); err != nil {
 		return nil, err
 	}
 

@@ -36,6 +36,9 @@ type Params struct {
 	// Maximum batch size
 	MaxBatchSize uint32 `json:"max_batch_size" yaml:"max_batch_size"`
 
+	// Maximum query limit for paginated queries
+	MaxQueryLimit uint32 `json:"max_query_limit" yaml:"max_query_limit"`
+
 	// Whether instant transfers are enabled
 	InstantTransfersEnabled bool `json:"instant_transfers_enabled" yaml:"instant_transfers_enabled"`
 
@@ -69,7 +72,8 @@ func DefaultParams() Params {
 		MaxEscrowExpiration:     86400 * 30, // 30 days
 		MinChannelExpiration:    100,        // ~10 minutes at 6s blocks
 		MaxChannelExpiration:    518400,     // ~30 days at 6s blocks
-		MaxBatchSize:           100,
+		MaxBatchSize:            100,
+		MaxQueryLimit:           100,
 		InstantTransfersEnabled: true,
 		EscrowEnabled:          true,
 		ChannelsEnabled:        true,
@@ -104,6 +108,9 @@ func (p Params) Validate() error {
 	}
 	if p.MaxBatchSize == 0 {
 		return fmt.Errorf("max batch size must be positive")
+	}
+	if p.MaxQueryLimit == 0 {
+		return fmt.Errorf("max query limit must be positive")
 	}
 	return nil
 }
