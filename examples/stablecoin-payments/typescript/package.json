@@ -1,0 +1,23 @@
+{
+  "name": "@stateset/payment-examples",
+  "version": "1.0.0",
+  "description": "ssUSD stablecoin payment examples for Stateset Commerce Network",
+  "private": true,
+  "scripts": {
+    "basic": "ts-node basic-payment.ts",
+    "escrow": "ts-node escrow-payment.ts",
+    "batch": "ts-node batch-payments.ts",
+    "channel": "ts-node payment-channel.ts",
+    "merchant": "ts-node merchant-integration.ts"
+  },
+  "dependencies": {
+    "@stateset/core": "^1.0.0",
+    "@cosmjs/stargate": "^0.32.0",
+    "@cosmjs/proto-signing": "^0.32.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}

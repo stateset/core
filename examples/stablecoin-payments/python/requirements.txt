@@ -1,0 +1,9 @@
+# ssUSD Payment Examples - Python Dependencies
+
+# No external dependencies required for basic examples
+# The examples use only the standard library and statesetd CLI
+
+# Optional: For enhanced functionality
+# requests>=2.28.0      # HTTP requests (alternative to CLI)
+# grpcio>=1.50.0        # gRPC client for direct node communication
+# protobuf>=4.21.0      # Protocol buffers for message serialization
