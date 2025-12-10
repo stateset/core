@@ -2,7 +2,7 @@ package types
 
 import (
 	errorsmod "cosmossdk.io/errors"
-	sdk "github.com/cosmos/cosmos-sdk/types"
+	sdkmath "cosmossdk.io/math"
 )
 
 const (
@@ -13,22 +13,22 @@ const (
 )
 
 var (
-	DefaultMinBaseFee     = sdk.MustNewDecFromStr("0.025") // per gas unit, in base denom
+	DefaultMinBaseFee     = sdkmath.LegacyMustNewDecFromStr("0.025") // per gas unit, in base denom
 	DefaultInitialBaseFee = DefaultMinBaseFee
-	DefaultPriorityFloor  = sdk.MustNewDecFromStr("0.0001") // suggested minimum priority tip
+	DefaultPriorityFloor  = sdkmath.LegacyMustNewDecFromStr("0.0001") // suggested minimum priority tip
 )
 
 // Params defines the configurable parameters for the fee market.
 type Params struct {
-	Enabled                  bool    `json:"enabled" yaml:"enabled"`
-	BaseFeeChangeDenominator uint64  `json:"base_fee_change_denominator" yaml:"base_fee_change_denominator"`
-	ElasticityMultiplier     uint64  `json:"elasticity_multiplier" yaml:"elasticity_multiplier"`
-	TargetGas                uint64  `json:"target_gas" yaml:"target_gas"`
-	InitialBaseFee           sdk.Dec `json:"initial_base_fee" yaml:"initial_base_fee"`
-	MinBaseFee               sdk.Dec `json:"min_base_fee" yaml:"min_base_fee"`
-	MaxBaseFee               sdk.Dec `json:"max_base_fee" yaml:"max_base_fee"`
-	PriorityFeeFloor         sdk.Dec `json:"priority_fee_floor" yaml:"priority_fee_floor"`
-	MaxFeeHistory            uint32  `json:"max_fee_history" yaml:"max_fee_history"`
+	Enabled                  bool                `json:"enabled" yaml:"enabled"`
+	BaseFeeChangeDenominator uint64              `json:"base_fee_change_denominator" yaml:"base_fee_change_denominator"`
+	ElasticityMultiplier     uint64              `json:"elasticity_multiplier" yaml:"elasticity_multiplier"`
+	TargetGas                uint64              `json:"target_gas" yaml:"target_gas"`
+	InitialBaseFee           sdkmath.LegacyDec   `json:"initial_base_fee" yaml:"initial_base_fee"`
+	MinBaseFee               sdkmath.LegacyDec   `json:"min_base_fee" yaml:"min_base_fee"`
+	MaxBaseFee               sdkmath.LegacyDec   `json:"max_base_fee" yaml:"max_base_fee"`
+	PriorityFeeFloor         sdkmath.LegacyDec   `json:"priority_fee_floor" yaml:"priority_fee_floor"`
+	MaxFeeHistory            uint32              `json:"max_fee_history" yaml:"max_fee_history"`
 }
 
 // DefaultParams returns the default parameters for the fee market.
@@ -40,7 +40,7 @@ func DefaultParams() Params {
 		TargetGas:                DefaultTargetGas,
 		InitialBaseFee:           DefaultInitialBaseFee,
 		MinBaseFee:               DefaultMinBaseFee,
-		MaxBaseFee:               sdk.ZeroDec(),
+		MaxBaseFee:               sdkmath.LegacyZeroDec(),
 		PriorityFeeFloor:         DefaultPriorityFloor,
 		MaxFeeHistory:            DefaultMaxFeeHistory,
 	}

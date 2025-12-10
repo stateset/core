@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/binary"
 
+	sdkmath "cosmossdk.io/math"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -49,24 +50,24 @@ func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
 }
 
 // GetBaseFee returns the current base fee, falling back to the initial default.
-func (k Keeper) GetBaseFee(ctx sdk.Context) sdk.Dec {
+func (k Keeper) GetBaseFee(ctx sdk.Context) sdkmath.LegacyDec {
 	store := ctx.KVStore(k.storeKey)
 	if !store.Has(types.BaseFeeKey) {
 		return types.DefaultInitialBaseFee
 	}
-	var dec sdk.Dec
+	var dec sdkmath.LegacyDec
 	types.ModuleCdc.MustUnmarshalJSON(store.Get(types.BaseFeeKey), &dec)
 	return dec
 }
 
 // SetBaseFee persists the current base fee.
-func (k Keeper) SetBaseFee(ctx sdk.Context, baseFee sdk.Dec) {
+func (k Keeper) SetBaseFee(ctx sdk.Context, baseFee sdkmath.LegacyDec) {
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.BaseFeeKey, types.ModuleCdc.MustMarshalJSON(&baseFee))
 }
 
 // UpdateBaseFee computes and persists the next base fee using the provided gas usage and block gas limit.
-func (k Keeper) UpdateBaseFee(ctx sdk.Context, gasUsed uint64, maxBlockGas uint64) sdk.Dec {
+func (k Keeper) UpdateBaseFee(ctx sdk.Context, gasUsed uint64, maxBlockGas uint64) sdkmath.LegacyDec {
 	params := k.GetParams(ctx)
 	current := k.GetBaseFee(ctx)
 	next := types.ComputeNextBaseFee(current, gasUsed, params, maxBlockGas)
