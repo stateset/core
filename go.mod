@@ -1,8 +1,6 @@
 module github.com/stateset/core
 
-go 1.23.2
-
-toolchain go1.23.4
+go 1.23
 
 require (
 	cosmossdk.io/core v0.11.3
@@ -22,6 +20,7 @@ require (
 	github.com/golang/protobuf v1.5.4
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1
+	github.com/leanovate/gopter v0.2.11
 	github.com/prometheus/client_golang v1.22.0
 	github.com/spf13/cast v1.9.2
 	github.com/spf13/cobra v1.9.1

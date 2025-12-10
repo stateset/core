@@ -1,0 +1,122 @@
+syntax = "proto3";
+package stateset.core.feemarket.v1;
+
+option go_package = "github.com/stateset/core/x/feemarket/types";
+
+import "gogoproto/gogo.proto";
+import "google/api/annotations.proto";
+import "cosmos_proto/cosmos.proto";
+import "feemarket/v1/params.proto";
+import "feemarket/v1/genesis.proto";
+
+// Query defines the gRPC querier service for the feemarket module.
+service Query {
+  // BaseFee queries the current base fee.
+  rpc BaseFee(QueryBaseFeeRequest) returns (QueryBaseFeeResponse) {
+    option (google.api.http).get = "/stateset/feemarket/v1/base_fee";
+  }
+
+  // Params queries the parameters of the feemarket module.
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse) {
+    option (google.api.http).get = "/stateset/feemarket/v1/params";
+  }
+
+  // GasPrice queries the recommended gas price based on current base fee.
+  rpc GasPrice(QueryGasPriceRequest) returns (QueryGasPriceResponse) {
+    option (google.api.http).get = "/stateset/feemarket/v1/gas_price";
+  }
+
+  // EstimateFee estimates the total fee for a transaction with given gas limit.
+  rpc EstimateFee(QueryEstimateFeeRequest) returns (QueryEstimateFeeResponse) {
+    option (google.api.http).get = "/stateset/feemarket/v1/estimate_fee";
+  }
+
+  // FeeHistory queries historical fee data.
+  rpc FeeHistory(QueryFeeHistoryRequest) returns (QueryFeeHistoryResponse) {
+    option (google.api.http).get = "/stateset/feemarket/v1/fee_history";
+  }
+}
+
+// QueryBaseFeeRequest is the request type for the Query/BaseFee RPC method.
+message QueryBaseFeeRequest {}
+
+// QueryBaseFeeResponse is the response type for the Query/BaseFee RPC method.
+message QueryBaseFeeResponse {
+  // base_fee is the current base fee.
+  string base_fee = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// QueryParamsRequest is the request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is the response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params defines the parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+// QueryGasPriceRequest is the request type for the Query/GasPrice RPC method.
+message QueryGasPriceRequest {
+  // priority is an optional priority level (low, medium, high).
+  // If not specified, returns the standard gas price.
+  string priority = 1;
+}
+
+// QueryGasPriceResponse is the response type for the Query/GasPrice RPC method.
+message QueryGasPriceResponse {
+  // gas_price is the recommended gas price.
+  string gas_price = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// QueryEstimateFeeRequest is the request type for the Query/EstimateFee RPC method.
+message QueryEstimateFeeRequest {
+  // gas_limit is the gas limit for the transaction.
+  uint64 gas_limit = 1;
+
+  // priority is an optional priority level (low, medium, high).
+  string priority = 2;
+}
+
+// QueryEstimateFeeResponse is the response type for the Query/EstimateFee RPC method.
+message QueryEstimateFeeResponse {
+  // estimated_fee is the total estimated fee.
+  string estimated_fee = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // base_fee_component is the base fee portion.
+  string base_fee_component = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // priority_fee_component is the priority fee portion (if applicable).
+  string priority_fee_component = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// QueryFeeHistoryRequest is the request type for the Query/FeeHistory RPC method.
+message QueryFeeHistoryRequest {
+  // limit is the maximum number of entries to return (default: 10, max: 100).
+  uint64 limit = 1;
+}
+
+// QueryFeeHistoryResponse is the response type for the Query/FeeHistory RPC method.
+message QueryFeeHistoryResponse {
+  // fee_history contains the requested historical fee data.
+  repeated FeeHistoryEntry fee_history = 1 [(gogoproto.nullable) = false];
+}

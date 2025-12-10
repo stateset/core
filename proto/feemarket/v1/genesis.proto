@@ -1,0 +1,46 @@
+syntax = "proto3";
+package stateset.core.feemarket.v1;
+
+option go_package = "github.com/stateset/core/x/feemarket/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "feemarket/v1/params.proto";
+
+// GenesisState defines the feemarket module's genesis state.
+message GenesisState {
+  // params defines all the parameters of the module.
+  Params params = 1 [(gogoproto.nullable) = false];
+
+  // base_fee is the current base fee.
+  string base_fee = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // latest_gas is the gas used in the most recent block.
+  uint64 latest_gas = 3;
+
+  // fee_history contains recent fee history entries.
+  repeated FeeHistoryEntry fee_history = 4 [(gogoproto.nullable) = false];
+}
+
+// FeeHistoryEntry represents a historical fee data point.
+message FeeHistoryEntry {
+  // block_height is the height at which this fee was recorded.
+  int64 block_height = 1;
+
+  // base_fee is the base fee at this block.
+  string base_fee = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  // gas_used is the total gas used in this block.
+  uint64 gas_used = 3;
+
+  // gas_limit is the gas limit for this block.
+  uint64 gas_limit = 4;
+}
