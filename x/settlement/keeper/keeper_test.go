@@ -2,6 +2,8 @@ package keeper_test
 
 import (
 	"context"
+	"encoding/hex"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -42,9 +44,14 @@ func newSettlementAddress() sdk.AccAddress {
 	return sdk.AccAddress(key.PubKey().Address())
 }
 
+func newSettlementKeyPair() (*secp256k1.PrivKey, sdk.AccAddress) {
+	key := secp256k1.GenPrivKey()
+	return key, sdk.AccAddress(key.PubKey().Address())
+}
+
 // Mock bank keeper
 type mockBankKeeper struct {
-	balances map[string]sdk.Coins
+	balances       map[string]sdk.Coins
 	moduleBalances map[string]sdk.Coins
 }
 
@@ -142,8 +149,12 @@ func (m *mockComplianceKeeper) SetSanctioned(addr string, sanctioned bool) {
 // Mock account keeper
 type mockAccountKeeper struct{}
 
+type mockAccountKeeper struct {
+	pubKeys map[string]cryptotypes.PubKey
+}
+
 func newMockAccountKeeper() *mockAccountKeeper {
-	return &mockAccountKeeper{}
+	return &mockAccountKeeper{pubKeys: make(map[string]cryptotypes.PubKey)}
 }
 
 func (m *mockAccountKeeper) GetAccount(ctx context.Context, addr sdk.AccAddress) sdk.AccountI {
@@ -151,10 +162,18 @@ func (m *mockAccountKeeper) GetAccount(ctx context.Context, addr sdk.AccAddress)
 }
 
 func (m *mockAccountKeeper) GetPubKey(ctx context.Context, addr sdk.AccAddress) (cryptotypes.PubKey, error) {
-	return nil, nil // Return nil to trigger fallback validation
+	pk, ok := m.pubKeys[addr.String()]
+	if !ok {
+		return nil, fmt.Errorf("pubkey not found")
+	}
+	return pk, nil
 }
 
-func setupSettlementKeeper(t *testing.T) (keeper.Keeper, sdk.Context, *mockBankKeeper, *mockComplianceKeeper) {
+func (m *mockAccountKeeper) SetPubKey(addr sdk.AccAddress, pk cryptotypes.PubKey) {
+	m.pubKeys[addr.String()] = pk
+}
+
+func setupSettlementKeeper(t *testing.T) (keeper.Keeper, sdk.Context, *mockBankKeeper, *mockComplianceKeeper, *mockAccountKeeper) {
 	t.Helper()
 	setupSettlementConfig()
 
@@ -188,11 +207,17 @@ func setupSettlementKeeper(t *testing.T) (keeper.Keeper, sdk.Context, *mockBankK
 	// Initialize genesis
 	k.InitGenesis(ctx, types.DefaultGenesis())
 
-	return k, ctx, bankKeeper, complianceKeeper
+	return k, ctx, bankKeeper, complianceKeeper, accountKeeper
+}
+
+func signChannelClaim(pk *secp256k1.PrivKey, channelId uint64, recipient sdk.AccAddress, amount sdk.Coin, nonce uint64) string {
+	msg := fmt.Sprintf("channel_claim:%d:%s:%s:%d", channelId, recipient.String(), amount.String(), nonce)
+	sig, _ := pk.Sign([]byte(msg))
+	return hex.EncodeToString(sig)
 }
 
 func TestInstantTransfer(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -218,7 +243,7 @@ func TestInstantTransfer(t *testing.T) {
 }
 
 func TestInstantTransfer_InsufficientBalance(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -234,7 +259,7 @@ func TestInstantTransfer_InsufficientBalance(t *testing.T) {
 }
 
 func TestInstantTransfer_ComplianceBlocked(t *testing.T) {
-	k, ctx, bankKeeper, complianceKeeper := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, complianceKeeper, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -253,7 +278,7 @@ func TestInstantTransfer_ComplianceBlocked(t *testing.T) {
 }
 
 func TestInstantTransfer_AmountTooSmall(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -269,7 +294,7 @@ func TestInstantTransfer_AmountTooSmall(t *testing.T) {
 }
 
 func TestCreateEscrow(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -292,7 +317,7 @@ func TestCreateEscrow(t *testing.T) {
 }
 
 func TestReleaseEscrow(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -317,7 +342,7 @@ func TestReleaseEscrow(t *testing.T) {
 }
 
 func TestReleaseEscrow_WrongSender(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -339,7 +364,7 @@ func TestReleaseEscrow_WrongSender(t *testing.T) {
 }
 
 func TestRefundEscrow(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -364,7 +389,7 @@ func TestRefundEscrow(t *testing.T) {
 }
 
 func TestOpenChannel(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -388,24 +413,25 @@ func TestOpenChannel(t *testing.T) {
 }
 
 func TestClaimChannel(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, accountKeeper := setupSettlementKeeper(t)
 
-	sender := newSettlementAddress()
+	senderKey, sender := newSettlementKeyPair()
 	recipient := newSettlementAddress()
 	deposit := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
 	// Fund sender
 	bankKeeper.SetBalance(sender.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	accountKeeper.SetPubKey(sender, senderKey.PubKey())
 
 	// Open channel
 	channelId, err := k.OpenChannel(ctx, sender.String(), recipient.String(), deposit, 1000)
 	require.NoError(t, err)
 
-	// Claim from channel (include dummy signature for testing)
+	// Claim from channel (include real signature)
 	recipientAddr := recipient
 	claimAmount := sdk.NewCoin("ssusd", sdkmath.NewInt(300000))
-	dummySig := "0000000000000000000000000000000000000000000000000000000000000000" + "0000000000000000000000000000000000000000000000000000000000000000" // 64 bytes hex
-	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 1, dummySig)
+	sig := signChannelClaim(senderKey, channelId, recipientAddr, claimAmount, 1)
+	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 1, sig)
 	require.NoError(t, err)
 
 	// Verify channel state
@@ -417,14 +443,15 @@ func TestClaimChannel(t *testing.T) {
 }
 
 func TestClaimChannel_InvalidNonce(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, accountKeeper := setupSettlementKeeper(t)
 
-	sender := newSettlementAddress()
+	senderKey, sender := newSettlementKeyPair()
 	recipient := newSettlementAddress()
 	deposit := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
 	// Fund sender
 	bankKeeper.SetBalance(sender.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	accountKeeper.SetPubKey(sender, senderKey.PubKey())
 
 	// Open channel
 	channelId, err := k.OpenChannel(ctx, sender.String(), recipient.String(), deposit, 1000)
@@ -433,22 +460,22 @@ func TestClaimChannel_InvalidNonce(t *testing.T) {
 	// First claim
 	recipientAddr := recipient
 	claimAmount := sdk.NewCoin("ssusd", sdkmath.NewInt(100000))
-	dummySig := "0000000000000000000000000000000000000000000000000000000000000000" + "0000000000000000000000000000000000000000000000000000000000000000" // 64 bytes hex
-	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 1, dummySig)
+	sig := signChannelClaim(senderKey, channelId, recipientAddr, claimAmount, 1)
+	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 1, sig)
 	require.NoError(t, err)
 
 	// Try to claim with same or lower nonce (replay attack)
-	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 1, dummySig)
+	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 1, sig)
 	require.Error(t, err)
 	require.ErrorIs(t, err, types.ErrInvalidNonce)
 
-	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 0, dummySig)
+	err = k.ClaimChannel(ctx, channelId, recipientAddr, claimAmount, 0, sig)
 	require.Error(t, err)
 	require.ErrorIs(t, err, types.ErrInvalidNonce)
 }
 
 func TestCloseChannel(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -481,7 +508,7 @@ func TestCloseChannel(t *testing.T) {
 }
 
 func TestCreateBatch(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	merchant := newSettlementAddress()
 	sender1 := newSettlementAddress()
@@ -515,7 +542,7 @@ func TestCreateBatch(t *testing.T) {
 }
 
 func TestSettleBatch(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	merchant := newSettlementAddress()
 	sender1 := newSettlementAddress()
@@ -547,7 +574,7 @@ func TestSettleBatch(t *testing.T) {
 }
 
 func TestSettleBatch_Unauthorized(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	merchant := newSettlementAddress()
 	sender1 := newSettlementAddress()
@@ -570,7 +597,7 @@ func TestSettleBatch_Unauthorized(t *testing.T) {
 }
 
 func TestRegisterMerchant(t *testing.T) {
-	k, ctx, _, _ := setupSettlementKeeper(t)
+	k, ctx, _, _, _ := setupSettlementKeeper(t)
 
 	merchantAddr := newSettlementAddress()
 	config := types.MerchantConfig{
@@ -593,7 +620,7 @@ func TestRegisterMerchant(t *testing.T) {
 }
 
 func TestUpdateMerchant(t *testing.T) {
-	k, ctx, _, _ := setupSettlementKeeper(t)
+	k, ctx, _, _, _ := setupSettlementKeeper(t)
 
 	merchantAddr := newSettlementAddress()
 	// Register merchant
@@ -622,7 +649,7 @@ func TestUpdateMerchant(t *testing.T) {
 }
 
 func TestProcessExpiredEscrows(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -652,7 +679,7 @@ func TestProcessExpiredEscrows(t *testing.T) {
 }
 
 func TestFeeCalculation(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -675,7 +702,7 @@ func TestFeeCalculation(t *testing.T) {
 }
 
 func TestMerchantCustomFeeRate(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	merchant := newSettlementAddress()
@@ -704,7 +731,7 @@ func TestMerchantCustomFeeRate(t *testing.T) {
 }
 
 func TestGenesisExportImport(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
@@ -732,7 +759,7 @@ func TestGenesisExportImport(t *testing.T) {
 	require.Len(t, genesis.Merchants, 1)
 
 	// Create new keeper and import
-	k2, ctx2, _, _ := setupSettlementKeeper(t)
+	k2, ctx2, _, _, _ := setupSettlementKeeper(t)
 	k2.InitGenesis(ctx2, genesis)
 
 	// Verify state was imported
@@ -750,7 +777,7 @@ func TestGenesisExportImport(t *testing.T) {
 }
 
 func TestIterators(t *testing.T) {
-	k, ctx, bankKeeper, _ := setupSettlementKeeper(t)
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()

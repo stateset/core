@@ -91,7 +91,7 @@ func DefaultParams() Params {
 	return Params{
 		Authorities:             []string{},
 		DefaultFailureThreshold: 5,
-		DefaultRecoveryPeriod:   300, // 5 minutes
+		DefaultRecoveryPeriod:   300,   // 5 minutes
 		MaxPauseDuration:        86400, // 24 hours
 		RateLimits: []RateLimitConfig{
 			{
@@ -114,7 +114,7 @@ func DefaultParams() Params {
 				WindowSeconds: 60,
 				PerAddress:    true,
 				Enabled:       true,
-				MessageTypes:  []string{"/stateset.stablecoin.v1.MsgMintStablecoin"},
+				MessageTypes:  []string{"/stateset.stablecoin.Msg/MintStablecoin"},
 			},
 			{
 				Name:          "large_settlement",
@@ -122,7 +122,7 @@ func DefaultParams() Params {
 				WindowSeconds: 300,
 				PerAddress:    true,
 				Enabled:       true,
-				MessageTypes:  []string{"/stateset.settlement.v1.MsgInstantTransfer"},
+				MessageTypes:  []string{"/stateset.settlement.Msg/InstantTransfer"},
 			},
 		},
 	}
@@ -195,9 +195,9 @@ type LiquidationSurgeProtection struct {
 // DefaultLiquidationSurgeProtection returns default surge protection settings
 func DefaultLiquidationSurgeProtection() LiquidationSurgeProtection {
 	return LiquidationSurgeProtection{
-		MaxLiquidationsPerBlock: 10,
-		MaxLiquidationValue:     sdkmath.NewInt(1_000_000_000_000), // 1M units
-		CooldownBlocks:          5,
+		MaxLiquidationsPerBlock:  10,
+		MaxLiquidationValue:      sdkmath.NewInt(1_000_000_000_000), // 1M units
+		CooldownBlocks:           5,
 		CurrentBlockLiquidations: 0,
 		CurrentBlockValue:        sdkmath.ZeroInt(),
 		LastResetHeight:          0,
@@ -206,12 +206,12 @@ func DefaultLiquidationSurgeProtection() LiquidationSurgeProtection {
 
 // GenesisState defines the circuit module's genesis state
 type GenesisState struct {
-	Params                  Params                     `json:"params"`
-	CircuitState            CircuitState               `json:"circuit_state"`
-	ModuleCircuits          []ModuleCircuitState       `json:"module_circuits"`
-	RateLimitStates         []RateLimitState           `json:"rate_limit_states"`
-	OracleDeviationConfigs  []OracleDeviationConfig    `json:"oracle_deviation_configs"`
-	LiquidationProtection   LiquidationSurgeProtection `json:"liquidation_protection"`
+	Params                 Params                     `json:"params"`
+	CircuitState           CircuitState               `json:"circuit_state"`
+	ModuleCircuits         []ModuleCircuitState       `json:"module_circuits"`
+	RateLimitStates        []RateLimitState           `json:"rate_limit_states"`
+	OracleDeviationConfigs []OracleDeviationConfig    `json:"oracle_deviation_configs"`
+	LiquidationProtection  LiquidationSurgeProtection `json:"liquidation_protection"`
 }
 
 // Proto message methods for GenesisState
@@ -222,12 +222,12 @@ func (m *GenesisState) ProtoMessage()  {}
 // DefaultGenesis returns the default genesis state
 func DefaultGenesis() *GenesisState {
 	return &GenesisState{
-		Params:                  DefaultParams(),
-		CircuitState:            CircuitState{GlobalPaused: false},
-		ModuleCircuits:          []ModuleCircuitState{},
-		RateLimitStates:         []RateLimitState{},
-		OracleDeviationConfigs:  DefaultOracleDeviationConfigs(),
-		LiquidationProtection:   DefaultLiquidationSurgeProtection(),
+		Params:                 DefaultParams(),
+		CircuitState:           CircuitState{GlobalPaused: false},
+		ModuleCircuits:         []ModuleCircuitState{},
+		RateLimitStates:        []RateLimitState{},
+		OracleDeviationConfigs: DefaultOracleDeviationConfigs(),
+		LiquidationProtection:  DefaultLiquidationSurgeProtection(),
 	}
 }
 

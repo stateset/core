@@ -374,6 +374,30 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state *types.GenesisState) {
 		state = types.DefaultGenesis()
 	}
 	k.SetParams(ctx, state.Params)
+	// Reserve-backed settings
+	_ = k.SetReserveParams(ctx, state.ReserveParams)
+	k.SetReserve(ctx, state.Reserve)
+	k.setNextDepositID(ctx, state.NextDepositId)
+	k.setNextRedemptionID(ctx, state.NextRedemptionId)
+	k.setNextAttestationID(ctx, state.NextAttestationId)
+
+	for _, deposit := range state.ReserveDeposits {
+		k.setReserveDeposit(ctx, deposit)
+	}
+	for _, redemption := range state.RedemptionRequests {
+		k.setRedemptionRequest(ctx, redemption)
+	}
+	for _, stat := range state.DailyStats {
+		k.SetDailyMintStats(ctx, stat)
+	}
+	for _, att := range state.Attestations {
+		store := prefix.NewStore(ctx.KVStore(k.storeKey), types.OffChainAttestationKeyPrefix)
+		store.Set(mustBz(att.Id), types.ModuleCdc.MustMarshalJSON(&att))
+	}
+	for _, addr := range state.ApprovedAttesters {
+		k.SetApprovedAttester(ctx, addr, true)
+	}
+
 	k.setNextVaultID(ctx, state.NextVaultId)
 	for _, vault := range state.Vaults {
 		k.setVault(ctx, vault)
@@ -384,7 +408,43 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state *types.GenesisState) {
 func (k Keeper) ExportGenesis(ctx sdk.Context) *types.GenesisState {
 	state := types.DefaultGenesis()
 	state.Params = k.GetParams(ctx)
+	state.ReserveParams = k.GetReserveParams(ctx)
+	state.Reserve = k.GetReserve(ctx)
 	state.NextVaultId = k.getNextVaultID(ctx)
+
+	state.NextDepositId = k.getNextDepositID(ctx)
+	state.NextRedemptionId = k.getNextRedemptionID(ctx)
+	state.NextAttestationId = k.getNextAttestationID(ctx)
+
+	k.IterateReserveDeposits(ctx, func(deposit types.ReserveDeposit) bool {
+		state.ReserveDeposits = append(state.ReserveDeposits, deposit)
+		return false
+	})
+	k.IterateRedemptionRequests(ctx, func(request types.RedemptionRequest) bool {
+		state.RedemptionRequests = append(state.RedemptionRequests, request)
+		return false
+	})
+	k.IterateAttestations(ctx, func(att types.OffChainReserveAttestation) bool {
+		state.Attestations = append(state.Attestations, att)
+		return false
+	})
+	// Daily stats are keyed by date; export all present entries
+	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.DailyMintStatsKeyPrefix)
+	iter := store.Iterator(nil, nil)
+	defer iter.Close()
+	for ; iter.Valid(); iter.Next() {
+		var stats types.DailyMintStats
+		types.ModuleCdc.MustUnmarshalJSON(iter.Value(), &stats)
+		state.DailyStats = append(state.DailyStats, stats)
+	}
+	// Approved attesters
+	attStore := prefix.NewStore(ctx.KVStore(k.storeKey), types.ApprovedAttesterKeyPrefix)
+	attIter := attStore.Iterator(nil, nil)
+	defer attIter.Close()
+	for ; attIter.Valid(); attIter.Next() {
+		state.ApprovedAttesters = append(state.ApprovedAttesters, string(attIter.Key()))
+	}
+
 	k.IterateVaults(ctx, func(vault types.Vault) bool {
 		state.Vaults = append(state.Vaults, vault)
 		return false

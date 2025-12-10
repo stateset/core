@@ -72,15 +72,20 @@ func TotalSupplyMatchInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 		reserve := k.GetReserve(ctx)
 
-		// The TotalMinted in reserve should match actual ssUSD supply
-		// This is a sanity check - actual implementation would need bank keeper total supply query
-
-		// For now, verify TotalMinted is non-negative
+		supply := k.getStablecoinSupply(ctx)
 		if reserve.TotalMinted.IsNegative() {
 			return sdk.FormatInvariant(
 				types.ModuleName,
 				"total-supply-match",
 				fmt.Sprintf("TotalMinted is negative: %s", reserve.TotalMinted),
+			), true
+		}
+
+		if !reserve.TotalMinted.Equal(supply) {
+			return sdk.FormatInvariant(
+				types.ModuleName,
+				"total-supply-match",
+				fmt.Sprintf("tracked minted %s does not match bank supply %s", reserve.TotalMinted, supply),
 			), true
 		}
 

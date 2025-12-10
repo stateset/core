@@ -62,11 +62,13 @@ func (k Keeper) GetReserve(ctx sdk.Context) types.Reserve {
 	}
 	var reserve types.Reserve
 	types.ModuleCdc.MustUnmarshalJSON(store.Get(types.ReserveKey), &reserve)
+	reserve.TotalMinted = k.getStablecoinSupply(ctx)
 	return reserve
 }
 
 // SetReserve updates the reserve state
 func (k Keeper) SetReserve(ctx sdk.Context, reserve types.Reserve) {
+	reserve.TotalMinted = k.getStablecoinSupply(ctx)
 	reserve.LastUpdated = ctx.BlockHeight()
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.ReserveKey, types.ModuleCdc.MustMarshalJSON(&reserve))
@@ -104,6 +106,11 @@ func (k Keeper) UpdateReserveValue(ctx sdk.Context) error {
 	reserve.TotalValue = totalValue
 	k.SetReserve(ctx, reserve)
 	return nil
+}
+
+func (k Keeper) getStablecoinSupply(ctx sdk.Context) sdkmath.Int {
+	supply := k.bankKeeper.GetSupply(sdk.WrapSDKContext(ctx), types.StablecoinDenom)
+	return supply.Amount
 }
 
 // ============================================================================

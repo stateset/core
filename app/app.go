@@ -95,21 +95,24 @@ import (
 	compliance "github.com/stateset/core/x/compliance"
 	compliancekeeper "github.com/stateset/core/x/compliance/keeper"
 	compliancetypes "github.com/stateset/core/x/compliance/types"
+	feemarket "github.com/stateset/core/x/feemarket"
+	feemarketkeeper "github.com/stateset/core/x/feemarket/keeper"
+	feemarkettypes "github.com/stateset/core/x/feemarket/types"
 	oracle "github.com/stateset/core/x/oracle"
 	oraclekeeper "github.com/stateset/core/x/oracle/keeper"
 	oracletypes "github.com/stateset/core/x/oracle/types"
 	payments "github.com/stateset/core/x/payments"
 	paymentskeeper "github.com/stateset/core/x/payments/keeper"
 	paymentstypes "github.com/stateset/core/x/payments/types"
+	settlement "github.com/stateset/core/x/settlement"
+	settlementkeeper "github.com/stateset/core/x/settlement/keeper"
+	settlementtypes "github.com/stateset/core/x/settlement/types"
 	stablecoin "github.com/stateset/core/x/stablecoin"
 	stablecoinkeeper "github.com/stateset/core/x/stablecoin/keeper"
 	stablecointypes "github.com/stateset/core/x/stablecoin/types"
 	treasury "github.com/stateset/core/x/treasury"
 	treasurykeeper "github.com/stateset/core/x/treasury/keeper"
 	treasurytypes "github.com/stateset/core/x/treasury/types"
-	settlement "github.com/stateset/core/x/settlement"
-	settlementkeeper "github.com/stateset/core/x/settlement/keeper"
-	settlementtypes "github.com/stateset/core/x/settlement/types"
 
 	// Security and monitoring modules
 	circuit "github.com/stateset/core/x/circuit"
@@ -246,6 +249,7 @@ func initModuleBasics() {
 		evidence.AppModuleBasic{},
 		transfer.AppModuleBasic{},
 		vesting.AppModuleBasic{},
+		feemarket.AppModuleBasic{},
 		oracle.AppModuleBasic{},
 		compliance.AppModuleBasic{},
 		treasury.AppModuleBasic{},
@@ -300,6 +304,7 @@ type App struct {
 	PaymentsKeeper        paymentskeeper.Keeper
 	StablecoinKeeper      stablecoinkeeper.Keeper
 	SettlementKeeper      settlementkeeper.Keeper
+	FeeMarketKeeper       feemarketkeeper.Keeper
 	CircuitKeeper         circuitkeeper.Keeper
 	MetricsKeeper         metricskeeper.Keeper
 	ZkpVerifyKeeper       zkpverifykeeper.Keeper
@@ -342,7 +347,7 @@ func New(
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, ibcexported.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey, consensusparamtypes.StoreKey,
-		oracletypes.StoreKey, compliancetypes.StoreKey, treasurytypes.StoreKey, paymentstypes.StoreKey, stablecointypes.StoreKey, settlementtypes.StoreKey,
+		oracletypes.StoreKey, compliancetypes.StoreKey, treasurytypes.StoreKey, paymentstypes.StoreKey, stablecointypes.StoreKey, settlementtypes.StoreKey, feemarkettypes.StoreKey,
 		circuittypes.StoreKey, metricstypes.StoreKey, zkpverifytypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 		// wasm.StoreKey, // Temporarily commented out due to dependency conflicts
@@ -541,6 +546,12 @@ func New(
 		oracleAuthority,
 	)
 
+	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
+		appCodec,
+		keys[feemarkettypes.StoreKey],
+		oracleAuthority,
+	)
+
 	// Circuit breaker keeper for security controls
 	app.CircuitKeeper = circuitkeeper.NewKeeper(
 		appCodec,
@@ -638,6 +649,7 @@ func New(
 		params.NewAppModule(app.ParamsKeeper),
 		ibc.NewAppModule(app.IBCKeeper),
 		transferModule,
+		feemarket.NewAppModule(app.FeeMarketKeeper),
 		oracle.NewAppModule(app.OracleKeeper),
 		compliance.NewAppModule(app.ComplianceKeeper),
 		treasury.NewAppModule(app.TreasuryKeeper),
@@ -658,14 +670,14 @@ func New(
 	app.mm.SetOrderBeginBlockers(
 		upgradetypes.ModuleName, capabilitytypes.ModuleName, consensusparamtypes.ModuleName, minttypes.ModuleName, distrtypes.ModuleName, slashingtypes.ModuleName,
 		evidencetypes.ModuleName, stakingtypes.ModuleName, ibcexported.ModuleName,
-		feegrant.ModuleName, circuittypes.ModuleName, metricstypes.ModuleName, // Circuit runs early to check pauses, metrics tracks block time
+		feegrant.ModuleName, circuittypes.ModuleName, metricstypes.ModuleName, feemarkettypes.ModuleName, // Circuit runs early to check pauses, metrics tracks block time
 		oracletypes.ModuleName, compliancetypes.ModuleName, treasurytypes.ModuleName, paymentstypes.ModuleName, stablecointypes.ModuleName, settlementtypes.ModuleName,
 		zkpverifytypes.ModuleName, // ZKP verification runs after other business logic modules
 	)
 
 	app.mm.SetOrderEndBlockers(crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, consensusparamtypes.ModuleName,
-		oracletypes.ModuleName, compliancetypes.ModuleName, treasurytypes.ModuleName, paymentstypes.ModuleName, stablecointypes.ModuleName, settlementtypes.ModuleName,
-		zkpverifytypes.ModuleName, // ZKP verification at end of block
+		feemarkettypes.ModuleName, oracletypes.ModuleName, compliancetypes.ModuleName, treasurytypes.ModuleName, paymentstypes.ModuleName, stablecointypes.ModuleName, settlementtypes.ModuleName,
+		zkpverifytypes.ModuleName,                        // ZKP verification at end of block
 		circuittypes.ModuleName, metricstypes.ModuleName, // Metrics checks alerts at end of block
 	)
 
@@ -688,14 +700,15 @@ func New(
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
 		ibctransfertypes.ModuleName,
-		circuittypes.ModuleName,  // Circuit breaker initialized early
-		metricstypes.ModuleName,  // Metrics initialized
+		circuittypes.ModuleName, // Circuit breaker initialized early
+		metricstypes.ModuleName, // Metrics initialized
 		oracletypes.ModuleName,
 		compliancetypes.ModuleName,
 		treasurytypes.ModuleName,
 		paymentstypes.ModuleName,
 		stablecointypes.ModuleName,
 		settlementtypes.ModuleName,
+		feemarkettypes.ModuleName,
 		zkpverifytypes.ModuleName,
 		consensusparamtypes.ModuleName,
 		// this line is used by starport scaffolding # stargate/app/initGenesis

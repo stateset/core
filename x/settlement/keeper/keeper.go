@@ -6,11 +6,11 @@ import (
 	"fmt"
 	"time"
 
+	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkmath "cosmossdk.io/math"
 
 	"github.com/stateset/core/x/settlement/types"
 )
@@ -843,23 +843,12 @@ func (k Keeper) verifyChannelSignature(ctx sdk.Context, channel types.PaymentCha
 	if k.accountKeeper != nil {
 		pubKey, err := k.accountKeeper.GetPubKey(wrappedCtx, senderAddr)
 		if err == nil && pubKey != nil {
-			// Verify signature using the sender's public key
 			if !pubKey.VerifySignature(msgBytes, sigBytes[:64]) {
 				return types.ErrSignatureVerificationFailed
 			}
 			return nil
 		}
-		// If pubkey not available, fall through to basic validation
-		ctx.Logger().Debug("account keeper pubkey not available, using basic validation", "sender", senderAddr.String())
-	}
-
-	// Fallback: Basic signature format validation
-	// In production, accounts should have pubkeys registered
-	// This allows the system to work before accounts have transacted
-	if len(sigBytes) >= 64 {
-		// Accept valid-format signatures when account pubkey isn't available
-		// This supports payment channels opened by new accounts
-		return nil
+		ctx.Logger().Debug("account keeper pubkey not available, rejecting claim", "sender", senderAddr.String())
 	}
 
 	return types.ErrInvalidSignature

@@ -7,13 +7,13 @@ import (
 	"testing"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/log"
+	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
-	dbm "github.com/cosmos/cosmos-db"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -150,6 +150,17 @@ func (m *mockBankKeeper) BurnCoins(_ context.Context, module string, amt sdk.Coi
 	moduleCoins = moduleCoins.Sub(amt...).Sort()
 	m.moduleBalances[module] = moduleCoins
 	return nil
+}
+
+func (m *mockBankKeeper) GetSupply(_ context.Context, denom string) sdk.Coin {
+	total := sdk.NewCoin(denom, sdkmath.ZeroInt())
+	for _, coins := range m.balances {
+		total = total.Add(sdk.NewCoin(denom, coins.AmountOf(denom)))
+	}
+	for _, coins := range m.moduleBalances {
+		total = total.Add(sdk.NewCoin(denom, coins.AmountOf(denom)))
+	}
+	return total
 }
 
 type mockAccountKeeper struct {
