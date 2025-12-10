@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 	"time"
@@ -247,12 +248,12 @@ func newBenchTreasuryBankKeeper() *benchTreasuryBankKeeper {
 	}
 }
 
-func (m *benchTreasuryBankKeeper) GetBalance(_ context, addr sdk.AccAddress, denom string) sdk.Coin {
+func (m *benchTreasuryBankKeeper) GetBalance(_ context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
 	coins := m.balances[addr.String()]
 	return sdk.NewCoin(denom, coins.AmountOf(denom))
 }
 
-func (m *benchTreasuryBankKeeper) GetAllBalances(_ context, addr sdk.AccAddress) sdk.Coins {
+func (m *benchTreasuryBankKeeper) GetAllBalances(_ context.Context, addr sdk.AccAddress) sdk.Coins {
 	for module, moduleAddr := range m.moduleAddresses {
 		if moduleAddr.Equals(addr) {
 			return m.moduleBalances[module]
@@ -265,7 +266,7 @@ func (m *benchTreasuryBankKeeper) SetModuleBalance(module string, coins sdk.Coin
 	m.moduleBalances[module] = coins.Sort()
 }
 
-func (m *benchTreasuryBankKeeper) SendCoinsFromModuleToAccount(_ context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error {
+func (m *benchTreasuryBankKeeper) SendCoinsFromModuleToAccount(_ context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error {
 	moduleCoins := m.moduleBalances[senderModule]
 	if moduleCoins == nil {
 		moduleCoins = sdk.NewCoins()
@@ -281,15 +282,15 @@ func (m *benchTreasuryBankKeeper) SendCoinsFromModuleToAccount(_ context, sender
 	return nil
 }
 
-func (m *benchTreasuryBankKeeper) SendCoinsFromAccountToModule(_ context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error {
+func (m *benchTreasuryBankKeeper) SendCoinsFromAccountToModule(_ context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error {
 	return nil
 }
 
-func (m *benchTreasuryBankKeeper) BurnCoins(_ context, moduleName string, amt sdk.Coins) error {
+func (m *benchTreasuryBankKeeper) BurnCoins(_ context.Context, moduleName string, amt sdk.Coins) error {
 	return nil
 }
 
-func (m *benchTreasuryBankKeeper) MintCoins(_ context, moduleName string, amt sdk.Coins) error {
+func (m *benchTreasuryBankKeeper) MintCoins(_ context.Context, moduleName string, amt sdk.Coins) error {
 	return nil
 }
 
@@ -310,5 +311,3 @@ func (m *benchTreasuryAccountKeeper) GetModuleAddress(moduleName string) sdk.Acc
 func (m *benchTreasuryAccountKeeper) SetModuleAddress(moduleName string, addr sdk.AccAddress) {
 	m.addresses[moduleName] = addr
 }
-
-type context = sdk.Context

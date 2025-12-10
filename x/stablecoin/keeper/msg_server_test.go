@@ -59,7 +59,7 @@ func setupKeeper(t *testing.T) (keeper.Keeper, sdk.Context, *mockBankKeeper, *mo
 	accountKeeper := newMockAccountKeeper()
 	accountKeeper.SetAddress(stablecointypes.ModuleAccountName, newAddress())
 
-	k := keeper.NewKeeper(cdc, storeKey, bankKeeper, accountKeeper, oracleKeeper, complianceKeeper)
+	k := keeper.NewKeeper(cdc, storeKey, "stateset1authority", bankKeeper, accountKeeper, oracleKeeper, complianceKeeper)
 
 	return k, ctx, bankKeeper, oracleKeeper, complianceKeeper
 }

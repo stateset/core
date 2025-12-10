@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"context"
 	"sync"
 	"testing"
 	"time"
@@ -29,6 +30,69 @@ func setupConfig() {
 	})
 }
 
+// Mock BankKeeper for msg server tests
+type msgServerMockBankKeeper struct {
+	balances       map[string]sdk.Coins
+	moduleBalances map[string]sdk.Coins
+}
+
+func newMsgServerMockBankKeeper() *msgServerMockBankKeeper {
+	return &msgServerMockBankKeeper{
+		balances:       make(map[string]sdk.Coins),
+		moduleBalances: make(map[string]sdk.Coins),
+	}
+}
+
+func (m *msgServerMockBankKeeper) GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
+	coins := m.balances[addr.String()]
+	return sdk.NewCoin(denom, coins.AmountOf(denom))
+}
+
+func (m *msgServerMockBankKeeper) GetAllBalances(ctx context.Context, addr sdk.AccAddress) sdk.Coins {
+	return m.balances[addr.String()]
+}
+
+func (m *msgServerMockBankKeeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error {
+	m.moduleBalances[senderModule] = m.moduleBalances[senderModule].Sub(amt...)
+	m.balances[recipientAddr.String()] = m.balances[recipientAddr.String()].Add(amt...)
+	return nil
+}
+
+func (m *msgServerMockBankKeeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error {
+	m.balances[senderAddr.String()] = m.balances[senderAddr.String()].Sub(amt...)
+	m.moduleBalances[recipientModule] = m.moduleBalances[recipientModule].Add(amt...)
+	return nil
+}
+
+func (m *msgServerMockBankKeeper) BurnCoins(ctx context.Context, moduleName string, amt sdk.Coins) error {
+	m.moduleBalances[moduleName] = m.moduleBalances[moduleName].Sub(amt...)
+	return nil
+}
+
+func (m *msgServerMockBankKeeper) MintCoins(ctx context.Context, moduleName string, amt sdk.Coins) error {
+	m.moduleBalances[moduleName] = m.moduleBalances[moduleName].Add(amt...)
+	return nil
+}
+
+// Mock AccountKeeper for msg server tests
+type msgServerMockAccountKeeper struct {
+	moduleAddresses map[string]sdk.AccAddress
+}
+
+func newMsgServerMockAccountKeeper() *msgServerMockAccountKeeper {
+	return &msgServerMockAccountKeeper{
+		moduleAddresses: make(map[string]sdk.AccAddress),
+	}
+}
+
+func (m *msgServerMockAccountKeeper) GetModuleAddress(moduleName string) sdk.AccAddress {
+	if addr, ok := m.moduleAddresses[moduleName]; ok {
+		return addr
+	}
+	// Generate deterministic address for module
+	return sdk.AccAddress([]byte(moduleName))
+}
+
 func setupKeeper(t *testing.T) (keeper.Keeper, sdk.Context, string) {
 	t.Helper()
 
@@ -42,8 +106,10 @@ func setupKeeper(t *testing.T) (keeper.Keeper, sdk.Context, string) {
 	ctx = ctx.WithBlockTime(time.Now().UTC())
 
 	authority := newAddress().String()
+	bankKeeper := newMsgServerMockBankKeeper()
+	accountKeeper := newMsgServerMockAccountKeeper()
 
-	return keeper.NewKeeper(cdc, storeKey, authority), ctx, authority
+	return keeper.NewKeeper(cdc, storeKey, authority, bankKeeper, accountKeeper), ctx, authority
 }
 
 func newAddress() sdk.AccAddress {

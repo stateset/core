@@ -40,7 +40,7 @@ func setupBenchmarkKeeper() (keeper.Keeper, sdk.Context, *benchBankKeeper, *benc
 	accountKeeper := newBenchAccountKeeper()
 	accountKeeper.SetAddress(stablecointypes.ModuleAccountName, newBenchAddress())
 
-	k := keeper.NewKeeper(cdc, storeKey, bankKeeper, accountKeeper, oracleKeeper, complianceKeeper)
+	k := keeper.NewKeeper(cdc, storeKey, "stateset1authority", bankKeeper, accountKeeper, oracleKeeper, complianceKeeper)
 
 	return k, ctx, bankKeeper, oracleKeeper
 }

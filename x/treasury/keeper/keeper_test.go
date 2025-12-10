@@ -1,6 +1,7 @@
 package keeper_test
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -16,6 +17,73 @@ import (
 	treasurytypes "github.com/stateset/core/x/treasury/types"
 )
 
+// Mock bank keeper for treasury tests
+type treasuryMockBankKeeper struct {
+	balances       map[string]sdk.Coins
+	moduleBalances map[string]sdk.Coins
+}
+
+func newTreasuryMockBankKeeper() *treasuryMockBankKeeper {
+	return &treasuryMockBankKeeper{
+		balances:       make(map[string]sdk.Coins),
+		moduleBalances: make(map[string]sdk.Coins),
+	}
+}
+
+func (m *treasuryMockBankKeeper) GetBalance(ctx context.Context, addr sdk.AccAddress, denom string) sdk.Coin {
+	coins := m.balances[addr.String()]
+	return sdk.NewCoin(denom, coins.AmountOf(denom))
+}
+
+func (m *treasuryMockBankKeeper) GetAllBalances(ctx context.Context, addr sdk.AccAddress) sdk.Coins {
+	return m.balances[addr.String()]
+}
+
+func (m *treasuryMockBankKeeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error {
+	moduleCoins := m.moduleBalances[senderModule]
+	recipientCoins := m.balances[recipientAddr.String()]
+	m.moduleBalances[senderModule] = moduleCoins.Sub(amt...)
+	m.balances[recipientAddr.String()] = recipientCoins.Add(amt...)
+	return nil
+}
+
+func (m *treasuryMockBankKeeper) SendCoinsFromAccountToModule(ctx context.Context, senderAddr sdk.AccAddress, recipientModule string, amt sdk.Coins) error {
+	senderCoins := m.balances[senderAddr.String()]
+	moduleCoins := m.moduleBalances[recipientModule]
+	m.balances[senderAddr.String()] = senderCoins.Sub(amt...)
+	m.moduleBalances[recipientModule] = moduleCoins.Add(amt...)
+	return nil
+}
+
+func (m *treasuryMockBankKeeper) BurnCoins(ctx context.Context, moduleName string, amt sdk.Coins) error {
+	moduleCoins := m.moduleBalances[moduleName]
+	m.moduleBalances[moduleName] = moduleCoins.Sub(amt...)
+	return nil
+}
+
+func (m *treasuryMockBankKeeper) MintCoins(ctx context.Context, moduleName string, amt sdk.Coins) error {
+	moduleCoins := m.moduleBalances[moduleName]
+	m.moduleBalances[moduleName] = moduleCoins.Add(amt...)
+	return nil
+}
+
+// Mock account keeper for treasury tests
+type treasuryMockAccountKeeper struct {
+	moduleAddresses map[string]sdk.AccAddress
+}
+
+func newTreasuryMockAccountKeeper() *treasuryMockAccountKeeper {
+	mk := &treasuryMockAccountKeeper{
+		moduleAddresses: make(map[string]sdk.AccAddress),
+	}
+	mk.moduleAddresses[treasurytypes.ModuleName] = sdk.AccAddress("treasury_module_____")
+	return mk
+}
+
+func (m *treasuryMockAccountKeeper) GetModuleAddress(moduleName string) sdk.AccAddress {
+	return m.moduleAddresses[moduleName]
+}
+
 func setupTreasuryKeeperTest(t *testing.T) (keeper.Keeper, sdk.Context, string) {
 	t.Helper()
 
@@ -27,8 +95,10 @@ func setupTreasuryKeeperTest(t *testing.T) (keeper.Keeper, sdk.Context, string) 
 	ctx = ctx.WithBlockTime(time.Now().UTC())
 
 	authority := newTreasuryTestAddress().String()
+	bankKeeper := newTreasuryMockBankKeeper()
+	accountKeeper := newTreasuryMockAccountKeeper()
 
-	return keeper.NewKeeper(cdc, storeKey, authority), ctx, authority
+	return keeper.NewKeeper(cdc, storeKey, authority, bankKeeper, accountKeeper), ctx, authority
 }
 
 func newTreasuryTestAddress() sdk.AccAddress {
@@ -196,7 +266,9 @@ func TestGenesisExportImport(t *testing.T) {
 	cdc := codec.NewProtoCodec(registry)
 	ctx2 := testutil.DefaultContext(storeKey, storetypes.NewTransientStoreKey("treasury-transient-import"))
 	ctx2 = ctx2.WithBlockTime(time.Now().UTC())
-	k2 := keeper.NewKeeper(cdc, storeKey, authority)
+	bankKeeper2 := newTreasuryMockBankKeeper()
+	accountKeeper2 := newTreasuryMockAccountKeeper()
+	k2 := keeper.NewKeeper(cdc, storeKey, authority, bankKeeper2, accountKeeper2)
 	k2.InitGenesis(ctx2, genesis)
 
 	// Verify state was imported
@@ -292,7 +364,9 @@ func BenchmarkRecordSnapshot(b *testing.B) {
 	ctx := testutil.DefaultContext(storeKey, storetypes.NewTransientStoreKey("test"))
 	ctx = ctx.WithBlockTime(time.Now())
 
-	k := keeper.NewKeeper(cdc, storeKey, "authority")
+	bankKeeper := newTreasuryMockBankKeeper()
+	accountKeeper := newTreasuryMockAccountKeeper()
+	k := keeper.NewKeeper(cdc, storeKey, "authority", bankKeeper, accountKeeper)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -313,7 +387,9 @@ func BenchmarkGetSnapshot(b *testing.B) {
 	ctx := testutil.DefaultContext(storeKey, storetypes.NewTransientStoreKey("test"))
 	ctx = ctx.WithBlockTime(time.Now())
 
-	k := keeper.NewKeeper(cdc, storeKey, "authority")
+	bankKeeper := newTreasuryMockBankKeeper()
+	accountKeeper := newTreasuryMockAccountKeeper()
+	k := keeper.NewKeeper(cdc, storeKey, "authority", bankKeeper, accountKeeper)
 
 	// Pre-populate with snapshots
 	for i := 0; i < 1000; i++ {
@@ -339,7 +415,9 @@ func BenchmarkGetLatestSnapshot(b *testing.B) {
 	ctx := testutil.DefaultContext(storeKey, storetypes.NewTransientStoreKey("test"))
 	ctx = ctx.WithBlockTime(time.Now())
 
-	k := keeper.NewKeeper(cdc, storeKey, "authority")
+	bankKeeper := newTreasuryMockBankKeeper()
+	accountKeeper := newTreasuryMockAccountKeeper()
+	k := keeper.NewKeeper(cdc, storeKey, "authority", bankKeeper, accountKeeper)
 
 	// Pre-populate with snapshots
 	for i := 0; i < 100; i++ {
