@@ -510,6 +510,42 @@ func (k Keeper) SlashProvider(ctx context.Context, address, reason string) error
 }
 
 // ============================================================================
+// EndBlock Processing
+// ============================================================================
+
+// ProcessStalePrices checks for stale prices and emits events/alerts
+func (k Keeper) ProcessStalePrices(ctx sdk.Context) {
+	params := k.GetParams(ctx)
+	stalenessThreshold := time.Duration(params.DefaultStalenessThreshold) * time.Second
+
+	// Iterate all prices and check for staleness
+	k.IteratePrices(ctx, func(price types.Price) bool {
+		timeSinceUpdate := ctx.BlockTime().Sub(price.UpdatedAt)
+
+		// If price is stale, emit an event
+		if timeSinceUpdate > stalenessThreshold {
+			ctx.EventManager().EmitEvent(
+				sdk.NewEvent(
+					"oracle_price_stale",
+					sdk.NewAttribute("denom", price.Denom),
+					sdk.NewAttribute("last_updated", price.UpdatedAt.String()),
+					sdk.NewAttribute("staleness_duration", timeSinceUpdate.String()),
+				),
+			)
+
+			// Log warning
+			ctx.Logger().Warn("stale oracle price detected",
+				"denom", price.Denom,
+				"last_updated", price.UpdatedAt,
+				"staleness", timeSinceUpdate.String(),
+			)
+		}
+
+		return false
+	})
+}
+
+// ============================================================================
 // Genesis
 // ============================================================================
 

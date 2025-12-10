@@ -2,6 +2,7 @@ package oracle
 
 import (
 	"encoding/json"
+	"fmt"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -100,7 +101,9 @@ func (am AppModule) InitGenesis(ctx sdk.Context, _ codec.JSONCodec, data json.Ra
 	if len(data) == 0 {
 		state = *types.DefaultGenesis()
 	} else {
-		_ = json.Unmarshal(data, &state)
+		if err := json.Unmarshal(data, &state); err != nil {
+			panic(fmt.Sprintf("failed to unmarshal %s genesis state: %v", types.ModuleName, err))
+		}
 	}
 	InitGenesis(ctx, am.keeper, &state)
 	return nil
@@ -111,4 +114,11 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, _ codec.JSONCodec) json.RawMe
 	state := ExportGenesis(ctx, am.keeper)
 	bz, _ := json.Marshal(state)
 	return bz
+}
+
+// EndBlock performs end-block processing for the oracle module.
+// It marks stale prices and slashes providers who haven't updated.
+func (am AppModule) EndBlock(ctx sdk.Context) []abci.ValidatorUpdate {
+	am.keeper.ProcessStalePrices(ctx)
+	return nil
 }

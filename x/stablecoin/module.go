@@ -2,6 +2,7 @@ package stablecoin
 
 import (
 	"encoding/json"
+	"fmt"
 
 	abci "github.com/cometbft/cometbft/abci/types"
 	"github.com/cosmos/cosmos-sdk/client"
@@ -69,7 +70,9 @@ func (AppModule) IsAppModule() {}
 
 func (AppModule) IsOnePerModuleType() {}
 
-func (AppModule) RegisterInvariants(_ sdk.InvariantRegistry) {}
+func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
+	keeper.RegisterInvariants(ir, am.keeper)
+}
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
@@ -80,7 +83,9 @@ func (am AppModule) InitGenesis(ctx sdk.Context, _ codec.JSONCodec, data json.Ra
 	if len(data) == 0 {
 		state = *types.DefaultGenesis()
 	} else {
-		_ = json.Unmarshal(data, &state)
+		if err := json.Unmarshal(data, &state); err != nil {
+			panic(fmt.Sprintf("failed to unmarshal %s genesis state: %v", types.ModuleName, err))
+		}
 	}
 	InitGenesis(ctx, am.keeper, &state)
 	return nil

@@ -21,6 +21,7 @@ var (
 // Keeper manages stablecoin state.
 type Keeper struct {
 	storeKey         storetypes.StoreKey
+	authority        string
 	bankKeeper       types.BankKeeper
 	accountKeeper    types.AccountKeeper
 	oracleKeeper     types.OracleKeeper
@@ -31,6 +32,7 @@ type Keeper struct {
 func NewKeeper(
 	_ codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
+	authority string,
 	bank types.BankKeeper,
 	account types.AccountKeeper,
 	oracle types.OracleKeeper,
@@ -38,11 +40,17 @@ func NewKeeper(
 ) Keeper {
 	return Keeper{
 		storeKey:         storeKey,
+		authority:        authority,
 		bankKeeper:       bank,
 		accountKeeper:    account,
 		oracleKeeper:     oracle,
 		complianceKeeper: compliance,
 	}
+}
+
+// GetAuthority returns the module authority address
+func (k Keeper) GetAuthority() string {
+	return k.authority
 }
 
 func (k Keeper) ensureModuleAccount(ctx sdk.Context) error {

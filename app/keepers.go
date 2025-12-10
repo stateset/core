@@ -337,7 +337,7 @@ func (app *App) InitStatesetKeepers(
 	app.ComplianceKeeper = compliancekeeper.NewKeeper(appCodec, keys[compliancetypes.StoreKey], authority)
 
 	// Init TreasuryKeeper
-	app.TreasuryKeeper = treasurykeeper.NewKeeper(appCodec, keys[treasurytypes.StoreKey], authority)
+	app.TreasuryKeeper = treasurykeeper.NewKeeper(appCodec, keys[treasurytypes.StoreKey], authority, app.BankKeeper, app.AccountKeeper)
 
 	// Init PaymentsKeeper
 	app.PaymentsKeeper = paymentskeeper.NewKeeper(
@@ -352,6 +352,7 @@ func (app *App) InitStatesetKeepers(
 	app.StablecoinKeeper = stablecoinkeeper.NewKeeper(
 		appCodec,
 		keys[stablecointypes.StoreKey],
+		authority,
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.OracleKeeper,

@@ -1,0 +1,201 @@
+groups:
+  - name: stateset_critical
+    rules:
+      # System Alerts
+      - alert: GlobalSystemPaused
+        expr: stateset_global_pause_state == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Stateset system is globally paused"
+          description: "The entire Stateset system has been paused. Immediate attention required."
+
+      - alert: CircuitBreakerTripped
+        expr: increase(stateset_circuit_trips_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Circuit breaker tripped for {{ $labels.module }}"
+          description: "Circuit breaker was triggered for module {{ $labels.module }}. Check for system anomalies."
+
+      - alert: HighRateLimitHits
+        expr: rate(stateset_rate_limit_hits_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High rate limit hit frequency"
+          description: "Rate limiting is being triggered frequently. Possible DDoS or misconfigured client."
+
+      # Stablecoin Alerts
+      - alert: SystemUndercollateralized
+        expr: stateset_collateral_ratio < 1.3
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "System collateral ratio below safe threshold"
+          description: "System-wide collateral ratio is {{ $value | humanizePercentage }}, below 130% threshold."
+
+      - alert: LiquidationSurge
+        expr: rate(stateset_liquidations_total[5m]) > 10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High liquidation rate detected"
+          description: "Liquidation rate is elevated at {{ $value }} per minute. Check market conditions."
+
+      - alert: StablecoinSupplySpike
+        expr: |
+          (stateset_stablecoin_supply - stateset_stablecoin_supply offset 1h)
+          / stateset_stablecoin_supply offset 1h > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Stablecoin supply increased >10% in 1 hour"
+          description: "Rapid stablecoin minting detected. Current supply: {{ $value | humanize }}."
+
+      # Oracle Alerts
+      - alert: OraclePriceStale
+        expr: stateset_oracle_stale_prices > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Oracle price is stale for {{ $labels.denom }}"
+          description: "Price feed for {{ $labels.denom }} has not been updated within staleness threshold."
+
+      - alert: OracleHighDeviation
+        expr: |
+          abs(stateset_oracle_price - stateset_oracle_price offset 1m)
+          / stateset_oracle_price offset 1m > 0.05
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Oracle price deviation >5% for {{ $labels.denom }}"
+          description: "Price for {{ $labels.denom }} changed by more than 5% in 1 minute."
+
+      - alert: OracleProviderSlashed
+        expr: increase(stateset_oracle_provider_slashed_total[1h]) > 0
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Oracle provider was slashed"
+          description: "An oracle provider was slashed for submitting invalid data."
+
+      # Validator Alerts
+      - alert: LowValidatorParticipation
+        expr: stateset_active_validators / stateset_total_validators < 0.67
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Validator participation below 67%"
+          description: "Only {{ $value | humanizePercentage }} of validators are active."
+
+      - alert: BlockTimeHigh
+        expr: stateset_block_time_seconds > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Block time is elevated"
+          description: "Block time is {{ $value }}s, expected ~5s."
+
+      # Settlement Alerts
+      - alert: SettlementBacklog
+        expr: stateset_active_escrows > 1000
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of active escrows"
+          description: "{{ $value }} active escrows. Check for processing delays."
+
+      - alert: SettlementFailureRate
+        expr: |
+          rate(stateset_settlement_failures_total[5m])
+          / rate(stateset_settlements_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Settlement failure rate >5%"
+          description: "{{ $value | humanizePercentage }} of settlements are failing."
+
+      # Compliance Alerts
+      - alert: HighComplianceBlocks
+        expr: rate(stateset_compliance_blocks_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High compliance block rate"
+          description: "{{ $value }} compliance blocks per minute. Check for sanctioned activity."
+
+      # Infrastructure Alerts
+      - alert: NodeNotSynced
+        expr: stateset_node_synced == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node is not synced"
+          description: "Node has fallen behind the network."
+
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / 1024 / 1024 / 1024 > 32
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage"
+          description: "Node memory usage is {{ $value | humanize }}GB."
+
+      - alert: HighDiskUsage
+        expr: stateset_database_size_bytes / 1024 / 1024 / 1024 > 500
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "High disk usage"
+          description: "Database size is {{ $value | humanize }}GB."
+
+  - name: stateset_sla
+    rules:
+      # SLA Monitoring
+      - alert: UptimeSLABreach
+        expr: |
+          avg_over_time(up{job="stateset"}[24h]) < 0.999
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Uptime SLA breach risk"
+          description: "24h uptime is {{ $value | humanizePercentage }}, target is 99.9%."
+
+      - alert: LatencySLABreach
+        expr: |
+          histogram_quantile(0.99, rate(stateset_tx_latency_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Transaction latency SLA breach"
+          description: "P99 latency is {{ $value }}s, target is <5s."
+
+      - alert: ThroughputSLABreach
+        expr: |
+          rate(stateset_transactions_total[5m]) * 60 < 100
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Throughput below target"
+          description: "Current throughput is {{ $value }} TX/min, target is >100."

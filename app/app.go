@@ -512,7 +512,7 @@ func New(
 
 	app.ComplianceKeeper = compliancekeeper.NewKeeper(appCodec, keys[compliancetypes.StoreKey], oracleAuthority)
 
-	app.TreasuryKeeper = treasurykeeper.NewKeeper(appCodec, keys[treasurytypes.StoreKey], oracleAuthority)
+	app.TreasuryKeeper = treasurykeeper.NewKeeper(appCodec, keys[treasurytypes.StoreKey], oracleAuthority, app.BankKeeper, app.AccountKeeper)
 
 	app.PaymentsKeeper = paymentskeeper.NewKeeper(
 		appCodec,
@@ -525,6 +525,7 @@ func New(
 	app.StablecoinKeeper = stablecoinkeeper.NewKeeper(
 		appCodec,
 		keys[stablecointypes.StoreKey],
+		oracleAuthority,
 		app.BankKeeper,
 		app.AccountKeeper,
 		app.OracleKeeper,
