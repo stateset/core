@@ -65,6 +65,8 @@ const (
 	EventTypeFeeCollected        = "fee_collected"
 	EventTypeEscrowExpired       = "escrow_expired"
 	EventTypeChannelExpired      = "channel_expired"
+	EventTypeInstantCheckout     = "instant_checkout"
+	EventTypePartialRefund       = "partial_refund"
 )
 
 // Event attribute keys

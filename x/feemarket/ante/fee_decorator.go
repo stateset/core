@@ -7,6 +7,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	authante "github.com/cosmos/cosmos-sdk/x/auth/ante"
 
 	"github.com/stateset/core/x/feemarket/keeper"
 	"github.com/stateset/core/x/feemarket/types"
@@ -122,7 +123,7 @@ func (fmd FeeMarketDecorator) validateFee(ctx sdk.Context, feeCoins sdk.Coins, m
 
 // DynamicFeeChecker returns a fee checker function that uses the fee market base fee.
 // This can be used with the standard Cosmos SDK fee decorator.
-func DynamicFeeChecker(fmk keeper.Keeper) sdk.TxFeeChecker {
+func DynamicFeeChecker(fmk keeper.Keeper) authante.TxFeeChecker {
 	return func(ctx sdk.Context, tx sdk.Tx) (sdk.Coins, int64, error) {
 		feeTx, ok := tx.(sdk.FeeTx)
 		if !ok {
@@ -178,7 +179,7 @@ func DynamicFeeChecker(fmk keeper.Keeper) sdk.TxFeeChecker {
 
 // FeeMarketCheckTxFeeWithMinGasPrices implements a fee checker that uses the fee market
 // in combination with validator minimum gas prices.
-func FeeMarketCheckTxFeeWithMinGasPrices(fmk keeper.Keeper) sdk.TxFeeChecker {
+func FeeMarketCheckTxFeeWithMinGasPrices(fmk keeper.Keeper) authante.TxFeeChecker {
 	return func(ctx sdk.Context, tx sdk.Tx) (sdk.Coins, int64, error) {
 		feeTx, ok := tx.(sdk.FeeTx)
 		if !ok {

@@ -1235,6 +1235,148 @@ func (k Keeper) ProcessExpiredChannels(ctx sdk.Context) {
 }
 
 // ============================================================================
+// Instant Checkout (Streamlined Ecommerce)
+// ============================================================================
+
+// InstantCheckout performs a streamlined checkout combining compliance check and payment
+// This is optimized for ecommerce use cases where speed and simplicity are critical
+func (k Keeper) InstantCheckout(ctx sdk.Context, customer, merchant string, amount sdk.Coin, orderRef string, useEscrow bool, metadata string) (uint64, sdk.Coin, sdk.Coin, error) {
+	wrappedCtx := sdk.WrapSDKContext(ctx)
+
+	customerAddr, err := sdk.AccAddressFromBech32(customer)
+	if err != nil {
+		return 0, sdk.Coin{}, sdk.Coin{}, types.ErrInvalidSettlement
+	}
+	merchantAddr, err := sdk.AccAddressFromBech32(merchant)
+	if err != nil {
+		return 0, sdk.Coin{}, sdk.Coin{}, types.ErrInvalidRecipient
+	}
+
+	// Batch compliance checks for efficiency
+	if err := k.compKeeper.AssertCompliant(wrappedCtx, customerAddr); err != nil {
+		return 0, sdk.Coin{}, sdk.Coin{}, types.ErrComplianceCheckFailed
+	}
+	if err := k.compKeeper.AssertCompliant(wrappedCtx, merchantAddr); err != nil {
+		return 0, sdk.Coin{}, sdk.Coin{}, types.ErrComplianceCheckFailed
+	}
+
+	// Validate amount
+	params := k.GetParams(ctx)
+	if amount.IsLT(params.MinSettlementAmount) {
+		return 0, sdk.Coin{}, sdk.Coin{}, types.ErrSettlementTooSmall
+	}
+	if amount.IsGTE(params.MaxSettlementAmount) {
+		return 0, sdk.Coin{}, sdk.Coin{}, types.ErrSettlementTooLarge
+	}
+
+	// Check balance
+	balance := k.bankKeeper.GetBalance(wrappedCtx, customerAddr, amount.Denom)
+	if balance.IsLT(amount) {
+		return 0, sdk.Coin{}, sdk.Coin{}, types.ErrInsufficientFunds
+	}
+
+	// Calculate fee
+	fee := k.calculateFee(ctx, amount, merchant)
+	netAmount := sdk.NewCoin(amount.Denom, amount.Amount.Sub(fee.Amount))
+
+	var settlementId uint64
+
+	if useEscrow {
+		// Create escrow for buyer protection
+		settlementId, err = k.CreateEscrow(ctx, customer, merchant, amount, orderRef, metadata, params.DefaultEscrowExpiration)
+		if err != nil {
+			return 0, sdk.Coin{}, sdk.Coin{}, err
+		}
+	} else {
+		// Instant transfer for speed
+		settlementId, err = k.InstantTransfer(ctx, customer, merchant, amount, orderRef, metadata)
+		if err != nil {
+			return 0, sdk.Coin{}, sdk.Coin{}, err
+		}
+	}
+
+	// Emit checkout event
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeInstantCheckout,
+			sdk.NewAttribute(types.AttributeKeySettlementID, fmt.Sprintf("%d", settlementId)),
+			sdk.NewAttribute(types.AttributeKeySender, customer),
+			sdk.NewAttribute(types.AttributeKeyRecipient, merchant),
+			sdk.NewAttribute(types.AttributeKeyAmount, amount.String()),
+			sdk.NewAttribute(types.AttributeKeyFee, fee.String()),
+			sdk.NewAttribute(types.AttributeKeyReference, orderRef),
+			sdk.NewAttribute("use_escrow", fmt.Sprintf("%t", useEscrow)),
+		),
+	)
+
+	return settlementId, netAmount, fee, nil
+}
+
+// PartialRefund processes a partial refund for a completed settlement
+func (k Keeper) PartialRefund(ctx sdk.Context, authority string, settlementId uint64, refundAmount sdk.Coin, reason string) (sdk.Coin, error) {
+	wrappedCtx := sdk.WrapSDKContext(ctx)
+
+	// Verify authority (merchant or module authority)
+	settlement, found := k.GetSettlement(ctx, settlementId)
+	if !found {
+		return sdk.Coin{}, types.ErrSettlementNotFound
+	}
+
+	// Only the merchant or module authority can issue refunds
+	if authority != settlement.Recipient && authority != k.GetAuthority() {
+		return sdk.Coin{}, types.ErrUnauthorized
+	}
+
+	// Validate settlement status - can only refund completed settlements
+	if settlement.Status != types.SettlementStatusCompleted {
+		return sdk.Coin{}, types.ErrSettlementNotCompleted
+	}
+
+	// Validate refund amount
+	if refundAmount.Amount.GT(settlement.NetAmount.Amount) {
+		return sdk.Coin{}, types.ErrRefundTooLarge
+	}
+
+	// Get addresses
+	merchantAddr, err := sdk.AccAddressFromBech32(settlement.Recipient)
+	if err != nil {
+		return sdk.Coin{}, types.ErrInvalidRecipient
+	}
+	customerAddr, err := sdk.AccAddressFromBech32(settlement.Sender)
+	if err != nil {
+		return sdk.Coin{}, types.ErrInvalidSettlement
+	}
+
+	// Transfer refund from merchant to customer
+	if err := k.bankKeeper.SendCoins(wrappedCtx, merchantAddr, customerAddr, sdk.NewCoins(refundAmount)); err != nil {
+		return sdk.Coin{}, types.ErrInsufficientFunds
+	}
+
+	// Calculate remaining amount
+	remainingAmount := sdk.NewCoin(settlement.NetAmount.Denom, settlement.NetAmount.Amount.Sub(refundAmount.Amount))
+
+	// Update settlement status if fully refunded
+	if remainingAmount.IsZero() {
+		settlement.Status = types.SettlementStatusRefunded
+	}
+	settlement.Metadata = fmt.Sprintf("partial_refund: %s - %s", refundAmount.String(), reason)
+	k.storeSettlement(ctx, settlement)
+
+	// Emit event
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypePartialRefund,
+			sdk.NewAttribute(types.AttributeKeySettlementID, fmt.Sprintf("%d", settlementId)),
+			sdk.NewAttribute(types.AttributeKeyAmount, refundAmount.String()),
+			sdk.NewAttribute("remaining", remainingAmount.String()),
+			sdk.NewAttribute("reason", reason),
+		),
+	)
+
+	return remainingAmount, nil
+}
+
+// ============================================================================
 // Helpers
 // ============================================================================
 

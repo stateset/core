@@ -21,3 +21,21 @@ var (
 	CircuitKey   = []byte{0x04}
 	LatestGasKey = []byte{0x05}
 )
+
+// Event types
+const (
+	EventTypeUpdateParams   = "update_params"
+	EventTypeFeeValidation  = "fee_validation"
+)
+
+// Attribute keys
+const (
+	AttributeKeyAuthority      = "authority"
+	AttributeKeyEnabled        = "enabled"
+	AttributeKeyMinBaseFee     = "min_base_fee"
+	AttributeKeyMaxBaseFee     = "max_base_fee"
+	AttributeKeyBaseFee        = "base_fee"
+	AttributeKeyGasLimit       = "gas_limit"
+	AttributeKeyMinRequiredFee = "min_required_fee"
+	AttributeKeyActualFee      = "actual_fee"
+)

@@ -224,3 +224,54 @@ func (m msgServer) UpdateMerchant(goCtx context.Context, msg *types.MsgUpdateMer
 
 	return &types.MsgUpdateMerchantResponse{}, nil
 }
+
+// InstantCheckout handles streamlined checkout for ecommerce
+func (m msgServer) InstantCheckout(goCtx context.Context, msg *types.MsgInstantCheckout) (*types.MsgInstantCheckoutResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	settlementId, netAmount, fee, err := m.Keeper.InstantCheckout(
+		ctx,
+		msg.Customer,
+		msg.Merchant,
+		msg.Amount,
+		msg.OrderReference,
+		msg.UseEscrow,
+		msg.Metadata,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	status := "completed"
+	if msg.UseEscrow {
+		status = "escrowed"
+	}
+
+	return &types.MsgInstantCheckoutResponse{
+		SettlementId: settlementId,
+		Status:       status,
+		NetAmount:    netAmount,
+		Fee:          fee,
+	}, nil
+}
+
+// PartialRefund handles partial refunds for settlements
+func (m msgServer) PartialRefund(goCtx context.Context, msg *types.MsgPartialRefund) (*types.MsgPartialRefundResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	remainingAmount, err := m.Keeper.PartialRefund(
+		ctx,
+		msg.Authority,
+		msg.SettlementId,
+		msg.RefundAmount,
+		msg.Reason,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgPartialRefundResponse{
+		RefundedAmount:  msg.RefundAmount,
+		RemainingAmount: remainingAmount,
+	}, nil
+}

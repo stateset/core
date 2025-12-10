@@ -147,8 +147,6 @@ func (m *mockComplianceKeeper) SetSanctioned(addr string, sanctioned bool) {
 }
 
 // Mock account keeper
-type mockAccountKeeper struct{}
-
 type mockAccountKeeper struct {
 	pubKeys map[string]cryptotypes.PubKey
 }

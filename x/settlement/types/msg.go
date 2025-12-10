@@ -94,6 +94,8 @@ const (
 	TypeMsgClaimChannel      = "claim_channel"
 	TypeMsgRegisterMerchant  = "register_merchant"
 	TypeMsgUpdateMerchant    = "update_merchant"
+	TypeMsgInstantCheckout   = "instant_checkout"
+	TypeMsgPartialRefund     = "partial_refund"
 )
 
 var (
@@ -108,6 +110,8 @@ var (
 	_ sdk.Msg = (*MsgClaimChannel)(nil)
 	_ sdk.Msg = (*MsgRegisterMerchant)(nil)
 	_ sdk.Msg = (*MsgUpdateMerchant)(nil)
+	_ sdk.Msg = (*MsgInstantCheckout)(nil)
+	_ sdk.Msg = (*MsgPartialRefund)(nil)
 )
 
 // MsgInstantTransfer - instant stablecoin transfer with immediate settlement
@@ -701,6 +705,140 @@ func (m MsgUpdateMerchant) GetSignBytes() []byte {
 
 type MsgUpdateMerchantResponse struct{}
 
+// MsgInstantCheckout - streamlined checkout for ecommerce with optional escrow
+// Combines compliance check, payment, and merchant notification in one operation
+type MsgInstantCheckout struct {
+	Customer       string      `json:"customer" yaml:"customer"`
+	Merchant       string      `json:"merchant" yaml:"merchant"`
+	Amount         sdk.Coin    `json:"amount" yaml:"amount"`
+	OrderReference string      `json:"order_reference" yaml:"order_reference"`
+	UseEscrow      bool        `json:"use_escrow" yaml:"use_escrow"`
+	Items          []CheckoutItem `json:"items,omitempty" yaml:"items,omitempty"`
+	Metadata       string      `json:"metadata,omitempty" yaml:"metadata,omitempty"`
+}
+
+// CheckoutItem represents an item in a checkout
+type CheckoutItem struct {
+	ProductId   string   `json:"product_id" yaml:"product_id"`
+	Quantity    uint64   `json:"quantity" yaml:"quantity"`
+	UnitPrice   sdk.Coin `json:"unit_price" yaml:"unit_price"`
+	Description string   `json:"description,omitempty" yaml:"description,omitempty"`
+}
+
+func (m *MsgInstantCheckout) Reset() { *m = MsgInstantCheckout{} }
+func (m *MsgInstantCheckout) String() string {
+	return fmt.Sprintf("MsgInstantCheckout{%s->%s %s ref:%s escrow:%v}", m.Customer, m.Merchant, m.Amount.String(), m.OrderReference, m.UseEscrow)
+}
+func (*MsgInstantCheckout) ProtoMessage() {}
+
+func NewMsgInstantCheckout(customer, merchant string, amount sdk.Coin, orderRef string, useEscrow bool, items []CheckoutItem, metadata string) *MsgInstantCheckout {
+	return &MsgInstantCheckout{
+		Customer:       customer,
+		Merchant:       merchant,
+		Amount:         amount,
+		OrderReference: orderRef,
+		UseEscrow:      useEscrow,
+		Items:          items,
+		Metadata:       metadata,
+	}
+}
+
+func (m MsgInstantCheckout) Route() string { return RouterKey }
+func (m MsgInstantCheckout) Type() string  { return TypeMsgInstantCheckout }
+
+func (m MsgInstantCheckout) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(m.Customer); err != nil {
+		return errorsmod.Wrap(ErrInvalidSettlement, "invalid customer address")
+	}
+	if _, err := sdk.AccAddressFromBech32(m.Merchant); err != nil {
+		return errorsmod.Wrap(ErrInvalidRecipient, "invalid merchant address")
+	}
+	if m.Customer == m.Merchant {
+		return errorsmod.Wrap(ErrInvalidSettlement, "customer and merchant cannot be the same")
+	}
+	if !m.Amount.IsValid() || m.Amount.IsZero() {
+		return errorsmod.Wrap(ErrInvalidAmount, "amount must be positive")
+	}
+	if m.Amount.Denom != StablecoinDenom {
+		return errorsmod.Wrapf(ErrInvalidDenom, "expected %s, got %s", StablecoinDenom, m.Amount.Denom)
+	}
+	if m.OrderReference == "" {
+		return errorsmod.Wrap(ErrInvalidSettlement, "order reference is required")
+	}
+	return nil
+}
+
+func (m MsgInstantCheckout) GetSigners() []sdk.AccAddress {
+	return mustGetSigner(m.Customer)
+}
+
+func (m MsgInstantCheckout) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+type MsgInstantCheckoutResponse struct {
+	SettlementId   uint64   `json:"settlement_id"`
+	Status         string   `json:"status"`
+	NetAmount      sdk.Coin `json:"net_amount"`
+	Fee            sdk.Coin `json:"fee"`
+	TransactionId  string   `json:"transaction_id,omitempty"`
+}
+
+// MsgPartialRefund - issue a partial refund for a settlement
+type MsgPartialRefund struct {
+	Authority    string   `json:"authority" yaml:"authority"`
+	SettlementId uint64   `json:"settlement_id" yaml:"settlement_id"`
+	RefundAmount sdk.Coin `json:"refund_amount" yaml:"refund_amount"`
+	Reason       string   `json:"reason" yaml:"reason"`
+}
+
+func (m *MsgPartialRefund) Reset() { *m = MsgPartialRefund{} }
+func (m *MsgPartialRefund) String() string {
+	return fmt.Sprintf("MsgPartialRefund{settlement:%d amount:%s}", m.SettlementId, m.RefundAmount.String())
+}
+func (*MsgPartialRefund) ProtoMessage() {}
+
+func NewMsgPartialRefund(authority string, settlementId uint64, refundAmount sdk.Coin, reason string) *MsgPartialRefund {
+	return &MsgPartialRefund{
+		Authority:    authority,
+		SettlementId: settlementId,
+		RefundAmount: refundAmount,
+		Reason:       reason,
+	}
+}
+
+func (m MsgPartialRefund) Route() string { return RouterKey }
+func (m MsgPartialRefund) Type() string  { return TypeMsgPartialRefund }
+
+func (m MsgPartialRefund) ValidateBasic() error {
+	if _, err := sdk.AccAddressFromBech32(m.Authority); err != nil {
+		return errorsmod.Wrap(ErrInvalidSettlement, "invalid authority address")
+	}
+	if m.SettlementId == 0 {
+		return errorsmod.Wrap(ErrInvalidSettlement, "settlement id required")
+	}
+	if !m.RefundAmount.IsValid() || m.RefundAmount.IsZero() {
+		return errorsmod.Wrap(ErrInvalidAmount, "refund amount must be positive")
+	}
+	if m.Reason == "" {
+		return errorsmod.Wrap(ErrInvalidSettlement, "refund reason is required")
+	}
+	return nil
+}
+
+func (m MsgPartialRefund) GetSigners() []sdk.AccAddress {
+	return mustGetSigner(m.Authority)
+}
+
+func (m MsgPartialRefund) GetSignBytes() []byte {
+	return sdk.MustSortJSON(ModuleCdc.MustMarshalJSON(&m))
+}
+
+type MsgPartialRefundResponse struct {
+	RefundedAmount sdk.Coin `json:"refunded_amount"`
+	RemainingAmount sdk.Coin `json:"remaining_amount"`
+}
+
 // MsgServer interface
 type MsgServer interface {
 	InstantTransfer(ctx context.Context, msg *MsgInstantTransfer) (*MsgInstantTransferResponse, error)
@@ -714,6 +852,8 @@ type MsgServer interface {
 	ClaimChannel(ctx context.Context, msg *MsgClaimChannel) (*MsgClaimChannelResponse, error)
 	RegisterMerchant(ctx context.Context, msg *MsgRegisterMerchant) (*MsgRegisterMerchantResponse, error)
 	UpdateMerchant(ctx context.Context, msg *MsgUpdateMerchant) (*MsgUpdateMerchantResponse, error)
+	InstantCheckout(ctx context.Context, msg *MsgInstantCheckout) (*MsgInstantCheckoutResponse, error)
+	PartialRefund(ctx context.Context, msg *MsgPartialRefund) (*MsgPartialRefundResponse, error)
 }
 
 // _Msg_serviceDesc is the gRPC service descriptor

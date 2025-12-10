@@ -1,11 +1,107 @@
 package types
 
 import (
+	"context"
 	"encoding/json"
 	"time"
 
 	sdkmath "cosmossdk.io/math"
 )
+
+// QueryServer defines the interface for metrics queries
+type QueryServer interface {
+	SystemMetrics(ctx context.Context, req *QuerySystemMetricsRequest) (*QuerySystemMetricsResponse, error)
+	Counter(ctx context.Context, req *QueryCounterRequest) (*QueryCounterResponse, error)
+	Gauge(ctx context.Context, req *QueryGaugeRequest) (*QueryGaugeResponse, error)
+	ModuleHealth(ctx context.Context, req *QueryModuleHealthRequest) (*QueryModuleHealthResponse, error)
+	Alerts(ctx context.Context, req *QueryAlertsRequest) (*QueryAlertsResponse, error)
+	PrometheusMetrics(ctx context.Context, req *QueryPrometheusMetricsRequest) (*QueryPrometheusMetricsResponse, error)
+}
+
+type QuerySystemMetricsRequest struct{}
+func (*QuerySystemMetricsRequest) Reset()         {}
+func (*QuerySystemMetricsRequest) String() string { return "QuerySystemMetricsRequest" }
+func (*QuerySystemMetricsRequest) ProtoMessage()  {}
+
+type QuerySystemMetricsResponse struct {
+	Metrics *SystemMetrics `json:"metrics"`
+}
+func (*QuerySystemMetricsResponse) Reset()         {}
+func (*QuerySystemMetricsResponse) String() string { return "QuerySystemMetricsResponse" }
+func (*QuerySystemMetricsResponse) ProtoMessage()  {}
+
+type QueryCounterRequest struct {
+	Name   string            `json:"name"`
+	Labels map[string]string `json:"labels,omitempty"`
+}
+func (*QueryCounterRequest) Reset()         {}
+func (*QueryCounterRequest) String() string { return "QueryCounterRequest" }
+func (*QueryCounterRequest) ProtoMessage()  {}
+
+type QueryCounterResponse struct {
+	Counter *Counter `json:"counter"`
+}
+func (*QueryCounterResponse) Reset()         {}
+func (*QueryCounterResponse) String() string { return "QueryCounterResponse" }
+func (*QueryCounterResponse) ProtoMessage()  {}
+
+type QueryGaugeRequest struct {
+	Name   string            `json:"name"`
+	Labels map[string]string `json:"labels,omitempty"`
+}
+func (*QueryGaugeRequest) Reset()         {}
+func (*QueryGaugeRequest) String() string { return "QueryGaugeRequest" }
+func (*QueryGaugeRequest) ProtoMessage()  {}
+
+type QueryGaugeResponse struct {
+	Gauge *Gauge `json:"gauge"`
+}
+func (*QueryGaugeResponse) Reset()         {}
+func (*QueryGaugeResponse) String() string { return "QueryGaugeResponse" }
+func (*QueryGaugeResponse) ProtoMessage()  {}
+
+type QueryModuleHealthRequest struct {
+	Module string `json:"module"`
+}
+func (*QueryModuleHealthRequest) Reset()         {}
+func (*QueryModuleHealthRequest) String() string { return "QueryModuleHealthRequest" }
+func (*QueryModuleHealthRequest) ProtoMessage()  {}
+
+type QueryModuleHealthResponse struct {
+	Health map[string]ModuleHealth `json:"health"`
+}
+func (*QueryModuleHealthResponse) Reset()         {}
+func (*QueryModuleHealthResponse) String() string { return "QueryModuleHealthResponse" }
+func (*QueryModuleHealthResponse) ProtoMessage()  {}
+
+type QueryAlertsRequest struct {
+	Active bool `json:"active"`
+}
+func (*QueryAlertsRequest) Reset()         {}
+func (*QueryAlertsRequest) String() string { return "QueryAlertsRequest" }
+func (*QueryAlertsRequest) ProtoMessage()  {}
+
+type QueryAlertsResponse struct {
+	Alerts       []Alert       `json:"alerts"`
+	AlertConfigs []AlertConfig `json:"alert_configs,omitempty"`
+}
+func (*QueryAlertsResponse) Reset()         {}
+func (*QueryAlertsResponse) String() string { return "QueryAlertsResponse" }
+func (*QueryAlertsResponse) ProtoMessage()  {}
+
+// QueryPrometheusMetricsRequest is the request type for prometheus metrics
+type QueryPrometheusMetricsRequest struct{}
+func (*QueryPrometheusMetricsRequest) Reset()         {}
+func (*QueryPrometheusMetricsRequest) String() string { return "QueryPrometheusMetricsRequest" }
+func (*QueryPrometheusMetricsRequest) ProtoMessage()  {}
+
+// QueryPrometheusMetricsResponse is the response type for prometheus metrics
+type QueryPrometheusMetricsResponse struct {
+	Metrics string `json:"metrics"`
+}
+func (*QueryPrometheusMetricsResponse) Reset()         {}
+func (*QueryPrometheusMetricsResponse) String() string { return "QueryPrometheusMetricsResponse" }
+func (*QueryPrometheusMetricsResponse) ProtoMessage()  {}
 
 // MetricType represents the type of metric
 type MetricType string

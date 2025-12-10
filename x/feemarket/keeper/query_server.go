@@ -69,8 +69,8 @@ func (k Keeper) EstimateFee(goCtx context.Context, req *types.QueryEstimateFeeRe
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	baseFee := k.GetBaseFee(ctx)
 
-	// Calculate gas price with priority
-	gasPrice := k.calculateGasPrice(baseFee, req.Priority)
+	// Calculate gas price with priority (used for potential future enhancements)
+	_ = k.calculateGasPrice(baseFee, req.Priority)
 
 	// Calculate priority fee component
 	priorityMultiplier := k.getPriorityMultiplier(req.Priority)

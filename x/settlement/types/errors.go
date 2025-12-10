@@ -40,4 +40,6 @@ var (
 	ErrInvalidWebhookURL          = errorsmod.Register(ModuleName, 32, "invalid webhook URL")
 	ErrWebhookURLNotHTTPS         = errorsmod.Register(ModuleName, 33, "webhook URL must use HTTPS")
 	ErrWebhookURLBlacklisted      = errorsmod.Register(ModuleName, 34, "webhook URL contains blacklisted host")
+	ErrSettlementNotCompleted     = errorsmod.Register(ModuleName, 35, "settlement not in completed status")
+	ErrRefundTooLarge             = errorsmod.Register(ModuleName, 36, "refund amount exceeds settlement amount")
 )

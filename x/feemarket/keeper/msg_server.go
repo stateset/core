@@ -2,6 +2,7 @@ package keeper
 
 import (
 	"context"
+	"strconv"
 
 	errorsmod "cosmossdk.io/errors"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -55,7 +56,7 @@ func (ms msgServer) UpdateParams(goCtx context.Context, msg *types.MsgUpdatePara
 		sdk.NewEvent(
 			types.EventTypeUpdateParams,
 			sdk.NewAttribute(types.AttributeKeyAuthority, msg.Authority),
-			sdk.NewAttribute(types.AttributeKeyEnabled, sdk.FormatBool(msg.Params.Enabled)),
+			sdk.NewAttribute(types.AttributeKeyEnabled, strconv.FormatBool(msg.Params.Enabled)),
 			sdk.NewAttribute(types.AttributeKeyMinBaseFee, msg.Params.MinBaseFee.String()),
 			sdk.NewAttribute(types.AttributeKeyMaxBaseFee, msg.Params.MaxBaseFee.String()),
 		),

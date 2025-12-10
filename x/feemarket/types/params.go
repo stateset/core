@@ -46,6 +46,11 @@ func DefaultParams() Params {
 	}
 }
 
+// Validate performs validation of parameters.
+func (p Params) Validate() error {
+	return p.ValidateBasic()
+}
+
 // ValidateBasic performs basic validation of parameters.
 func (p Params) ValidateBasic() error {
 	if p.BaseFeeChangeDenominator == 0 {

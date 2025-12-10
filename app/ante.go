@@ -10,14 +10,17 @@ import (
 	ibckeeper "github.com/cosmos/ibc-go/v8/modules/core/keeper"
 
 	circuitkeeper "github.com/stateset/core/x/circuit/keeper"
+	feemarketante "github.com/stateset/core/x/feemarket/ante"
+	feemarketkeeper "github.com/stateset/core/x/feemarket/keeper"
 )
 
 // HandlerOptions extends the SDK's AnteHandler options by requiring the IBC keeper.
 type HandlerOptions struct {
 	ante.HandlerOptions
 
-	IBCKeeper     *ibckeeper.Keeper
-	CircuitKeeper *circuitkeeper.Keeper
+	IBCKeeper       *ibckeeper.Keeper
+	CircuitKeeper   *circuitkeeper.Keeper
+	FeeMarketKeeper *feemarketkeeper.Keeper
 	// WasmConfig        wasmTypes.WasmConfig // Temporarily commented out due to dependency conflicts
 }
 
@@ -72,6 +75,12 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		sigGasConsumer = ante.DefaultSigVerificationGasConsumer
 	}
 
+	// Use fee market for dynamic fee checking if keeper is available
+	txFeeChecker := options.TxFeeChecker
+	if options.FeeMarketKeeper != nil {
+		txFeeChecker = feemarketante.FeeMarketCheckTxFeeWithMinGasPrices(*options.FeeMarketKeeper)
+	}
+
 	anteDecorators := []sdk.AnteDecorator{
 		ante.NewSetUpContextDecorator(),
 		NewMinCommissionDecorator(),
@@ -80,7 +89,7 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 		ante.NewTxTimeoutHeightDecorator(),
 		ante.NewValidateMemoDecorator(options.AccountKeeper),
 		ante.NewConsumeGasForTxSizeDecorator(options.AccountKeeper),
-		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, options.TxFeeChecker),
+		ante.NewDeductFeeDecorator(options.AccountKeeper, options.BankKeeper, options.FeegrantKeeper, txFeeChecker),
 		ante.NewSetPubKeyDecorator(options.AccountKeeper),
 		ante.NewValidateSigCountDecorator(options.AccountKeeper),
 		ante.NewSigGasConsumeDecorator(options.AccountKeeper, sigGasConsumer),
