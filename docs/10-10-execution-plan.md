@@ -10,8 +10,8 @@ Fastest path to raise Stateset to a 10/10 across security, decentralization, per
 ## Security & Safety
 - Target: External audit coverage of critical modules, >80% test coverage on safety-critical code, CosmWasm re-enabled safely.
 - Immediate actions:
-  - Scope an external audit per `docs/SECURITY.md` (stablecoins, oracle, compliance, governance, circuit breakers).
-  - Add fuzz/property tests for liquidation bounds, oracle deviation/staleness, and compliance gates (start with `x/stablecoins`, `x/commerce`, `x/compliance`).
+  - Scope an external audit per `docs/SECURITY.md` (stablecoin, oracle, compliance, governance, circuit breakers).
+  - Add fuzz/property tests for liquidation bounds, oracle deviation/staleness, and compliance gates (start with `x/stablecoin`, `x/commerce`, `x/compliance`).
   - Re-enable CosmWasm when a v0.53-compatible wasmd lands; run migration tests and circuit-breaker regressions before enabling in `app/app.go`.
   - Stand up a public bug bounty after audit handoff.
 

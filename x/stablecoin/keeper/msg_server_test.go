@@ -59,7 +59,8 @@ func setupKeeper(t *testing.T) (keeper.Keeper, sdk.Context, *mockBankKeeper, *mo
 	accountKeeper := newMockAccountKeeper()
 	accountKeeper.SetAddress(stablecointypes.ModuleAccountName, newAddress())
 
-	k := keeper.NewKeeper(cdc, storeKey, "stateset1authority", bankKeeper, accountKeeper, oracleKeeper, complianceKeeper)
+	authority := newAddress()
+	k := keeper.NewKeeper(cdc, storeKey, authority.String(), bankKeeper, accountKeeper, oracleKeeper, complianceKeeper)
 
 	return k, ctx, bankKeeper, oracleKeeper, complianceKeeper
 }
@@ -238,7 +239,7 @@ func TestMsgCreateVault(t *testing.T) {
 
 	msg := stablecointypes.NewMsgCreateVault(owner.String(), sdk.NewInt64Coin("stst", 1_000), sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 500))
 
-	resp, err := msgServer.CreateVault(ctx, msg)
+	resp, err := msgServer.CreateVault(sdk.WrapSDKContext(ctx), msg)
 	require.NoError(t, err)
 	require.Equal(t, uint64(1), resp.VaultId)
 
@@ -263,11 +264,11 @@ func TestMsgDepositAndWithdrawCollateral(t *testing.T) {
 	oracle.SetPrice("stst", sdkmath.LegacyMustNewDecFromStr("2.0"))
 
 	create := stablecointypes.NewMsgCreateVault(owner.String(), sdk.NewInt64Coin("stst", 500), sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 0))
-	resp, err := msgServer.CreateVault(ctx, create)
+	resp, err := msgServer.CreateVault(sdk.WrapSDKContext(ctx), create)
 	require.NoError(t, err)
 
 	deposit := stablecointypes.NewMsgDepositCollateral(owner.String(), resp.VaultId, sdk.NewInt64Coin("stst", 200))
-	_, err = msgServer.DepositCollateral(ctx, deposit)
+	_, err = msgServer.DepositCollateral(sdk.WrapSDKContext(ctx), deposit)
 	require.NoError(t, err)
 
 	withdraw := &stablecointypes.MsgWithdrawCollateral{
@@ -275,7 +276,7 @@ func TestMsgDepositAndWithdrawCollateral(t *testing.T) {
 		VaultId:    resp.VaultId,
 		Collateral: sdk.NewInt64Coin("stst", 100),
 	}
-	_, err = msgServer.WithdrawCollateral(ctx, withdraw)
+	_, err = msgServer.WithdrawCollateral(sdk.WrapSDKContext(ctx), withdraw)
 	require.NoError(t, err)
 
 	vault, found := k.GetVault(ctx, resp.VaultId)
@@ -294,7 +295,7 @@ func TestMsgMintAndRepayStablecoin(t *testing.T) {
 	oracle.SetPrice("stst", sdkmath.LegacyMustNewDecFromStr("2.0"))
 
 	create := stablecointypes.NewMsgCreateVault(owner.String(), sdk.NewInt64Coin("stst", 1_000), sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 0))
-	resp, err := msgServer.CreateVault(ctx, create)
+	resp, err := msgServer.CreateVault(sdk.WrapSDKContext(ctx), create)
 	require.NoError(t, err)
 
 	mint := &stablecointypes.MsgMintStablecoin{
@@ -302,7 +303,7 @@ func TestMsgMintAndRepayStablecoin(t *testing.T) {
 		VaultId: resp.VaultId,
 		Amount:  sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 300),
 	}
-	_, err = msgServer.MintStablecoin(ctx, mint)
+	_, err = msgServer.MintStablecoin(sdk.WrapSDKContext(ctx), mint)
 	require.NoError(t, err)
 
 	vault, found := k.GetVault(ctx, resp.VaultId)
@@ -315,7 +316,7 @@ func TestMsgMintAndRepayStablecoin(t *testing.T) {
 		VaultId: resp.VaultId,
 		Amount:  sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 200),
 	}
-	_, err = msgServer.RepayStablecoin(ctx, repay)
+	_, err = msgServer.RepayStablecoin(sdk.WrapSDKContext(ctx), repay)
 	require.NoError(t, err)
 
 	vault, found = k.GetVault(ctx, resp.VaultId)
@@ -334,7 +335,7 @@ func TestMsgLiquidateHealthyVaultFails(t *testing.T) {
 	oracle.SetPrice("stst", sdkmath.LegacyMustNewDecFromStr("2.0"))
 
 	create := stablecointypes.NewMsgCreateVault(owner.String(), sdk.NewInt64Coin("stst", 500), sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 0))
-	resp, err := msgServer.CreateVault(ctx, create)
+	resp, err := msgServer.CreateVault(sdk.WrapSDKContext(ctx), create)
 	require.NoError(t, err)
 
 	liquidator := newAddress()
@@ -342,7 +343,7 @@ func TestMsgLiquidateHealthyVaultFails(t *testing.T) {
 		Liquidator: liquidator.String(),
 		VaultId:    resp.VaultId,
 	}
-	_, err = msgServer.LiquidateVault(ctx, liquidate)
+	_, err = msgServer.LiquidateVault(sdk.WrapSDKContext(ctx), liquidate)
 	require.Error(t, err)
 	require.ErrorIs(t, err, stablecointypes.ErrUnderCollateralized)
 }
@@ -364,13 +365,13 @@ func TestMsgLiquidateVaultRepaysDebtFromLiquidator(t *testing.T) {
 		sdk.NewInt64Coin("stst", 1_000),
 		sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 400),
 	)
-	resp, err := msgServer.CreateVault(ctx, create)
+	resp, err := msgServer.CreateVault(sdk.WrapSDKContext(ctx), create)
 	require.NoError(t, err)
 
 	// Price crash pushes the vault below the liquidation ratio.
 	oracle.SetPrice("stst", sdkmath.LegacyMustNewDecFromStr("0.5"))
 
-	_, err = msgServer.LiquidateVault(ctx, &stablecointypes.MsgLiquidateVault{
+	_, err = msgServer.LiquidateVault(sdk.WrapSDKContext(ctx), &stablecointypes.MsgLiquidateVault{
 		Liquidator: liquidator.String(),
 		VaultId:    resp.VaultId,
 	})

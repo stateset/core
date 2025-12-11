@@ -7,139 +7,153 @@ import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
 import "google/protobuf/timestamp.proto";
 
-// Order represents a customer order in the Stateset commerce system
+// Params defines configurable parameters for the orders module.
+message Params {
+  int64 default_order_expiration = 1;
+  int64 default_escrow_expiration = 2;
+  int64 dispute_window = 3;
+
+  cosmos.base.v1beta1.Coin min_order_amount = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin max_order_amount = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+
+  uint32 default_fee_rate_bps = 6;
+  string stablecoin_denom = 7;
+  bool auto_complete_after_delivery = 8;
+  int64 auto_complete_window = 9;
+}
+
+// Order represents a customer order in the Stateset commerce system.
 message Order {
-  // Unique identifier for the order
-  string id = 1;
-  
-  // Customer who placed the order
+  uint64 id = 1;
   string customer = 2;
-  
-  // Merchant/seller handling the order
   string merchant = 3;
-  
-  // Order status (pending, confirmed, shipped, delivered, cancelled, refunded)
   string status = 4;
-  
-  // Total order amount
-  repeated cosmos.base.v1beta1.Coin total_amount = 5 [
+  repeated OrderItem items = 5;
+
+  cosmos.base.v1beta1.Coin subtotal = 6 [
     (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
-  
-  // Currency used for pricing
-  string currency = 6;
-  
-  // List of items in the order
-  repeated OrderItem items = 7;
-  
-  // Shipping information
-  ShippingInfo shipping_info = 8;
-  
-  // Payment information
-  PaymentInfo payment_info = 9;
-  
-  // Order metadata (custom fields)
-  string metadata = 10;
-  
-  // Order creation timestamp
-  google.protobuf.Timestamp created_at = 11 [
+  cosmos.base.v1beta1.Coin shipping_cost = 7 [
     (gogoproto.nullable) = false,
-    (gogoproto.stdtime) = true
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
-  
-  // Order last updated timestamp
-  google.protobuf.Timestamp updated_at = 12 [
+  cosmos.base.v1beta1.Coin tax_amount = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin discount_amount = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin total_amount = 10 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+
+  PaymentInfo payment_info = 11 [(gogoproto.nullable) = false];
+  ShippingInfo shipping_info = 12 [(gogoproto.nullable) = false];
+  string metadata = 13;
+
+  google.protobuf.Timestamp created_at = 14 [
     (gogoproto.nullable) = false,
     (gogoproto.stdtime) = true
   ];
-  
-  // Due date for order fulfillment
-  google.protobuf.Timestamp due_date = 13 [
+  google.protobuf.Timestamp updated_at = 15 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp paid_at = 16 [
     (gogoproto.nullable) = true,
     (gogoproto.stdtime) = true
   ];
-  
-  // Order fulfillment type (physical, digital, service)
-  string fulfillment_type = 14;
-  
-  // Order source (web, mobile, api, pos)
-  string source = 15;
-  
-  // Order discount information
-  repeated DiscountInfo discounts = 16;
-  
-  // Tax information
-  TaxInfo tax_info = 17;
+  google.protobuf.Timestamp shipped_at = 17 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp delivered_at = 18 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp completed_at = 19 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp expires_at = 20 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+
+  uint64 settlement_id = 21;
+  uint64 dispute_id = 22;
 }
 
-// OrderItem represents an individual item within an order
+// OrderItem represents an individual item within an order.
 message OrderItem {
-  // Unique identifier for the order item
   string id = 1;
-  
-  // Product SKU or identifier
   string product_id = 2;
-  
-  // Product name
   string product_name = 3;
-  
-  // Quantity ordered
   uint64 quantity = 4;
-  
-  // Unit price
-  repeated cosmos.base.v1beta1.Coin unit_price = 5 [
+  cosmos.base.v1beta1.Coin unit_price = 5 [
     (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
-  
-  // Total line amount (quantity * unit_price)
-  repeated cosmos.base.v1beta1.Coin total_amount = 6 [
+  cosmos.base.v1beta1.Coin total_price = 6 [
     (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
-  
-  // Product variant information
   string variant = 7;
-  
-  // Item-specific metadata
   string metadata = 8;
 }
 
-// ShippingInfo contains shipping details for an order
-message ShippingInfo {
-  // Shipping address
-  Address shipping_address = 1;
-  
-  // Shipping method (standard, express, overnight)
-  string shipping_method = 2;
-  
-  // Shipping cost
-  repeated cosmos.base.v1beta1.Coin shipping_cost = 3 [
+// PaymentInfo contains payment details for an order.
+message PaymentInfo {
+  string status = 1;
+  string method = 2;
+  string transaction_id = 3;
+  uint64 settlement_id = 4;
+  uint64 escrow_id = 5;
+  cosmos.base.v1beta1.Coin paid_amount = 6 [
     (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
-  
-  // Tracking number
-  string tracking_number = 4;
-  
-  // Carrier (fedex, ups, dhl, usps)
-  string carrier = 5;
-  
-  // Estimated delivery date
-  google.protobuf.Timestamp estimated_delivery = 6 [
-    (gogoproto.nullable) = true,
-    (gogoproto.stdtime) = true
+  cosmos.base.v1beta1.Coin refunded_amount = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
-  
-  // Actual delivery date
-  google.protobuf.Timestamp delivered_at = 7 [
+  cosmos.base.v1beta1.Coin fee_amount = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  google.protobuf.Timestamp paid_at = 9 [
     (gogoproto.nullable) = true,
     (gogoproto.stdtime) = true
   ];
 }
 
-// Address represents a shipping or billing address
+// ShippingInfo contains shipping details for an order.
+message ShippingInfo {
+  Address address = 1 [(gogoproto.nullable) = false];
+  string method = 2;
+  string carrier = 3;
+  string tracking_number = 4;
+  google.protobuf.Timestamp estimated_delivery = 5 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp actual_delivery = 6 [
+    (gogoproto.nullable) = true,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// Address represents a shipping or billing address.
 message Address {
   string line1 = 1;
   string line2 = 2;
@@ -151,116 +165,33 @@ message Address {
   string phone = 8;
 }
 
-// PaymentInfo contains payment details for an order
-message PaymentInfo {
-  // Payment method (card, crypto, bank_transfer, wallet, stablecoin)
-  string payment_method = 1;
-  
-  // Payment status (pending, authorized, captured, failed, refunded)
-  string payment_status = 2;
-  
-  // Transaction ID from payment processor
-  string transaction_id = 3;
-  
-  // Payment processor used
-  string payment_processor = 4;
-  
-  // Amount paid
-  repeated cosmos.base.v1beta1.Coin amount_paid = 5 [
+// Dispute represents a dispute on an order.
+message Dispute {
+  uint64 id = 1;
+  uint64 order_id = 2;
+  string customer = 3;
+  string merchant = 4;
+  string reason = 5;
+  string description = 6;
+  repeated string evidence = 7;
+  string status = 8;
+  string resolution = 9;
+  string resolved_by = 10;
+  google.protobuf.Timestamp created_at = 11 [
     (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+    (gogoproto.stdtime) = true
   ];
-  
-  // Payment timestamp
-  google.protobuf.Timestamp payment_date = 6 [
+  google.protobuf.Timestamp updated_at = 12 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp resolved_at = 13 [
     (gogoproto.nullable) = true,
     (gogoproto.stdtime) = true
   ];
-  
-  // Stablecoin payment details (only used when payment_method is "stablecoin")
-  StablecoinPaymentInfo stablecoin_payment = 7;
-}
-
-// StablecoinPaymentInfo contains stablecoin-specific payment details
-message StablecoinPaymentInfo {
-  // Stablecoin denomination used for payment
-  string stablecoin_denom = 1;
-  
-  // Amount paid in stablecoin
-  string stablecoin_amount = 2 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
-  
-  // Exchange rate at time of payment (stablecoin to order currency)
-  string exchange_rate = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable) = false
-  ];
-  
-  // Customer wallet address that sent the payment
-  string customer_address = 4;
-  
-  // Merchant wallet address that received the payment
-  string merchant_address = 5;
-  
-  // Transaction hash on the blockchain
-  string tx_hash = 6;
-  
-  // Block height when payment was confirmed
-  uint64 block_height = 7;
-  
-  // Payment confirmation status
-  string confirmation_status = 8; // pending, confirmed, failed
-  
-  // Number of confirmations required
-  uint64 confirmations_required = 9;
-  
-  // Current number of confirmations
-  uint64 current_confirmations = 10;
-  
-  // Escrow details (if payment is held in escrow)
-  EscrowInfo escrow_info = 11;
-}
-
-// EscrowInfo contains escrow details for stablecoin payments
-message EscrowInfo {
-  // Whether payment is held in escrow
-  bool is_escrowed = 1;
-  
-  // Escrow contract address
-  string escrow_address = 2;
-  
-  // Escrow release conditions
-  string release_conditions = 3;
-  
-  // Escrow timeout (when funds auto-release to merchant)
-  google.protobuf.Timestamp escrow_timeout = 4 [
-    (gogoproto.nullable) = true,
-    (gogoproto.stdtime) = true
-  ];
-  
-  // Dispute resolution address
-  string dispute_resolver = 5;
-}
-
-// DiscountInfo represents discount applied to an order
-message DiscountInfo {
-  string code = 1;
-  string type = 2; // percentage, fixed_amount, free_shipping
-  string value = 3;
-  repeated cosmos.base.v1beta1.Coin amount = 4 [
+  cosmos.base.v1beta1.Coin amount = 14 [
     (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
 }
 
-// TaxInfo represents tax information for an order
-message TaxInfo {
-  repeated cosmos.base.v1beta1.Coin tax_amount = 1 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
-  ];
-  string tax_rate = 2;
-  string tax_jurisdiction = 3;
-}

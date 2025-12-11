@@ -375,7 +375,9 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state *types.GenesisState) {
 	}
 	k.SetParams(ctx, state.Params)
 	// Reserve-backed settings
-	_ = k.SetReserveParams(ctx, state.ReserveParams)
+	if err := k.SetReserveParams(ctx, state.ReserveParams); err != nil {
+		panic(err)
+	}
 	k.SetReserve(ctx, state.Reserve)
 	k.setNextDepositID(ctx, state.NextDepositId)
 	k.setNextRedemptionID(ctx, state.NextRedemptionId)

@@ -99,7 +99,7 @@ func (s *MsgServerTestSuite) TestMsgPauseSystem() {
 				s.Require().NoError(err)
 			}
 
-			_, err := s.msgServer.PauseSystem(s.ctx, tc.msg)
+			_, err := s.msgServer.PauseSystem(sdk.WrapSDKContext(s.ctx), tc.msg)
 			if tc.expectErr {
 				s.Require().Error(err)
 				if tc.errType != nil {
@@ -144,7 +144,7 @@ func (s *MsgServerTestSuite) TestMsgResumeSystem() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			_, err := s.msgServer.ResumeSystem(s.ctx, tc.msg)
+			_, err := s.msgServer.ResumeSystem(sdk.WrapSDKContext(s.ctx), tc.msg)
 			if tc.expectErr {
 				s.Require().Error(err)
 				if tc.errType != nil {
@@ -205,7 +205,7 @@ func (s *MsgServerTestSuite) TestMsgTripCircuit() {
 				_ = s.keeper.ResetCircuit(s.ctx, tc.msg.ModuleName, s.authority)
 			}
 
-			_, err := s.msgServer.TripCircuit(s.ctx, tc.msg)
+			_, err := s.msgServer.TripCircuit(sdk.WrapSDKContext(s.ctx), tc.msg)
 			if tc.expectErr {
 				s.Require().Error(err)
 				if tc.errType != nil {
@@ -257,7 +257,7 @@ func (s *MsgServerTestSuite) TestMsgResetCircuit() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			_, err := s.msgServer.ResetCircuit(s.ctx, tc.msg)
+			_, err := s.msgServer.ResetCircuit(sdk.WrapSDKContext(s.ctx), tc.msg)
 			if tc.expectErr {
 				s.Require().Error(err)
 				if tc.errType != nil {
@@ -329,7 +329,7 @@ func (s *MsgServerTestSuite) TestMsgUpdateParams() {
 
 	for _, tc := range testCases {
 		s.Run(tc.name, func() {
-			_, err := s.msgServer.UpdateParams(s.ctx, tc.msg)
+			_, err := s.msgServer.UpdateParams(sdk.WrapSDKContext(s.ctx), tc.msg)
 			if tc.expectErr {
 				s.Require().Error(err)
 				if tc.errType != nil {
@@ -353,12 +353,12 @@ func (s *MsgServerTestSuite) TestPauseResumeCycle() {
 	}
 
 	// Pause
-	_, err := s.msgServer.PauseSystem(s.ctx, pauseMsg)
+	_, err := s.msgServer.PauseSystem(sdk.WrapSDKContext(s.ctx), pauseMsg)
 	s.Require().NoError(err)
 	s.Require().True(s.keeper.IsGloballyPaused(s.ctx))
 
 	// Try to pause again (should fail)
-	_, err = s.msgServer.PauseSystem(s.ctx, pauseMsg)
+	_, err = s.msgServer.PauseSystem(sdk.WrapSDKContext(s.ctx), pauseMsg)
 	s.Require().Error(err)
 	s.Require().ErrorIs(err, circuittypes.ErrAlreadyPaused)
 
@@ -366,12 +366,12 @@ func (s *MsgServerTestSuite) TestPauseResumeCycle() {
 	resumeMsg := &circuittypes.MsgResumeSystem{
 		Authority: s.authority,
 	}
-	_, err = s.msgServer.ResumeSystem(s.ctx, resumeMsg)
+	_, err = s.msgServer.ResumeSystem(sdk.WrapSDKContext(s.ctx), resumeMsg)
 	s.Require().NoError(err)
 	s.Require().False(s.keeper.IsGloballyPaused(s.ctx))
 
 	// Try to resume again (should fail)
-	_, err = s.msgServer.ResumeSystem(s.ctx, resumeMsg)
+	_, err = s.msgServer.ResumeSystem(sdk.WrapSDKContext(s.ctx), resumeMsg)
 	s.Require().Error(err)
 	s.Require().ErrorIs(err, circuittypes.ErrNotPaused)
 }
@@ -385,7 +385,7 @@ func (s *MsgServerTestSuite) TestTripResetCycle() {
 		ModuleName: moduleName,
 		Reason:     "trip test",
 	}
-	_, err := s.msgServer.TripCircuit(s.ctx, tripMsg)
+	_, err := s.msgServer.TripCircuit(sdk.WrapSDKContext(s.ctx), tripMsg)
 	s.Require().NoError(err)
 	s.Require().True(s.keeper.IsModuleCircuitOpen(s.ctx, moduleName))
 
@@ -394,7 +394,7 @@ func (s *MsgServerTestSuite) TestTripResetCycle() {
 		Authority:  s.authority,
 		ModuleName: moduleName,
 	}
-	_, err = s.msgServer.ResetCircuit(s.ctx, resetMsg)
+	_, err = s.msgServer.ResetCircuit(sdk.WrapSDKContext(s.ctx), resetMsg)
 	s.Require().NoError(err)
 	s.Require().False(s.keeper.IsModuleCircuitOpen(s.ctx, moduleName))
 }
@@ -409,7 +409,7 @@ func (s *MsgServerTestSuite) TestMultipleModuleCircuits() {
 			ModuleName: mod,
 			Reason:     "multi-module test",
 		}
-		_, err := s.msgServer.TripCircuit(s.ctx, tripMsg)
+		_, err := s.msgServer.TripCircuit(sdk.WrapSDKContext(s.ctx), tripMsg)
 		s.Require().NoError(err)
 		s.Require().True(s.keeper.IsModuleCircuitOpen(s.ctx, mod))
 	}
@@ -425,7 +425,7 @@ func (s *MsgServerTestSuite) TestMultipleModuleCircuits() {
 			Authority:  s.authority,
 			ModuleName: mod,
 		}
-		_, err := s.msgServer.ResetCircuit(s.ctx, resetMsg)
+		_, err := s.msgServer.ResetCircuit(sdk.WrapSDKContext(s.ctx), resetMsg)
 		s.Require().NoError(err)
 		s.Require().False(s.keeper.IsModuleCircuitOpen(s.ctx, mod), "module %d should be closed", i)
 	}

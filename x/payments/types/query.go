@@ -70,8 +70,3 @@ type QueryPaymentsByStatusResponse struct {
 	Payments []PaymentIntent `json:"payments"`
 	Total    uint64          `json:"total"`
 }
-
-// RegisterQueryServer registers the query server
-func RegisterQueryServer(s interface{}, srv QueryServer) {
-	// Registration handled by module
-}

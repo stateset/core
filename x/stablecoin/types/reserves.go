@@ -119,13 +119,13 @@ type ReserveParams struct {
 // DefaultReserveParams returns default reserve parameters
 func DefaultReserveParams() ReserveParams {
 	return ReserveParams{
-		MinReserveRatioBps:    10000, // 100% backed
-		TargetReserveRatioBps: 10200, // 102% target (2% buffer)
-		MintFeeBps:            10,    // 0.1% mint fee
-		RedeemFeeBps:          10,    // 0.1% redeem fee
-		MinMintAmount:         sdkmath.NewInt(100_000_000),  // 100 ssUSD minimum
-		MinRedeemAmount:       sdkmath.NewInt(100_000_000),  // 100 ssUSD minimum
-		RedemptionDelay:       0,                             // Instant for tokenized
+		MinReserveRatioBps:    10000,                               // 100% backed
+		TargetReserveRatioBps: 10200,                               // 102% target (2% buffer)
+		MintFeeBps:            10,                                  // 0.1% mint fee
+		RedeemFeeBps:          10,                                  // 0.1% redeem fee
+		MinMintAmount:         sdkmath.NewInt(100_000_000),         // 100 ssUSD minimum
+		MinRedeemAmount:       sdkmath.NewInt(100_000_000),         // 100 ssUSD minimum
+		RedemptionDelay:       0,                                   // Instant for tokenized
 		MaxDailyMint:          sdkmath.NewInt(100_000_000_000_000), // 100M ssUSD/day
 		MaxDailyRedeem:        sdkmath.NewInt(100_000_000_000_000), // 100M ssUSD/day
 		TokenizedTreasuries:   DefaultTokenizedTreasuries(),
@@ -139,7 +139,7 @@ func DefaultReserveParams() ReserveParams {
 func DefaultTokenizedTreasuries() []TokenizedTreasuryConfig {
 	return []TokenizedTreasuryConfig{
 		{
-			Denom:            "usdy",  // Ondo USDY
+			Denom:            "usdy", // Ondo USDY
 			Issuer:           "ondo",
 			UnderlyingType:   ReserveAssetTBill,
 			Active:           true,
@@ -148,7 +148,7 @@ func DefaultTokenizedTreasuries() []TokenizedTreasuryConfig {
 			OracleDenom:      "usdy",
 		},
 		{
-			Denom:            "stbt",  // Matrixdock STBT
+			Denom:            "stbt", // Matrixdock STBT
 			Issuer:           "matrixdock",
 			UnderlyingType:   ReserveAssetTBill,
 			Active:           true,
@@ -157,16 +157,16 @@ func DefaultTokenizedTreasuries() []TokenizedTreasuryConfig {
 			OracleDenom:      "stbt",
 		},
 		{
-			Denom:            "ousg",  // Ondo US Government Bond
+			Denom:            "ousg", // Ondo US Government Bond
 			Issuer:           "ondo",
 			UnderlyingType:   ReserveAssetTBond,
 			Active:           true,
-			HaircutBps:       100,  // 1% haircut for duration risk
+			HaircutBps:       100, // 1% haircut for duration risk
 			MaxAllocationBps: 3000,
 			OracleDenom:      "ousg",
 		},
 		{
-			Denom:            "tbill",  // OpenEden T-Bill
+			Denom:            "tbill", // OpenEden T-Bill
 			Issuer:           "openeden",
 			UnderlyingType:   ReserveAssetTBill,
 			Active:           true,
@@ -175,7 +175,7 @@ func DefaultTokenizedTreasuries() []TokenizedTreasuryConfig {
 			OracleDenom:      "tbill",
 		},
 		{
-			Denom:            "usdc",  // USDC as cash equivalent
+			Denom:            "usdc", // USDC as cash equivalent
 			Issuer:           "circle",
 			UnderlyingType:   ReserveAssetCash,
 			Active:           true,
@@ -226,8 +226,10 @@ type Reserve struct {
 	TotalValue sdkmath.Int `json:"total_value" yaml:"total_value"`
 	// TotalMinted total ssUSD minted against reserves
 	TotalMinted sdkmath.Int `json:"total_minted" yaml:"total_minted"`
-	// LastUpdated block height of last update
-	LastUpdated int64 `json:"last_updated" yaml:"last_updated"`
+	// LastUpdatedHeight block height of last update (kept as `last_updated` for backward compatibility)
+	LastUpdatedHeight int64 `json:"last_updated" yaml:"last_updated"`
+	// LastUpdatedTime wall-clock time of last update
+	LastUpdatedTime time.Time `json:"last_updated_time" yaml:"last_updated_time"`
 }
 
 // GetReserveRatio returns the current reserve ratio in basis points
@@ -250,13 +252,13 @@ func (r Reserve) IsHealthy(minRatioBps uint32) bool {
 
 // ReserveDeposit represents a deposit of tokenized treasuries
 type ReserveDeposit struct {
-	Id          uint64         `json:"id" yaml:"id"`
-	Depositor   string         `json:"depositor" yaml:"depositor"`
-	Amount      sdk.Coin       `json:"amount" yaml:"amount"`
-	UsdValue    sdkmath.Int    `json:"usd_value" yaml:"usd_value"`
-	SsusdMinted sdkmath.Int    `json:"ssusd_minted" yaml:"ssusd_minted"`
-	DepositedAt time.Time      `json:"deposited_at" yaml:"deposited_at"`
-	Status      DepositStatus  `json:"status" yaml:"status"`
+	Id          uint64        `json:"id" yaml:"id"`
+	Depositor   string        `json:"depositor" yaml:"depositor"`
+	Amount      sdk.Coin      `json:"amount" yaml:"amount"`
+	UsdValue    sdkmath.Int   `json:"usd_value" yaml:"usd_value"`
+	SsusdMinted sdkmath.Int   `json:"ssusd_minted" yaml:"ssusd_minted"`
+	DepositedAt time.Time     `json:"deposited_at" yaml:"deposited_at"`
+	Status      DepositStatus `json:"status" yaml:"status"`
 }
 
 // DepositStatus represents the status of a reserve deposit
@@ -270,15 +272,15 @@ const (
 
 // RedemptionRequest represents a request to redeem ssUSD for reserves
 type RedemptionRequest struct {
-	Id               uint64        `json:"id" yaml:"id"`
-	Requester        string        `json:"requester" yaml:"requester"`
-	SsusdAmount      sdkmath.Int   `json:"ssusd_amount" yaml:"ssusd_amount"`
-	OutputDenom      string        `json:"output_denom" yaml:"output_denom"`
-	RequestedAt      time.Time     `json:"requested_at" yaml:"requested_at"`
-	ExecutableAfter  time.Time     `json:"executable_after" yaml:"executable_after"`
-	Status           RedeemStatus  `json:"status" yaml:"status"`
-	ExecutedAt       time.Time     `json:"executed_at,omitempty" yaml:"executed_at,omitempty"`
-	OutputAmount     sdk.Coin      `json:"output_amount,omitempty" yaml:"output_amount,omitempty"`
+	Id              uint64       `json:"id" yaml:"id"`
+	Requester       string       `json:"requester" yaml:"requester"`
+	SsusdAmount     sdkmath.Int  `json:"ssusd_amount" yaml:"ssusd_amount"`
+	OutputDenom     string       `json:"output_denom" yaml:"output_denom"`
+	RequestedAt     time.Time    `json:"requested_at" yaml:"requested_at"`
+	ExecutableAfter time.Time    `json:"executable_after" yaml:"executable_after"`
+	Status          RedeemStatus `json:"status" yaml:"status"`
+	ExecutedAt      time.Time    `json:"executed_at,omitempty" yaml:"executed_at,omitempty"`
+	OutputAmount    sdk.Coin     `json:"output_amount,omitempty" yaml:"output_amount,omitempty"`
 }
 
 // RedeemStatus represents the status of a redemption request
@@ -292,27 +294,27 @@ const (
 
 // DailyMintStats tracks daily minting/redemption
 type DailyMintStats struct {
-	Date        string      `json:"date" yaml:"date"` // YYYY-MM-DD
-	TotalMinted sdkmath.Int `json:"total_minted" yaml:"total_minted"`
+	Date          string      `json:"date" yaml:"date"` // YYYY-MM-DD
+	TotalMinted   sdkmath.Int `json:"total_minted" yaml:"total_minted"`
 	TotalRedeemed sdkmath.Int `json:"total_redeemed" yaml:"total_redeemed"`
 }
 
 // OffChainReserveAttestation represents off-chain reserve attestation
 type OffChainReserveAttestation struct {
-	Id              uint64           `json:"id" yaml:"id"`
-	Attester        string           `json:"attester" yaml:"attester"`
-	TotalCash       sdkmath.Int      `json:"total_cash" yaml:"total_cash"`
-	TotalTBills     sdkmath.Int      `json:"total_tbills" yaml:"total_tbills"`
-	TotalTNotes     sdkmath.Int      `json:"total_tnotes" yaml:"total_tnotes"`
-	TotalTBonds     sdkmath.Int      `json:"total_tbonds" yaml:"total_tbonds"`
-	TotalRepos      sdkmath.Int      `json:"total_repos" yaml:"total_repos"`
-	TotalMMF        sdkmath.Int      `json:"total_mmf" yaml:"total_mmf"`
-	TotalValue      sdkmath.Int      `json:"total_value" yaml:"total_value"`
-	CustodianName   string           `json:"custodian_name" yaml:"custodian_name"`
-	AuditFirm       string           `json:"audit_firm" yaml:"audit_firm"`
-	ReportDate      time.Time        `json:"report_date" yaml:"report_date"`
-	AttestationHash string           `json:"attestation_hash" yaml:"attestation_hash"`
-	Timestamp       time.Time        `json:"timestamp" yaml:"timestamp"`
+	Id              uint64      `json:"id" yaml:"id"`
+	Attester        string      `json:"attester" yaml:"attester"`
+	TotalCash       sdkmath.Int `json:"total_cash" yaml:"total_cash"`
+	TotalTBills     sdkmath.Int `json:"total_tbills" yaml:"total_tbills"`
+	TotalTNotes     sdkmath.Int `json:"total_tnotes" yaml:"total_tnotes"`
+	TotalTBonds     sdkmath.Int `json:"total_tbonds" yaml:"total_tbonds"`
+	TotalRepos      sdkmath.Int `json:"total_repos" yaml:"total_repos"`
+	TotalMMF        sdkmath.Int `json:"total_mmf" yaml:"total_mmf"`
+	TotalValue      sdkmath.Int `json:"total_value" yaml:"total_value"`
+	CustodianName   string      `json:"custodian_name" yaml:"custodian_name"`
+	AuditFirm       string      `json:"audit_firm" yaml:"audit_firm"`
+	ReportDate      time.Time   `json:"report_date" yaml:"report_date"`
+	AttestationHash string      `json:"attestation_hash" yaml:"attestation_hash"`
+	Timestamp       time.Time   `json:"timestamp" yaml:"timestamp"`
 }
 
 // ValidateBasic validates the attestation

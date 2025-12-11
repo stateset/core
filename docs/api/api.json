@@ -1,7 +1,7 @@
 {
   "version": "v1.1.0",
   "title": "Stateset Core Blockchain API",
-  "description": "Enhanced blockchain API with security, analytics, business functionality, orders, and stablecoins",
+  "description": "Enhanced blockchain API with security, analytics, business functionality, orders, and the ssUSD stablecoin (legacy stablecoins REST remains under /stablecoins)",
   "base_url": "https://api.stateset.io",
   "endpoints": [
     {
@@ -328,7 +328,7 @@
           "response": "{\n  \"denom\": \"usdx\",\n  \"active\": true\n}"
         }
       ],
-      "module": "stablecoins"
+      "module": "stablecoin"
     },
     {
       "method": "GET",
@@ -357,7 +357,7 @@
           "response": "{\n  \"stablecoin\": {\n    \"denom\": \"usdx\",\n    \"name\": \"StateSet USD\",\n    \"symbol\": \"USDX\",\n    \"total_supply\": \"10000000\",\n    \"active\": true,\n    \"peg_info\": {\n      \"target_asset\": \"USD\",\n      \"target_price\": \"1.0\"\n    }\n  }\n}"
         }
       ],
-      "module": "stablecoins"
+      "module": "stablecoin"
     },
     {
       "method": "GET",
@@ -388,7 +388,7 @@
           "response": "{\n  \"total_supply\": \"10000000\",\n  \"max_supply\": \"1000000000000000\",\n  \"circulating_supply\": \"9850000\"\n}"
         }
       ],
-      "module": "stablecoins"
+      "module": "stablecoin"
     },
     {
       "method": "GET",
@@ -417,7 +417,7 @@
           "response": "{\n  \"price_data\": [\n    {\n      \"price\": \"1.001\",\n      \"source\": \"chainlink\",\n      \"timestamp\": \"2024-01-15T10:30:00Z\"\n    }\n  ]\n}"
         }
       ],
-      "module": "stablecoins"
+      "module": "stablecoin"
     },
     {
       "method": "GET",
@@ -448,7 +448,7 @@
           "response": "{\n  \"total_stablecoins\": 5,\n  \"active_stablecoins\": 4,\n  \"total_market_cap\": \"50000000.00\",\n  \"total_volume_24h\": \"2500000.00\",\n  \"stablecoin_stats\": [\n    {\n      \"denom\": \"usdx\",\n      \"market_cap\": \"10000000.00\",\n      \"price\": \"1.001\"\n    }\n  ]\n}"
         }
       ],
-      "module": "stablecoins"
+      "module": "stablecoin"
     }
   ],
   "generated_at": "2025-01-27T10:15:30.000000000Z"

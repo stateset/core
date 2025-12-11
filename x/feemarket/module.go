@@ -21,6 +21,7 @@ import (
 var (
 	_ module.AppModuleBasic = AppModuleBasic{}
 	_ appmodule.AppModule   = AppModule{}
+	_ module.HasServices    = AppModule{}
 )
 
 // AppModuleBasic implements the basic methods for the module.
@@ -76,7 +77,8 @@ func (AppModule) IsAppModule() {}
 func (AppModule) IsOnePerModuleType() {}
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	_ = cfg
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) {

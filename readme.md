@@ -1,6 +1,8 @@
 # Stateset Core
 
-**Stateset Core** is a next-generation blockchain built using Cosmos SDK and Tendermint, designed for intelligent commerce and business automation. It provides a decentralized platform for advanced business processes including smart agreements, invoices, purchase orders, loans, stablecoins (ssUSD), and cross-chain commerce functionality.
+**Stateset Core** is a next-generation blockchain built on the Cosmos SDK and CometBFT (Tendermint), designed for intelligent commerce and business automation. It provides a decentralized platform for advanced business processes including smart agreements, invoices, purchase orders, loans, stablecoins (ssUSD), and cross-chain commerce functionality.
+
+**Quick Links**: [Run a local node](#running-the-blockchain-node) | [CLI guide](docs/cli-guide.md) | [Security](docs/SECURITY.md) | [Tokenomics](docs/TOKENOMICS.md) | [Contributing](CONTRIBUTING.md)
 
 ## Prerequisites
 
@@ -52,10 +54,10 @@ make install
 
 ```bash
 # Build the binary
-go build -o statesetd ./cmd/cored
+go build -o statesetd ./cmd/statesetd
 
 # Or install it to your GOPATH/bin
-go install ./cmd/cored
+go install ./cmd/statesetd
 ```
 
 After successful compilation, you should have a `statesetd` binary in your current directory (or in your `$GOPATH/bin` if you used `go install`).
@@ -112,7 +114,7 @@ This command will:
 
 ### Development Mode (Manual Setup)
 
-For development and testing purposes, you can run a local single-node blockchain:
+For development and testing purposes, you can run a local single-node blockchain. If you built with `make`, replace `./statesetd` below with `./build/statesetd`.
 
 #### 1. Initialize the Node
 
@@ -253,7 +255,7 @@ docker run -it --rm \
 
 ### Common Issues
 
-1. **Build Errors**: Ensure you have Go 1.21+ installed and all dependencies are downloaded
+1. **Build Errors**: Ensure you have Go 1.23+ installed and all dependencies are downloaded
    ```bash
    go version
    go mod download
@@ -342,7 +344,7 @@ Available Commands:
   validate-signatures validate transactions signatures
   vesting             Vesting transaction subcommands
   wasm                Wasm transaction subcommands
-  stablecoins         stablecoin transactions subcommands
+  stablecoin          stablecoin transactions subcommands (alias: stablecoins)
   orders              order management transactions subcommands
   commerce            commerce transactions subcommands
   cctp                cross-chain transfer protocol subcommands

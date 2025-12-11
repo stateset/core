@@ -3,6 +3,7 @@ package types
 import (
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 type GenesisState struct {
@@ -25,7 +26,7 @@ func DefaultGenesis() *GenesisState {
 	return &GenesisState{
 		Params:             DefaultParams(),
 		ReserveParams:      DefaultReserveParams(),
-		Reserve:            Reserve{TotalDeposited: nil, TotalValue: sdkmath.ZeroInt(), TotalMinted: sdkmath.ZeroInt()},
+		Reserve:            Reserve{TotalDeposited: sdk.NewCoins(), TotalValue: sdkmath.ZeroInt(), TotalMinted: sdkmath.ZeroInt()},
 		NextVaultId:        1,
 		Vaults:             []Vault{},
 		NextDepositId:      1,

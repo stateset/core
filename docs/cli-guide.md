@@ -46,6 +46,47 @@ statesetd query payments payment <payment-id>
 
 ---
 
+## Settlement Module
+
+### Transactions
+
+```bash
+# Instant transfer
+statesetd tx settlement instant-transfer <recipient> <amount> <reference> --from <sender>
+
+# Escrow flow
+statesetd tx settlement create-escrow <recipient> <amount> <expires-in> --from <sender>
+statesetd tx settlement release-escrow <settlement-id> --from <sender>
+statesetd tx settlement refund-escrow <settlement-id> --from <recipient>
+
+# Payment channels
+statesetd tx settlement open-channel <recipient> <deposit> <expires-in-blocks> --from <sender>
+statesetd tx settlement claim-channel <channel-id> <amount> <nonce> <signature> --from <recipient>
+statesetd tx settlement close-channel <channel-id> --from <sender>
+
+# Merchant config
+statesetd tx settlement register-merchant <name> --fee-rate-bps 25 --batch-enabled \
+  --min-settlement 10ssusd --max-settlement 100000ssusd \
+  --webhook-url https://example.com/webhook --from <merchant>
+statesetd tx settlement update-merchant <merchant-address> --name "New Name" --from <merchant>
+
+# Batch settlements (authority-only; comma-separated lists)
+statesetd tx settlement create-batch <merchant> <sender1,sender2> <100ssusd,200ssusd> <ref1,ref2> --from <authority>
+statesetd tx settlement settle-batch <batch-id> --from <authority>
+```
+
+### Queries
+
+```bash
+statesetd query settlement settlement <id>
+statesetd query settlement batch <id>
+statesetd query settlement channel <id>
+statesetd query settlement merchant <merchant-address>
+statesetd query settlement params
+```
+
+---
+
 ## Stablecoin Module
 
 ### Transactions
@@ -68,7 +109,7 @@ statesetd tx stablecoin liquidate <vault-id> --from <liquidator>
 
 Liquidation automatically deducts the vault's entire `ssusd` debt from the calling
 account before collateral is released, so be sure the liquidator holds enough
-stablecoins to cover the position.
+stablecoin to cover the position.
 
 ### Queries
 

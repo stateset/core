@@ -2,24 +2,21 @@
  * Stablecoin Module
  *
  * Interact with the Stateset stablecoin (ssUSD) system.
- * Create vaults, mint/burn stablecoins, manage collateral.
+ * Supports vault-based CDPs and reserve-backed issuance/redemption.
  */
 
 import type { Coin } from '@cosmjs/stargate';
 import type { StatesetClient } from '../client';
 import type {
   Vault,
-  VaultStats,
   CreateVaultParams,
   MintParams,
   RepayParams,
   DepositParams,
   WithdrawParams,
-  LiquidationInfo,
   TxResult,
-  PaginationParams,
 } from '../types';
-import { STABLECOIN_DENOM, MIN_COLLATERAL_RATIO } from '../constants';
+import { STABLECOIN_DENOM } from '../constants';
 
 export class StablecoinModule {
   constructor(private readonly client: StatesetClient) {}
@@ -43,100 +40,12 @@ export class StablecoinModule {
   }
 
   /**
-   * Get all vaults for an owner
+   * Get all vaults, optionally filtered by owner.
    */
-  async getVaultsByOwner(
-    owner: string,
-    pagination?: PaginationParams,
-  ): Promise<Vault[]> {
-    const result = await this.client.queryModule('stablecoin', 'vaults_by_owner', {
-      owner,
-      ...pagination,
+  async getVaults(owner?: string): Promise<Vault[]> {
+    const result = await this.client.queryModule('stablecoin', 'vaults', {
+      owner: owner || '',
     }) as { vaults: unknown[] };
-    return (result.vaults || []).map((v) => this.parseVault(v));
-  }
-
-  /**
-   * Get stablecoin module statistics
-   */
-  async getStats(): Promise<VaultStats> {
-    const result = await this.client.queryModule('stablecoin', 'stats', {}) as {
-      total_vaults: number;
-      total_collateral: { denom: string; amount: string };
-      total_debt: { denom: string; amount: string };
-      average_collateral_ratio: string;
-    };
-    return {
-      totalVaults: result.total_vaults,
-      totalCollateral: result.total_collateral,
-      totalDebt: result.total_debt,
-      averageCollateralRatio: parseFloat(result.average_collateral_ratio),
-    };
-  }
-
-  /**
-   * Calculate the collateral ratio for a vault
-   */
-  async calculateCollateralRatio(vaultId: string): Promise<number> {
-    const vault = await this.getVault(vaultId);
-    if (!vault) {
-      throw new Error(`Vault ${vaultId} not found`);
-    }
-
-    const price = await this.client.oracle.getPrice(vault.collateral.denom);
-    if (!price) {
-      throw new Error(`Price not found for ${vault.collateral.denom}`);
-    }
-
-    const collateralValue =
-      parseFloat(vault.collateral.amount) * parseFloat(price.amount);
-    const debtValue = parseFloat(vault.debt.amount);
-
-    if (debtValue === 0) {
-      return Infinity;
-    }
-
-    return collateralValue / debtValue;
-  }
-
-  /**
-   * Check if a vault is liquidatable
-   */
-  async getLiquidationInfo(vaultId: string): Promise<LiquidationInfo> {
-    const ratio = await this.calculateCollateralRatio(vaultId);
-    const vault = await this.getVault(vaultId);
-
-    if (!vault) {
-      throw new Error(`Vault ${vaultId} not found`);
-    }
-
-    const price = await this.client.oracle.getPrice(vault.collateral.denom);
-    const currentPrice = price ? parseFloat(price.amount) : 0;
-
-    // Calculate liquidation price
-    const liquidationPrice =
-      vault.debt.amount !== '0'
-        ? (parseFloat(vault.debt.amount) * MIN_COLLATERAL_RATIO) /
-          parseFloat(vault.collateral.amount)
-        : 0;
-
-    return {
-      vaultId,
-      collateralRatio: ratio,
-      isLiquidatable: ratio < MIN_COLLATERAL_RATIO,
-      liquidationPrice: liquidationPrice.toFixed(6),
-    };
-  }
-
-  /**
-   * Get all liquidatable vaults
-   */
-  async getLiquidatableVaults(): Promise<Vault[]> {
-    const result = await this.client.queryModule(
-      'stablecoin',
-      'liquidatable_vaults',
-      {},
-    ) as { vaults: unknown[] };
     return (result.vaults || []).map((v) => this.parseVault(v));
   }
 
@@ -225,7 +134,7 @@ export class StablecoinModule {
    */
   async repay(params: RepayParams): Promise<TxResult> {
     const msg = {
-      typeUrl: '/stateset.stablecoin.MsgRepayDebt',
+      typeUrl: '/stateset.stablecoin.MsgRepayStablecoin',
       value: {
         owner: this.client.getAddress(),
         vaultId: params.vaultId,
@@ -238,27 +147,11 @@ export class StablecoinModule {
   }
 
   /**
-   * Close a vault (repay all debt and withdraw all collateral)
-   */
-  async closeVault(vaultId: string): Promise<TxResult> {
-    const msg = {
-      typeUrl: '/stateset.stablecoin.MsgCloseVault',
-      value: {
-        owner: this.client.getAddress(),
-        vaultId,
-      },
-    };
-
-    const result = await this.client.sendTx([msg], 'Close vault');
-    return { ...result, events: [] };
-  }
-
-  /**
    * Liquidate an undercollateralized vault
    */
   async liquidate(vaultId: string): Promise<TxResult> {
     const msg = {
-      typeUrl: '/stateset.stablecoin.MsgLiquidate',
+      typeUrl: '/stateset.stablecoin.MsgLiquidateVault',
       value: {
         liquidator: this.client.getAddress(),
         vaultId,
@@ -275,20 +168,21 @@ export class StablecoinModule {
 
   private parseVault(data: unknown): Vault {
     const v = data as {
-      id: string;
+      id: string | number;
       owner: string;
       collateral: { denom: string; amount: string };
-      debt: { denom: string; amount: string };
-      created_at: string;
-      last_updated: string;
+      collateral_denom?: string;
+      debt: string;
+      last_accrued?: string | number;
     };
+    const debtAmount = typeof v.debt === 'string' ? v.debt : String(v.debt);
     return {
-      id: v.id,
+      id: String(v.id),
       owner: v.owner,
       collateral: v.collateral,
-      debt: v.debt,
-      createdAt: new Date(v.created_at),
-      lastUpdated: new Date(v.last_updated),
+      debt: { denom: STABLECOIN_DENOM, amount: debtAmount },
+      collateralDenom: v.collateral_denom || v.collateral.denom,
+      lastAccrued: v.last_accrued ? Number(v.last_accrued) : 0,
     };
   }
 

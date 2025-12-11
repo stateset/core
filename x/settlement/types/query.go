@@ -131,8 +131,3 @@ type QueryParamsRequest struct{}
 type QueryParamsResponse struct {
 	Params Params `json:"params"`
 }
-
-// RegisterQueryServer registers the query server
-func RegisterQueryServer(s interface{}, srv QueryServer) {
-	// Registration handled by module
-}

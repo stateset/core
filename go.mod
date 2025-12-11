@@ -1,6 +1,6 @@
 module github.com/stateset/core
 
-go 1.23.2
+go 1.23
 
 toolchain go1.23.4
 

@@ -253,6 +253,7 @@ func TestMsgServer_CreateBatch(t *testing.T) {
 	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 	msgServer := keeper.NewMsgServerImpl(k)
 
+	authority := k.GetAuthority()
 	merchant := newSettlementAddress()
 	sender1 := newSettlementAddress()
 	sender2 := newSettlementAddress()
@@ -269,6 +270,7 @@ func TestMsgServer_CreateBatch(t *testing.T) {
 	}
 
 	msg := &types.MsgCreateBatch{
+		Authority:  authority,
 		Merchant:   merchant.String(),
 		Senders:    senders,
 		Amounts:    amounts,
@@ -286,9 +288,11 @@ func TestMsgServer_CreateBatch_EmptySenders(t *testing.T) {
 	k, ctx, _, _, _ := setupSettlementKeeper(t)
 	msgServer := keeper.NewMsgServerImpl(k)
 
+	authority := k.GetAuthority()
 	merchant := newSettlementAddress()
 
 	msg := &types.MsgCreateBatch{
+		Authority:  authority,
 		Merchant:   merchant.String(),
 		Senders:    []string{},
 		Amounts:    []sdk.Coin{},
@@ -303,10 +307,12 @@ func TestMsgServer_CreateBatch_MismatchedArrays(t *testing.T) {
 	k, ctx, _, _, _ := setupSettlementKeeper(t)
 	msgServer := keeper.NewMsgServerImpl(k)
 
+	authority := k.GetAuthority()
 	merchant := newSettlementAddress()
 	sender1 := newSettlementAddress()
 
 	msg := &types.MsgCreateBatch{
+		Authority:  authority,
 		Merchant:   merchant.String(),
 		Senders:    []string{sender1.String()},
 		Amounts:    []sdk.Coin{sdk.NewCoin("ssusd", sdkmath.NewInt(100000)), sdk.NewCoin("ssusd", sdkmath.NewInt(200000))},
@@ -317,11 +323,34 @@ func TestMsgServer_CreateBatch_MismatchedArrays(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestMsgServer_CreateBatch_Unauthorized(t *testing.T) {
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
+	msgServer := keeper.NewMsgServerImpl(k)
+
+	merchant := newSettlementAddress()
+	sender := newSettlementAddress()
+
+	bankKeeper.SetBalance(sender.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))))
+
+	msg := &types.MsgCreateBatch{
+		Authority:  newSettlementAddress().String(),
+		Merchant:   merchant.String(),
+		Senders:    []string{sender.String()},
+		Amounts:    []sdk.Coin{sdk.NewCoin("ssusd", sdkmath.NewInt(100000))},
+		References: []string{"REF1"},
+	}
+
+	_, err := msgServer.CreateBatch(sdk.WrapSDKContext(ctx), msg)
+	require.Error(t, err)
+	require.ErrorIs(t, err, types.ErrUnauthorized)
+}
+
 // TestMsgServer_SettleBatch tests the SettleBatch message handler
 func TestMsgServer_SettleBatch(t *testing.T) {
 	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 	msgServer := keeper.NewMsgServerImpl(k)
 
+	authority := k.GetAuthority()
 	merchant := newSettlementAddress()
 	sender1 := newSettlementAddress()
 
@@ -333,6 +362,7 @@ func TestMsgServer_SettleBatch(t *testing.T) {
 
 	// Create batch
 	createMsg := &types.MsgCreateBatch{
+		Authority:  authority,
 		Merchant:   merchant.String(),
 		Senders:    senders,
 		Amounts:    amounts,
@@ -342,7 +372,6 @@ func TestMsgServer_SettleBatch(t *testing.T) {
 	require.NoError(t, err)
 
 	// Settle batch
-	authority := k.GetAuthority()
 	settleMsg := &types.MsgSettleBatch{
 		BatchId:   createResp.BatchId,
 		Authority: authority,
@@ -358,6 +387,7 @@ func TestMsgServer_SettleBatch_Unauthorized(t *testing.T) {
 	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
 	msgServer := keeper.NewMsgServerImpl(k)
 
+	authority := k.GetAuthority()
 	merchant := newSettlementAddress()
 	sender1 := newSettlementAddress()
 
@@ -369,6 +399,7 @@ func TestMsgServer_SettleBatch_Unauthorized(t *testing.T) {
 
 	// Create batch
 	createMsg := &types.MsgCreateBatch{
+		Authority:  authority,
 		Merchant:   merchant.String(),
 		Senders:    senders,
 		Amounts:    amounts,
@@ -578,6 +609,7 @@ func TestMsgServer_RegisterMerchant(t *testing.T) {
 	merchant := newSettlementAddress()
 
 	msg := &types.MsgRegisterMerchant{
+		Authority:      merchant.String(),
 		Merchant:       merchant.String(),
 		Name:           "Test Merchant",
 		FeeRateBps:     25,
@@ -606,6 +638,7 @@ func TestMsgServer_RegisterMerchant_EmptyName(t *testing.T) {
 	merchant := newSettlementAddress()
 
 	msg := &types.MsgRegisterMerchant{
+		Authority:  merchant.String(),
 		Merchant:   merchant.String(),
 		Name:       "",
 		FeeRateBps: 25,
@@ -617,6 +650,24 @@ func TestMsgServer_RegisterMerchant_EmptyName(t *testing.T) {
 	require.NotNil(t, resp)
 }
 
+func TestMsgServer_RegisterMerchant_Unauthorized(t *testing.T) {
+	k, ctx, _, _, _ := setupSettlementKeeper(t)
+	msgServer := keeper.NewMsgServerImpl(k)
+
+	merchant := newSettlementAddress()
+
+	msg := &types.MsgRegisterMerchant{
+		Authority:  newSettlementAddress().String(),
+		Merchant:   merchant.String(),
+		Name:       "Test Merchant",
+		FeeRateBps: 25,
+	}
+
+	_, err := msgServer.RegisterMerchant(sdk.WrapSDKContext(ctx), msg)
+	require.Error(t, err)
+	require.ErrorIs(t, err, types.ErrUnauthorized)
+}
+
 // TestMsgServer_UpdateMerchant tests the UpdateMerchant message handler
 func TestMsgServer_UpdateMerchant(t *testing.T) {
 	k, ctx, _, _, _ := setupSettlementKeeper(t)
@@ -626,6 +677,7 @@ func TestMsgServer_UpdateMerchant(t *testing.T) {
 
 	// Register merchant first
 	registerMsg := &types.MsgRegisterMerchant{
+		Authority:    merchant.String(),
 		Merchant:     merchant.String(),
 		Name:         "Test Merchant",
 		FeeRateBps:   25,
@@ -638,6 +690,7 @@ func TestMsgServer_UpdateMerchant(t *testing.T) {
 	batchEnabled := false
 	isActive := true
 	updateMsg := &types.MsgUpdateMerchant{
+		Authority:    merchant.String(),
 		Merchant:     merchant.String(),
 		Name:         "Updated Merchant",
 		FeeRateBps:   30,
@@ -657,6 +710,34 @@ func TestMsgServer_UpdateMerchant(t *testing.T) {
 	require.False(t, storedMerchant.BatchEnabled)
 }
 
+func TestMsgServer_UpdateMerchant_Unauthorized(t *testing.T) {
+	k, ctx, _, _, _ := setupSettlementKeeper(t)
+	msgServer := keeper.NewMsgServerImpl(k)
+
+	merchant := newSettlementAddress()
+
+	registerMsg := &types.MsgRegisterMerchant{
+		Authority:    merchant.String(),
+		Merchant:     merchant.String(),
+		Name:         "Test Merchant",
+		FeeRateBps:   25,
+		BatchEnabled: true,
+	}
+	_, err := msgServer.RegisterMerchant(sdk.WrapSDKContext(ctx), registerMsg)
+	require.NoError(t, err)
+
+	updateMsg := &types.MsgUpdateMerchant{
+		Authority:  newSettlementAddress().String(),
+		Merchant:   merchant.String(),
+		Name:       "Updated Merchant",
+		FeeRateBps: 30,
+	}
+
+	_, err = msgServer.UpdateMerchant(sdk.WrapSDKContext(ctx), updateMsg)
+	require.Error(t, err)
+	require.ErrorIs(t, err, types.ErrUnauthorized)
+}
+
 func TestMsgServer_UpdateMerchant_NotFound(t *testing.T) {
 	k, ctx, _, _, _ := setupSettlementKeeper(t)
 	msgServer := keeper.NewMsgServerImpl(k)
@@ -664,6 +745,7 @@ func TestMsgServer_UpdateMerchant_NotFound(t *testing.T) {
 	merchant := newSettlementAddress()
 
 	msg := &types.MsgUpdateMerchant{
+		Authority:  merchant.String(),
 		Merchant:   merchant.String(),
 		Name:       "Updated Merchant",
 		FeeRateBps: 30,
@@ -682,6 +764,7 @@ func TestMsgServer_UpdateMerchant_PartialUpdate(t *testing.T) {
 
 	// Register merchant
 	registerMsg := &types.MsgRegisterMerchant{
+		Authority:    merchant.String(),
 		Merchant:     merchant.String(),
 		Name:         "Test Merchant",
 		FeeRateBps:   25,
@@ -692,8 +775,9 @@ func TestMsgServer_UpdateMerchant_PartialUpdate(t *testing.T) {
 
 	// Update only name
 	updateMsg := &types.MsgUpdateMerchant{
-		Merchant: merchant.String(),
-		Name:     "Updated Name Only",
+		Authority: merchant.String(),
+		Merchant:  merchant.String(),
+		Name:      "Updated Name Only",
 	}
 
 	resp, err := msgServer.UpdateMerchant(sdk.WrapSDKContext(ctx), updateMsg)

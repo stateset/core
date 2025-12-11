@@ -5,195 +5,119 @@ option go_package = "github.com/stateset/core/x/orders/types";
 
 import "gogoproto/gogo.proto";
 import "cosmos/base/v1beta1/coin.proto";
-import "google/protobuf/timestamp.proto";
 import "orders/orders.proto";
 
 // Msg defines the orders Msg service.
 service Msg {
-  // CreateOrder creates a new order
   rpc CreateOrder(MsgCreateOrder) returns (MsgCreateOrderResponse);
-  
-  // UpdateOrder updates an existing order
-  rpc UpdateOrder(MsgUpdateOrder) returns (MsgUpdateOrderResponse);
-  
-  // CancelOrder cancels an order
+  rpc ConfirmOrder(MsgConfirmOrder) returns (MsgConfirmOrderResponse);
+  rpc PayOrder(MsgPayOrder) returns (MsgPayOrderResponse);
+  rpc ShipOrder(MsgShipOrder) returns (MsgShipOrderResponse);
+  rpc DeliverOrder(MsgDeliverOrder) returns (MsgDeliverOrderResponse);
+  rpc CompleteOrder(MsgCompleteOrder) returns (MsgCompleteOrderResponse);
   rpc CancelOrder(MsgCancelOrder) returns (MsgCancelOrderResponse);
-  
-  // FulfillOrder marks an order as fulfilled
-  rpc FulfillOrder(MsgFulfillOrder) returns (MsgFulfillOrderResponse);
-  
-  // RefundOrder processes a refund for an order
   rpc RefundOrder(MsgRefundOrder) returns (MsgRefundOrderResponse);
-  
-  // UpdateOrderStatus updates the status of an order
-  rpc UpdateOrderStatus(MsgUpdateOrderStatus) returns (MsgUpdateOrderStatusResponse);
-  
-  // PayWithStablecoin processes a stablecoin payment for an order
-  rpc PayWithStablecoin(MsgPayWithStablecoin) returns (MsgPayWithStablecoinResponse);
-  
-  // ConfirmStablecoinPayment confirms a stablecoin payment
-  rpc ConfirmStablecoinPayment(MsgConfirmStablecoinPayment) returns (MsgConfirmStablecoinPaymentResponse);
-  
-  // RefundStablecoinPayment processes a stablecoin refund
-  rpc RefundStablecoinPayment(MsgRefundStablecoinPayment) returns (MsgRefundStablecoinPaymentResponse);
-  
-  // ReleaseEscrow releases escrowed stablecoin payment to merchant
-  rpc ReleaseEscrow(MsgReleaseEscrow) returns (MsgReleaseEscrowResponse);
+  rpc OpenDispute(MsgOpenDispute) returns (MsgOpenDisputeResponse);
+  rpc ResolveDispute(MsgResolveDispute) returns (MsgResolveDisputeResponse);
 }
 
-// MsgCreateOrder defines the message for creating a new order
 message MsgCreateOrder {
-  string creator = 1;
-  string customer = 2;
-  string merchant = 3;
-  repeated OrderItem items = 4;
-  ShippingInfo shipping_info = 5;
-  PaymentInfo payment_info = 6;
-  string currency = 7;
-  repeated cosmos.base.v1beta1.Coin total_amount = 8 [
-    (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
-  ];
-  string fulfillment_type = 9;
-  string source = 10;
-  repeated DiscountInfo discounts = 11;
-  TaxInfo tax_info = 12;
-  string metadata = 13;
-  google.protobuf.Timestamp due_date = 14 [
-    (gogoproto.nullable) = true,
-    (gogoproto.stdtime) = true
-  ];
+  string customer = 1;
+  string merchant = 2;
+  repeated OrderItem items = 3;
+  ShippingInfo shipping_info = 4;
+  string metadata = 5;
 }
 
 message MsgCreateOrderResponse {
-  string order_id = 1;
+  uint64 order_id = 1;
 }
 
-// MsgUpdateOrder defines the message for updating an order
-message MsgUpdateOrder {
-  string creator = 1;
-  string order_id = 2;
-  repeated OrderItem items = 3;
-  ShippingInfo shipping_info = 4;
-  PaymentInfo payment_info = 5;
-  string metadata = 6;
-  google.protobuf.Timestamp due_date = 7 [
-    (gogoproto.nullable) = true,
-    (gogoproto.stdtime) = true
+message MsgConfirmOrder {
+  string merchant = 1;
+  uint64 order_id = 2;
+}
+
+message MsgConfirmOrderResponse {}
+
+message MsgPayOrder {
+  string customer = 1;
+  uint64 order_id = 2;
+  cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
+  bool use_escrow = 4;
 }
 
-message MsgUpdateOrderResponse {}
+message MsgPayOrderResponse {}
 
-// MsgCancelOrder defines the message for cancelling an order
+message MsgShipOrder {
+  string merchant = 1;
+  uint64 order_id = 2;
+  string carrier = 3;
+  string tracking_number = 4;
+}
+
+message MsgShipOrderResponse {}
+
+message MsgDeliverOrder {
+  string signer = 1;
+  uint64 order_id = 2;
+}
+
+message MsgDeliverOrderResponse {}
+
+message MsgCompleteOrder {
+  string customer = 1;
+  uint64 order_id = 2;
+}
+
+message MsgCompleteOrderResponse {}
+
 message MsgCancelOrder {
-  string creator = 1;
-  string order_id = 2;
+  string signer = 1;
+  uint64 order_id = 2;
   string reason = 3;
 }
 
 message MsgCancelOrderResponse {}
 
-// MsgFulfillOrder defines the message for fulfilling an order
-message MsgFulfillOrder {
-  string creator = 1;
-  string order_id = 2;
-  string tracking_number = 3;
-  string carrier = 4;
-  google.protobuf.Timestamp shipped_at = 5 [
-    (gogoproto.nullable) = true,
-    (gogoproto.stdtime) = true
-  ];
-}
-
-message MsgFulfillOrderResponse {}
-
-// MsgRefundOrder defines the message for refunding an order
 message MsgRefundOrder {
-  string creator = 1;
-  string order_id = 2;
-  repeated cosmos.base.v1beta1.Coin refund_amount = 3 [
+  string merchant = 1;
+  uint64 order_id = 2;
+  cosmos.base.v1beta1.Coin refund_amount = 3 [
     (gogoproto.nullable) = false,
-    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
   string reason = 4;
-  bool partial_refund = 5;
+  bool full_refund = 5;
 }
 
 message MsgRefundOrderResponse {}
 
-// MsgUpdateOrderStatus defines the message for updating order status
-message MsgUpdateOrderStatus {
-  string creator = 1;
-  string order_id = 2;
-  string status = 3;
-  string notes = 4;
+message MsgOpenDispute {
+  string customer = 1;
+  uint64 order_id = 2;
+  string reason = 3;
+  string description = 4;
+  repeated string evidence = 5;
 }
 
-message MsgUpdateOrderStatusResponse {}
+message MsgOpenDisputeResponse {
+  uint64 dispute_id = 1;
+}
 
-// MsgPayWithStablecoin defines the message for paying with stablecoins
-message MsgPayWithStablecoin {
-  string creator = 1;
-  string order_id = 2;
-  string stablecoin_denom = 3;
-  string stablecoin_amount = 4 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
+message MsgResolveDispute {
+  string authority = 1;
+  uint64 dispute_id = 2;
+  string resolution = 3;
+  cosmos.base.v1beta1.Coin refund_amount = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
   ];
-  string customer_address = 5;
-  string merchant_address = 6;
-  string exchange_rate = 7 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
-    (gogoproto.nullable) = false
-  ];
-  bool use_escrow = 8;
-  uint64 confirmations_required = 9;
-  google.protobuf.Timestamp escrow_timeout = 10 [
-    (gogoproto.nullable) = true,
-    (gogoproto.stdtime) = true
-  ];
+  bool to_customer = 5;
 }
 
-message MsgPayWithStablecoinResponse {
-  string tx_hash = 1;
-  string payment_id = 2;
-}
+message MsgResolveDisputeResponse {}
 
-// MsgConfirmStablecoinPayment defines the message for confirming stablecoin payment
-message MsgConfirmStablecoinPayment {
-  string creator = 1;
-  string order_id = 2;
-  string tx_hash = 3;
-  uint64 block_height = 4;
-  uint64 confirmations = 5;
-}
-
-message MsgConfirmStablecoinPaymentResponse {}
-
-// MsgRefundStablecoinPayment defines the message for refunding stablecoin payment
-message MsgRefundStablecoinPayment {
-  string creator = 1;
-  string order_id = 2;
-  string refund_amount = 3 [
-    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Int",
-    (gogoproto.nullable) = false
-  ];
-  string reason = 4;
-  bool partial_refund = 5;
-}
-
-message MsgRefundStablecoinPaymentResponse {
-  string refund_tx_hash = 1;
-}
-
-// MsgReleaseEscrow defines the message for releasing escrowed payment
-message MsgReleaseEscrow {
-  string creator = 1;
-  string order_id = 2;
-  string release_reason = 3;
-}
-
-message MsgReleaseEscrowResponse {
-  string release_tx_hash = 1;
-}

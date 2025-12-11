@@ -1,19 +1,15 @@
 package types
 
-// QueryServer defines the gRPC query server interface for the oracle module
+import "context"
+
+// QueryServer defines the gRPC query server interface for the oracle module.
 type QueryServer interface {
-	// Price returns the current price for a denom
-	Price(*QueryPriceRequest) (*QueryPriceResponse, error)
-	// Prices returns all prices
-	Prices(*QueryPricesRequest) (*QueryPricesResponse, error)
-	// OracleConfig returns the oracle configuration for a denom
-	OracleConfig(*QueryOracleConfigRequest) (*QueryOracleConfigResponse, error)
-	// Provider returns an oracle provider by address
-	Provider(*QueryProviderRequest) (*QueryProviderResponse, error)
-	// Providers returns all oracle providers
-	Providers(*QueryProvidersRequest) (*QueryProvidersResponse, error)
-	// Params returns the module parameters
-	Params(*QueryParamsRequest) (*QueryParamsResponse, error)
+	Price(context.Context, *QueryPriceRequest) (*QueryPriceResponse, error)
+	Prices(context.Context, *QueryPricesRequest) (*QueryPricesResponse, error)
+	OracleConfig(context.Context, *QueryOracleConfigRequest) (*QueryOracleConfigResponse, error)
+	Provider(context.Context, *QueryProviderRequest) (*QueryProviderResponse, error)
+	Providers(context.Context, *QueryProvidersRequest) (*QueryProvidersResponse, error)
+	Params(context.Context, *QueryParamsRequest) (*QueryParamsResponse, error)
 }
 
 // QueryPriceRequest is the request for a single price

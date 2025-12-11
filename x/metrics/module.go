@@ -20,6 +20,7 @@ import (
 var (
 	_ module.AppModuleBasic = AppModuleBasic{}
 	_ appmodule.AppModule   = AppModule{}
+	_ module.HasServices    = AppModule{}
 )
 
 // AppModuleBasic implements the AppModuleBasic interface for the metrics module
@@ -75,7 +76,7 @@ func (am AppModule) IsOnePerModuleType() {}
 
 // RegisterServices registers module services
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	// Metrics module is read-only, no msg server needed
+	types.RegisterQueryServer(cfg.QueryServer(), am.keeper)
 }
 
 // InitGenesis performs genesis initialization

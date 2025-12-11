@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/log"
+	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
-	dbm "github.com/cosmos/cosmos-db"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -169,6 +169,7 @@ func (m *benchComplianceKeeper) AssertCompliant(_ context.Context, addr sdk.AccA
 func BenchmarkCreateVault(b *testing.B) {
 	k, ctx, bank, oracle := setupBenchmarkKeeper()
 	msgServer := keeper.NewMsgServerImpl(k)
+	goCtx := sdk.WrapSDKContext(ctx)
 
 	oracle.SetPrice("stst", sdkmath.LegacyMustNewDecFromStr("2.0"))
 
@@ -182,13 +183,14 @@ func BenchmarkCreateVault(b *testing.B) {
 			sdk.NewInt64Coin("stst", 1_000),
 			sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 0),
 		)
-		msgServer.CreateVault(ctx, msg)
+		msgServer.CreateVault(goCtx, msg)
 	}
 }
 
 func BenchmarkDepositCollateral(b *testing.B) {
 	k, ctx, bank, oracle := setupBenchmarkKeeper()
 	msgServer := keeper.NewMsgServerImpl(k)
+	goCtx := sdk.WrapSDKContext(ctx)
 
 	oracle.SetPrice("stst", sdkmath.LegacyMustNewDecFromStr("2.0"))
 
@@ -200,7 +202,7 @@ func BenchmarkDepositCollateral(b *testing.B) {
 		sdk.NewInt64Coin("stst", 1_000),
 		sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 0),
 	)
-	resp, _ := msgServer.CreateVault(ctx, createMsg)
+	resp, _ := msgServer.CreateVault(goCtx, createMsg)
 	vaultId := resp.VaultId
 
 	b.ResetTimer()
@@ -210,13 +212,14 @@ func BenchmarkDepositCollateral(b *testing.B) {
 			vaultId,
 			sdk.NewInt64Coin("stst", 100),
 		)
-		msgServer.DepositCollateral(ctx, deposit)
+		msgServer.DepositCollateral(goCtx, deposit)
 	}
 }
 
 func BenchmarkMintStablecoin(b *testing.B) {
 	k, ctx, bank, oracle := setupBenchmarkKeeper()
 	msgServer := keeper.NewMsgServerImpl(k)
+	goCtx := sdk.WrapSDKContext(ctx)
 
 	oracle.SetPrice("stst", sdkmath.LegacyMustNewDecFromStr("2.0"))
 
@@ -228,7 +231,7 @@ func BenchmarkMintStablecoin(b *testing.B) {
 		sdk.NewInt64Coin("stst", 1_000_000),
 		sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 0),
 	)
-	resp, _ := msgServer.CreateVault(ctx, createMsg)
+	resp, _ := msgServer.CreateVault(goCtx, createMsg)
 	vaultId := resp.VaultId
 
 	b.ResetTimer()
@@ -238,13 +241,14 @@ func BenchmarkMintStablecoin(b *testing.B) {
 			VaultId: vaultId,
 			Amount:  sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 10),
 		}
-		msgServer.MintStablecoin(ctx, mint)
+		msgServer.MintStablecoin(goCtx, mint)
 	}
 }
 
 func BenchmarkGetVault(b *testing.B) {
 	k, ctx, bank, oracle := setupBenchmarkKeeper()
 	msgServer := keeper.NewMsgServerImpl(k)
+	goCtx := sdk.WrapSDKContext(ctx)
 
 	oracle.SetPrice("stst", sdkmath.LegacyMustNewDecFromStr("2.0"))
 
@@ -258,7 +262,7 @@ func BenchmarkGetVault(b *testing.B) {
 			sdk.NewInt64Coin("stst", 1_000),
 			sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 0),
 		)
-		msgServer.CreateVault(ctx, createMsg)
+		msgServer.CreateVault(goCtx, createMsg)
 	}
 
 	b.ResetTimer()
@@ -270,6 +274,7 @@ func BenchmarkGetVault(b *testing.B) {
 func BenchmarkIterateVaults(b *testing.B) {
 	k, ctx, bank, oracle := setupBenchmarkKeeper()
 	msgServer := keeper.NewMsgServerImpl(k)
+	goCtx := sdk.WrapSDKContext(ctx)
 
 	oracle.SetPrice("stst", sdkmath.LegacyMustNewDecFromStr("2.0"))
 
@@ -283,7 +288,7 @@ func BenchmarkIterateVaults(b *testing.B) {
 			sdk.NewInt64Coin("stst", 1_000),
 			sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 0),
 		)
-		msgServer.CreateVault(ctx, createMsg)
+		msgServer.CreateVault(goCtx, createMsg)
 	}
 
 	b.ResetTimer()

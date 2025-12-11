@@ -1,6 +1,9 @@
 package cli
 
 import (
+	"encoding/json"
+	"fmt"
+	"os"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -21,7 +24,7 @@ func NewTxCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:                        types.ModuleName,
 		Short:                      "Stablecoin transaction subcommands",
-		Aliases:                    []string{"stablecoin"},
+		Aliases:                    []string{"stablecoin", "stablecoins"},
 		DisableFlagParsing:         true,
 		SuggestionsMinimumDistance: 2,
 		RunE:                       client.ValidateCmd,
@@ -34,6 +37,14 @@ func NewTxCmd() *cobra.Command {
 		NewMintStablecoinCmd(),
 		NewRepayStablecoinCmd(),
 		NewLiquidateVaultCmd(),
+		// Reserve-backed ssUSD operations
+		NewDepositReserveCmd(),
+		NewRequestRedemptionCmd(),
+		NewExecuteRedemptionCmd(),
+		NewCancelRedemptionCmd(),
+		NewUpdateReserveParamsCmd(),
+		NewRecordAttestationCmd(),
+		NewSetApprovedAttesterCmd(),
 	)
 
 	return cmd
@@ -235,7 +246,7 @@ func NewLiquidateVaultCmd() *cobra.Command {
 		Short: "Liquidate an undercollateralized vault",
 		Long: "Liquidate an undercollateralized vault by repaying its outstanding ssusd debt in " +
 			"exchange for the locked collateral. You must have sufficient ssusd to cover the debt.",
-		Args:  cobra.ExactArgs(1),
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			clientCtx, err := client.GetClientTxContext(cmd)
 			if err != nil {
@@ -250,6 +261,247 @@ func NewLiquidateVaultCmd() *cobra.Command {
 			msg := types.MsgLiquidateVault{
 				Liquidator: clientCtx.GetFromAddress().String(),
 				VaultId:    id,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+// ============================================================================
+// Reserve-backed ssUSD CLI
+// ============================================================================
+
+func NewDepositReserveCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "deposit-reserve [amount]",
+		Short: "Deposit approved tokenized treasuries to mint ssUSD",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			amount, err := sdk.ParseCoinNormalized(args[0])
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgDepositReserve{
+				Depositor: clientCtx.GetFromAddress().String(),
+				Amount:    amount,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func NewRequestRedemptionCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "request-redemption [ssusd-amount] [output-denom]",
+		Short: "Request redemption of ssUSD into an approved reserve asset",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			coin, err := sdk.ParseCoinNormalized(args[0])
+			if err != nil {
+				return err
+			}
+			if coin.Denom != types.StablecoinDenom {
+				return fmt.Errorf("ssusd amount denom must be %s", types.StablecoinDenom)
+			}
+
+			msg := types.MsgRequestRedemption{
+				Requester:   clientCtx.GetFromAddress().String(),
+				SsusdAmount: coin.Amount.String(),
+				OutputDenom: args[1],
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func NewExecuteRedemptionCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "execute-redemption [redemption-id]",
+		Short: "Execute a pending redemption request",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			id, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgExecuteRedemption{
+				Executor:     clientCtx.GetFromAddress().String(),
+				RedemptionId: id,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func NewCancelRedemptionCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "cancel-redemption [redemption-id]",
+		Short: "Cancel a pending redemption request (authority only)",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			id, err := strconv.ParseUint(args[0], 10, 64)
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgCancelRedemption{
+				Authority:    clientCtx.GetFromAddress().String(),
+				RedemptionId: id,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func NewUpdateReserveParamsCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "update-reserve-params [params-json-file]",
+		Short: "Update reserve parameters from a JSON file (authority only)",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			bz, err := os.ReadFile(args[0])
+			if err != nil {
+				return err
+			}
+
+			var params types.ReserveParams
+			if err := json.Unmarshal(bz, &params); err != nil {
+				return err
+			}
+
+			msg := types.MsgUpdateReserveParams{
+				Authority: clientCtx.GetFromAddress().String(),
+				Params:    params,
+			}
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func NewRecordAttestationCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "record-attestation [attestation-json-file]",
+		Short: "Record an off-chain reserve attestation from a JSON file",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			bz, err := os.ReadFile(args[0])
+			if err != nil {
+				return err
+			}
+
+			var msg types.MsgRecordAttestation
+			if err := json.Unmarshal(bz, &msg); err != nil {
+				return err
+			}
+			if msg.Attester == "" {
+				msg.Attester = clientCtx.GetFromAddress().String()
+			}
+
+			if err := msg.ValidateBasic(); err != nil {
+				return err
+			}
+
+			return tx.GenerateOrBroadcastTxCLI(clientCtx, cmd.Flags(), &msg)
+		},
+	}
+
+	flags.AddTxFlagsToCmd(cmd)
+	return cmd
+}
+
+func NewSetApprovedAttesterCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "set-approved-attester [attester] [true|false]",
+		Short: "Add or remove an approved attester (authority only)",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientTxContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			approved, err := strconv.ParseBool(args[1])
+			if err != nil {
+				return err
+			}
+
+			msg := types.MsgSetApprovedAttester{
+				Authority: clientCtx.GetFromAddress().String(),
+				Attester:  args[0],
+				Approved:  approved,
 			}
 			if err := msg.ValidateBasic(); err != nil {
 				return err

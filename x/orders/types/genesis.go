@@ -3,6 +3,8 @@ package types
 import (
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	stablecointypes "github.com/stateset/core/x/stablecoin/types"
 )
 
 // Params defines the configurable parameters for the orders module.
@@ -34,15 +36,15 @@ func (*Params) ProtoMessage()    {}
 // DefaultParams returns the default parameters for the orders module.
 func DefaultParams() Params {
 	return Params{
-		DefaultOrderExpiration:    86400,      // 24 hours
-		DefaultEscrowExpiration:   604800,     // 7 days
-		DisputeWindow:             1209600,    // 14 days
-		MinOrderAmount:            sdk.NewCoin("ussusd", sdkmath.NewInt(100)),      // $0.0001
-		MaxOrderAmount:            sdk.NewCoin("ussusd", sdkmath.NewInt(1000000000000)), // $1M
-		DefaultFeeRateBps:         100,        // 1%
-		StablecoinDenom:           "ussusd",
+		DefaultOrderExpiration:    86400,                                                                       // 24 hours
+		DefaultEscrowExpiration:   604800,                                                                      // 7 days
+		DisputeWindow:             1209600,                                                                     // 14 days
+		MinOrderAmount:            sdk.NewCoin(stablecointypes.StablecoinDenom, sdkmath.NewInt(100)),           // $0.0001
+		MaxOrderAmount:            sdk.NewCoin(stablecointypes.StablecoinDenom, sdkmath.NewInt(1000000000000)), // $1M
+		DefaultFeeRateBps:         100,                                                                         // 1%
+		StablecoinDenom:           stablecointypes.StablecoinDenom,
 		AutoCompleteAfterDelivery: true,
-		AutoCompleteWindow:        259200,     // 3 days after delivery
+		AutoCompleteWindow:        259200, // 3 days after delivery
 	}
 }
 

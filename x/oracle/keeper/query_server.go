@@ -19,43 +19,8 @@ func NewQueryServerImpl(keeper Keeper) types.QueryServer {
 	return &queryServer{Keeper: keeper}
 }
 
-// Price returns the current price for a denom
-func (q queryServer) Price(req *types.QueryPriceRequest) (*types.QueryPriceResponse, error) {
-	// For oracle queries, we need to get context from somewhere
-	// Since this is a simplified implementation, we'll return an error
-	// In production, this would be called via gRPC with proper context
-	return nil, types.ErrPriceNotFound
-}
-
-// Prices returns all prices with pagination
-func (q queryServer) Prices(req *types.QueryPricesRequest) (*types.QueryPricesResponse, error) {
-	return nil, types.ErrPriceNotFound
-}
-
-// OracleConfig returns the oracle configuration for a denom
-func (q queryServer) OracleConfig(req *types.QueryOracleConfigRequest) (*types.QueryOracleConfigResponse, error) {
-	return nil, types.ErrInvalidDenom
-}
-
-// Provider returns an oracle provider by address
-func (q queryServer) Provider(req *types.QueryProviderRequest) (*types.QueryProviderResponse, error) {
-	return nil, types.ErrProviderNotFound
-}
-
-// Providers returns all oracle providers
-func (q queryServer) Providers(req *types.QueryProvidersRequest) (*types.QueryProvidersResponse, error) {
-	return nil, types.ErrProviderNotFound
-}
-
-// Params returns the module parameters
-func (q queryServer) Params(req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
-	return nil, nil
-}
-
-// Context-aware query implementations
-
-// PriceWithContext returns the current price for a denom
-func (q queryServer) PriceWithContext(goCtx context.Context, req *types.QueryPriceRequest) (*types.QueryPriceResponse, error) {
+// Price returns the current price for a denom.
+func (q queryServer) Price(goCtx context.Context, req *types.QueryPriceRequest) (*types.QueryPriceResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	price, found := q.Keeper.GetPrice(ctx, req.Denom)
@@ -68,8 +33,8 @@ func (q queryServer) PriceWithContext(goCtx context.Context, req *types.QueryPri
 	}, nil
 }
 
-// PricesWithContext returns all prices with pagination
-func (q queryServer) PricesWithContext(goCtx context.Context, req *types.QueryPricesRequest) (*types.QueryPricesResponse, error) {
+// Prices returns all prices with pagination.
+func (q queryServer) Prices(goCtx context.Context, req *types.QueryPricesRequest) (*types.QueryPricesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	params := q.Keeper.GetParams(ctx)
@@ -101,8 +66,8 @@ func (q queryServer) PricesWithContext(goCtx context.Context, req *types.QueryPr
 	}, nil
 }
 
-// OracleConfigWithContext returns the oracle configuration for a denom
-func (q queryServer) OracleConfigWithContext(goCtx context.Context, req *types.QueryOracleConfigRequest) (*types.QueryOracleConfigResponse, error) {
+// OracleConfig returns the oracle configuration for a denom.
+func (q queryServer) OracleConfig(goCtx context.Context, req *types.QueryOracleConfigRequest) (*types.QueryOracleConfigResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	config, found := q.Keeper.GetOracleConfig(ctx, req.Denom)
@@ -115,8 +80,8 @@ func (q queryServer) OracleConfigWithContext(goCtx context.Context, req *types.Q
 	}, nil
 }
 
-// ProviderWithContext returns an oracle provider by address
-func (q queryServer) ProviderWithContext(goCtx context.Context, req *types.QueryProviderRequest) (*types.QueryProviderResponse, error) {
+// Provider returns an oracle provider by address.
+func (q queryServer) Provider(goCtx context.Context, req *types.QueryProviderRequest) (*types.QueryProviderResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	provider, found := q.Keeper.GetProvider(ctx, req.Address)
@@ -129,8 +94,8 @@ func (q queryServer) ProviderWithContext(goCtx context.Context, req *types.Query
 	}, nil
 }
 
-// ProvidersWithContext returns all oracle providers
-func (q queryServer) ProvidersWithContext(goCtx context.Context, req *types.QueryProvidersRequest) (*types.QueryProvidersResponse, error) {
+// Providers returns all oracle providers.
+func (q queryServer) Providers(goCtx context.Context, req *types.QueryProvidersRequest) (*types.QueryProvidersResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	params := q.Keeper.GetParams(ctx)
@@ -162,8 +127,8 @@ func (q queryServer) ProvidersWithContext(goCtx context.Context, req *types.Quer
 	}, nil
 }
 
-// ParamsWithContext returns the module parameters
-func (q queryServer) ParamsWithContext(goCtx context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
+// Params returns the module parameters.
+func (q queryServer) Params(goCtx context.Context, req *types.QueryParamsRequest) (*types.QueryParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	params := q.Keeper.GetParams(ctx)

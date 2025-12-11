@@ -5,13 +5,13 @@ import (
 	"testing"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/log"
+	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
-	dbm "github.com/cosmos/cosmos-db"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -67,7 +67,7 @@ func TestUpdatePrice(t *testing.T) {
 
 	msg := oracletypes.NewMsgUpdatePrice(authority, "ustate", sdkmath.LegacyNewDec(12345))
 
-	_, err := msgServer.UpdatePrice(ctx, msg)
+	_, err := msgServer.UpdatePrice(sdk.WrapSDKContext(ctx), msg)
 	require.NoError(t, err)
 
 	price, found := k.GetPrice(ctx, "ustate")
@@ -86,7 +86,7 @@ func TestUpdatePriceUnauthorized(t *testing.T) {
 
 	msg := oracletypes.NewMsgUpdatePrice(other, "ustate", sdkmath.LegacyNewDec(10))
 
-	_, err := msgServer.UpdatePrice(ctx, msg)
+	_, err := msgServer.UpdatePrice(sdk.WrapSDKContext(ctx), msg)
 	require.Error(t, err)
 	require.ErrorIs(t, err, oracletypes.ErrUnauthorized)
 }
@@ -97,7 +97,7 @@ func TestUpdatePriceInvalidValue(t *testing.T) {
 
 	msg := oracletypes.NewMsgUpdatePrice(authority, "ustate", sdkmath.LegacyZeroDec())
 
-	_, err := msgServer.UpdatePrice(ctx, msg)
+	_, err := msgServer.UpdatePrice(sdk.WrapSDKContext(ctx), msg)
 	require.Error(t, err)
 	require.ErrorIs(t, err, oracletypes.ErrInvalidPrice)
 }

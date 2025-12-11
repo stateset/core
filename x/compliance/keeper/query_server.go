@@ -19,25 +19,8 @@ func NewQueryServerImpl(keeper Keeper) types.QueryServer {
 	return &queryServer{Keeper: keeper}
 }
 
-// Profile returns a compliance profile by address
-func (q queryServer) Profile(req *types.QueryProfileRequest) (*types.QueryProfileResponse, error) {
-	return nil, types.ErrProfileNotFound
-}
-
-// Profiles returns all profiles with pagination
-func (q queryServer) Profiles(req *types.QueryProfilesRequest) (*types.QueryProfilesResponse, error) {
-	return nil, types.ErrProfileNotFound
-}
-
-// ProfilesByStatus returns profiles filtered by status
-func (q queryServer) ProfilesByStatus(req *types.QueryProfilesByStatusRequest) (*types.QueryProfilesByStatusResponse, error) {
-	return nil, types.ErrProfileNotFound
-}
-
-// Context-aware query implementations
-
-// ProfileWithContext returns a compliance profile by address
-func (q queryServer) ProfileWithContext(goCtx context.Context, req *types.QueryProfileRequest) (*types.QueryProfileResponse, error) {
+// Profile returns a compliance profile by address.
+func (q queryServer) Profile(goCtx context.Context, req *types.QueryProfileRequest) (*types.QueryProfileResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	addr, err := sdk.AccAddressFromBech32(req.Address)
@@ -55,8 +38,8 @@ func (q queryServer) ProfileWithContext(goCtx context.Context, req *types.QueryP
 	}, nil
 }
 
-// ProfilesWithContext returns all profiles with pagination
-func (q queryServer) ProfilesWithContext(goCtx context.Context, req *types.QueryProfilesRequest) (*types.QueryProfilesResponse, error) {
+// Profiles returns all profiles with pagination.
+func (q queryServer) Profiles(goCtx context.Context, req *types.QueryProfilesRequest) (*types.QueryProfilesResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	maxLimit := uint64(100)
@@ -83,8 +66,8 @@ func (q queryServer) ProfilesWithContext(goCtx context.Context, req *types.Query
 	}, nil
 }
 
-// ProfilesByStatusWithContext returns profiles filtered by status
-func (q queryServer) ProfilesByStatusWithContext(goCtx context.Context, req *types.QueryProfilesByStatusRequest) (*types.QueryProfilesByStatusResponse, error) {
+// ProfilesByStatus returns profiles filtered by status.
+func (q queryServer) ProfilesByStatus(goCtx context.Context, req *types.QueryProfilesByStatusRequest) (*types.QueryProfilesByStatusResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	maxLimit := uint64(100)

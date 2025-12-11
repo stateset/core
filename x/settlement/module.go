@@ -14,6 +14,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"github.com/spf13/cobra"
 
+	"github.com/stateset/core/x/settlement/client/cli"
 	"github.com/stateset/core/x/settlement/keeper"
 	"github.com/stateset/core/x/settlement/types"
 )
@@ -64,12 +65,12 @@ func (AppModuleBasic) RegisterGRPCGatewayRoutes(clientCtx client.Context, mux *r
 
 // GetTxCmd returns the capability module's root tx command
 func (a AppModuleBasic) GetTxCmd() *cobra.Command {
-	return nil // CLI commands would go here
+	return cli.NewTxCmd()
 }
 
 // GetQueryCmd returns the capability module's root query command
 func (AppModuleBasic) GetQueryCmd() *cobra.Command {
-	return nil // CLI query commands would go here
+	return cli.NewQueryCmd()
 }
 
 // AppModule implements the AppModule interface
@@ -95,6 +96,7 @@ func (am AppModule) IsAppModule() {}
 // RegisterServices registers module services
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServerImpl(am.keeper))
 }
 
 // InitGenesis performs genesis initialization for the module

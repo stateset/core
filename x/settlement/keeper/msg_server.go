@@ -92,6 +92,11 @@ func (m msgServer) RefundEscrow(goCtx context.Context, msg *types.MsgRefundEscro
 func (m msgServer) CreateBatch(goCtx context.Context, msg *types.MsgCreateBatch) (*types.MsgCreateBatchResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	// Only module authority can create batches since this message can move funds for many senders.
+	if msg.Authority != m.Keeper.GetAuthority() {
+		return nil, types.ErrUnauthorized
+	}
+
 	batchId, settlementIds, err := m.Keeper.CreateBatch(ctx, msg.Merchant, msg.Senders, msg.Amounts, msg.References)
 	if err != nil {
 		return nil, err
@@ -179,6 +184,11 @@ func (m msgServer) ClaimChannel(goCtx context.Context, msg *types.MsgClaimChanne
 func (m msgServer) RegisterMerchant(goCtx context.Context, msg *types.MsgRegisterMerchant) (*types.MsgRegisterMerchantResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	// Only the merchant itself or module authority may register a merchant configuration.
+	if msg.Authority != msg.Merchant && msg.Authority != m.Keeper.GetAuthority() {
+		return nil, types.ErrUnauthorized
+	}
+
 	config := types.MerchantConfig{
 		Address:        msg.Merchant,
 		Name:           msg.Name,
@@ -202,6 +212,11 @@ func (m msgServer) RegisterMerchant(goCtx context.Context, msg *types.MsgRegiste
 // UpdateMerchant updates a merchant configuration
 func (m msgServer) UpdateMerchant(goCtx context.Context, msg *types.MsgUpdateMerchant) (*types.MsgUpdateMerchantResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	// Only the merchant itself or module authority may update merchant configuration.
+	if msg.Authority != msg.Merchant && msg.Authority != m.Keeper.GetAuthority() {
+		return nil, types.ErrUnauthorized
+	}
 
 	updates := make(map[string]interface{})
 

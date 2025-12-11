@@ -11,8 +11,8 @@ import (
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
 	"cosmossdk.io/store/types"
-	dbm "github.com/cosmos/cosmos-db"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -160,7 +160,7 @@ func TestMsgCreatePayment(t *testing.T) {
 	// leave compliance unblocked by default
 
 	msg := paymentstypes.NewMsgCreatePayment(payer.String(), payee.String(), sdk.NewInt64Coin("ustate", 250), "invoice-42")
-	resp, err := msgServer.CreatePayment(ctx, msg)
+	resp, err := msgServer.CreatePayment(sdk.WrapSDKContext(ctx), msg)
 	require.NoError(t, err)
 	require.Equal(t, uint64(1), resp.PaymentId)
 
@@ -184,7 +184,7 @@ func TestMsgCreatePaymentInsufficientBalance(t *testing.T) {
 	payee := newPaymentsAddress()
 
 	msg := paymentstypes.NewMsgCreatePayment(payer.String(), payee.String(), sdk.NewInt64Coin("ustate", 10), "insufficient")
-	_, err := msgServer.CreatePayment(ctx, msg)
+	_, err := msgServer.CreatePayment(sdk.WrapSDKContext(ctx), msg)
 	require.Error(t, err)
 	require.ErrorIs(t, err, paymentstypes.ErrInsufficientBalance)
 }
@@ -199,11 +199,11 @@ func TestMsgSettlePayment(t *testing.T) {
 	bank.SetBalance(payer, sdk.NewCoins(sdk.NewInt64Coin("ustate", 1_000)))
 
 	create := paymentstypes.NewMsgCreatePayment(payer.String(), payee.String(), sdk.NewInt64Coin("ustate", 300), "order-1")
-	resp, err := msgServer.CreatePayment(ctx, create)
+	resp, err := msgServer.CreatePayment(sdk.WrapSDKContext(ctx), create)
 	require.NoError(t, err)
 
 	settle := paymentstypes.NewMsgSettlePayment(payee.String(), resp.PaymentId)
-	_, err = msgServer.SettlePayment(ctx, settle)
+	_, err = msgServer.SettlePayment(sdk.WrapSDKContext(ctx), settle)
 	require.NoError(t, err)
 
 	stored, found := k.GetPayment(ctx, resp.PaymentId)
@@ -226,11 +226,11 @@ func TestMsgSettlePaymentWrongPayee(t *testing.T) {
 	bank.SetBalance(payer, sdk.NewCoins(sdk.NewInt64Coin("ustate", 400)))
 
 	create := paymentstypes.NewMsgCreatePayment(payer.String(), payee.String(), sdk.NewInt64Coin("ustate", 200), "order-2")
-	resp, err := msgServer.CreatePayment(ctx, create)
+	resp, err := msgServer.CreatePayment(sdk.WrapSDKContext(ctx), create)
 	require.NoError(t, err)
 
 	settle := paymentstypes.NewMsgSettlePayment(other.String(), resp.PaymentId)
-	_, err = msgServer.SettlePayment(ctx, settle)
+	_, err = msgServer.SettlePayment(sdk.WrapSDKContext(ctx), settle)
 	require.Error(t, err)
 	require.ErrorIs(t, err, paymentstypes.ErrNotAuthorized)
 
@@ -249,11 +249,11 @@ func TestMsgCancelPayment(t *testing.T) {
 	bank.SetBalance(payer, sdk.NewCoins(sdk.NewInt64Coin("ustate", 500)))
 
 	create := paymentstypes.NewMsgCreatePayment(payer.String(), payee.String(), sdk.NewInt64Coin("ustate", 200), "order-3")
-	resp, err := msgServer.CreatePayment(ctx, create)
+	resp, err := msgServer.CreatePayment(sdk.WrapSDKContext(ctx), create)
 	require.NoError(t, err)
 
 	cancel := paymentstypes.NewMsgCancelPayment(payer.String(), resp.PaymentId, "buyer request")
-	_, err = msgServer.CancelPayment(ctx, cancel)
+	_, err = msgServer.CancelPayment(sdk.WrapSDKContext(ctx), cancel)
 	require.NoError(t, err)
 
 	stored, found := k.GetPayment(ctx, resp.PaymentId)
@@ -276,7 +276,7 @@ func TestMsgCreatePaymentComplianceBlocked(t *testing.T) {
 	compliance.Block(payee)
 
 	msg := paymentstypes.NewMsgCreatePayment(payer.String(), payee.String(), sdk.NewInt64Coin("ustate", 50), "blocked")
-	_, err := msgServer.CreatePayment(ctx, msg)
+	_, err := msgServer.CreatePayment(sdk.WrapSDKContext(ctx), msg)
 	require.Error(t, err)
 }
 
@@ -290,12 +290,12 @@ func TestMsgSettlePaymentComplianceBlocked(t *testing.T) {
 	bank.SetBalance(payer, sdk.NewCoins(sdk.NewInt64Coin("ustate", 250)))
 
 	create := paymentstypes.NewMsgCreatePayment(payer.String(), payee.String(), sdk.NewInt64Coin("ustate", 100), "order-4")
-	resp, err := msgServer.CreatePayment(ctx, create)
+	resp, err := msgServer.CreatePayment(sdk.WrapSDKContext(ctx), create)
 	require.NoError(t, err)
 
 	compliance.Block(payee)
 
 	settle := paymentstypes.NewMsgSettlePayment(payee.String(), resp.PaymentId)
-	_, err = msgServer.SettlePayment(ctx, settle)
+	_, err = msgServer.SettlePayment(sdk.WrapSDKContext(ctx), settle)
 	require.Error(t, err)
 }

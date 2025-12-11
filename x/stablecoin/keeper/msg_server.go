@@ -301,13 +301,42 @@ func (m msgServer) RecordAttestation(goCtx context.Context, msg *types.MsgRecord
 	}
 
 	// Parse amounts
-	totalCash, _ := sdkmath.NewIntFromString(msg.TotalCash)
-	totalTBills, _ := sdkmath.NewIntFromString(msg.TotalTBills)
-	totalTNotes, _ := sdkmath.NewIntFromString(msg.TotalTNotes)
-	totalTBonds, _ := sdkmath.NewIntFromString(msg.TotalTBonds)
-	totalRepos, _ := sdkmath.NewIntFromString(msg.TotalRepos)
-	totalMMF, _ := sdkmath.NewIntFromString(msg.TotalMMF)
-	totalValue, _ := sdkmath.NewIntFromString(msg.TotalValue)
+	parseInt := func(raw string, field string) (sdkmath.Int, error) {
+		v, ok := sdkmath.NewIntFromString(raw)
+		if !ok {
+			return sdkmath.ZeroInt(), errorsmod.Wrapf(types.ErrInvalidReserve, "invalid %s amount", field)
+		}
+		return v, nil
+	}
+
+	totalCash, err := parseInt(msg.TotalCash, "total_cash")
+	if err != nil {
+		return nil, err
+	}
+	totalTBills, err := parseInt(msg.TotalTBills, "total_t_bills")
+	if err != nil {
+		return nil, err
+	}
+	totalTNotes, err := parseInt(msg.TotalTNotes, "total_t_notes")
+	if err != nil {
+		return nil, err
+	}
+	totalTBonds, err := parseInt(msg.TotalTBonds, "total_t_bonds")
+	if err != nil {
+		return nil, err
+	}
+	totalRepos, err := parseInt(msg.TotalRepos, "total_repos")
+	if err != nil {
+		return nil, err
+	}
+	totalMMF, err := parseInt(msg.TotalMMF, "total_mmf")
+	if err != nil {
+		return nil, err
+	}
+	totalValue, err := parseInt(msg.TotalValue, "total_value")
+	if err != nil {
+		return nil, err
+	}
 
 	// Parse report date
 	reportDate, err := parseDate(msg.ReportDate)

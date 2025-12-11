@@ -60,7 +60,7 @@ Each module can have its circuit breaker tripped independently.
 # Trip circuit for stablecoin module
 statesetd tx circuit trip-circuit stablecoin \
   --reason "Investigating anomaly" \
-  --disable-messages "/stateset.stablecoin.v1.MsgLiquidateVault" \
+  --disable-messages "/stateset.stablecoin.Msg/LiquidateVault" \
   --from authority
 
 # Reset circuit
@@ -97,7 +97,7 @@ Rate limits can be applied to specific message types:
   "max_requests": 10,
   "window_seconds": 60,
   "per_address": true,
-  "message_types": ["/stateset.stablecoin.v1.MsgMintStablecoin"]
+  "message_types": ["/stateset.stablecoin.Msg/MintStablecoin"]
 }
 ```
 

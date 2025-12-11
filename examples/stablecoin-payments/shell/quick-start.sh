@@ -15,6 +15,9 @@
 #
 # Usage: ./quick-start.sh
 # =============================================================================
+#
+# NOTE: Legacy quick start for deprecated `x/stablecoins` CLI. The canonical
+# module is `x/stablecoin`; commands below need migration.
 
 set -e
 

@@ -1,0 +1,167 @@
+syntax = "proto3";
+package stateset.stablecoin;
+
+option go_package = "github.com/stateset/core/x/stablecoin/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "stablecoin/stablecoin.proto";
+
+// Msg defines the stablecoin Msg service.
+service Msg {
+  // Vault-based CDPs
+  rpc CreateVault(MsgCreateVault) returns (MsgCreateVaultResponse);
+  rpc DepositCollateral(MsgDepositCollateral) returns (MsgDepositCollateralResponse);
+  rpc WithdrawCollateral(MsgWithdrawCollateral) returns (MsgWithdrawCollateralResponse);
+  rpc MintStablecoin(MsgMintStablecoin) returns (MsgMintStablecoinResponse);
+  rpc RepayStablecoin(MsgRepayStablecoin) returns (MsgRepayStablecoinResponse);
+  rpc LiquidateVault(MsgLiquidateVault) returns (MsgLiquidateVaultResponse);
+
+  // Reserve-backed ssUSD
+  rpc DepositReserve(MsgDepositReserve) returns (MsgDepositReserveResponse);
+  rpc RequestRedemption(MsgRequestRedemption) returns (MsgRequestRedemptionResponse);
+  rpc ExecuteRedemption(MsgExecuteRedemption) returns (MsgExecuteRedemptionResponse);
+  rpc CancelRedemption(MsgCancelRedemption) returns (MsgCancelRedemptionResponse);
+  rpc UpdateReserveParams(MsgUpdateReserveParams) returns (MsgUpdateReserveParamsResponse);
+  rpc RecordAttestation(MsgRecordAttestation) returns (MsgRecordAttestationResponse);
+  rpc SetApprovedAttester(MsgSetApprovedAttester) returns (MsgSetApprovedAttesterResponse);
+}
+
+message MsgCreateVault {
+  string owner = 1;
+  cosmos.base.v1beta1.Coin collateral = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin debt = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+
+message MsgCreateVaultResponse {
+  uint64 vault_id = 1;
+}
+
+message MsgDepositCollateral {
+  string owner = 1;
+  uint64 vault_id = 2;
+  cosmos.base.v1beta1.Coin collateral = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+
+message MsgDepositCollateralResponse {}
+
+message MsgWithdrawCollateral {
+  string owner = 1;
+  uint64 vault_id = 2;
+  cosmos.base.v1beta1.Coin collateral = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+
+message MsgWithdrawCollateralResponse {}
+
+message MsgMintStablecoin {
+  string owner = 1;
+  uint64 vault_id = 2;
+  cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+
+message MsgMintStablecoinResponse {}
+
+message MsgRepayStablecoin {
+  string owner = 1;
+  uint64 vault_id = 2;
+  cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+
+message MsgRepayStablecoinResponse {}
+
+message MsgLiquidateVault {
+  string liquidator = 1;
+  uint64 vault_id = 2;
+}
+
+message MsgLiquidateVaultResponse {}
+
+message MsgDepositReserve {
+  string depositor = 1;
+  cosmos.base.v1beta1.Coin amount = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+
+message MsgDepositReserveResponse {
+  uint64 deposit_id = 1;
+  string ssusd_minted = 2;
+}
+
+message MsgRequestRedemption {
+  string requester = 1;
+  string ssusd_amount = 2;
+  string output_denom = 3;
+}
+
+message MsgRequestRedemptionResponse {
+  uint64 redemption_id = 1;
+}
+
+message MsgExecuteRedemption {
+  string executor = 1;
+  uint64 redemption_id = 2;
+}
+
+message MsgExecuteRedemptionResponse {}
+
+message MsgCancelRedemption {
+  string authority = 1;
+  uint64 redemption_id = 2;
+}
+
+message MsgCancelRedemptionResponse {}
+
+message MsgUpdateReserveParams {
+  string authority = 1;
+  ReserveParams params = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgUpdateReserveParamsResponse {}
+
+message MsgRecordAttestation {
+  string attester = 1;
+  string total_cash = 2;
+  string total_tbills = 3;
+  string total_tnotes = 4;
+  string total_tbonds = 5;
+  string total_repos = 6;
+  string total_mmf = 7;
+  string total_value = 8;
+  string custodian_name = 9;
+  string audit_firm = 10;
+  string report_date = 11;
+  string hash = 12;
+}
+
+message MsgRecordAttestationResponse {
+  uint64 attestation_id = 1;
+}
+
+message MsgSetApprovedAttester {
+  string authority = 1;
+  string attester = 2;
+  bool approved = 3;
+}
+
+message MsgSetApprovedAttesterResponse {}
+

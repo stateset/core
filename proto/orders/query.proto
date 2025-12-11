@@ -3,116 +3,39 @@ package stateset.core.orders;
 
 option go_package = "github.com/stateset/core/x/orders/types";
 
-import "gogoproto/gogo.proto";
-import "google/api/annotations.proto";
-import "cosmos/base/query/v1beta1/pagination.proto";
 import "orders/orders.proto";
 
-// Query defines the gRPC querier service.
+// Query defines the gRPC querier service for orders.
 service Query {
-  // Order queries an order by ID
-  rpc Order(QueryOrderRequest) returns (QueryOrderResponse) {
-    option (google.api.http).get = "/stateset/orders/v1/order/{id}";
-  }
-
-  // Orders queries all orders with optional pagination
-  rpc Orders(QueryOrdersRequest) returns (QueryOrdersResponse) {
-    option (google.api.http).get = "/stateset/orders/v1/orders";
-  }
-
-  // OrdersByCustomer queries orders by customer address
-  rpc OrdersByCustomer(QueryOrdersByCustomerRequest) returns (QueryOrdersByCustomerResponse) {
-    option (google.api.http).get = "/stateset/orders/v1/orders/customer/{customer}";
-  }
-
-  // OrdersByMerchant queries orders by merchant address
-  rpc OrdersByMerchant(QueryOrdersByMerchantRequest) returns (QueryOrdersByMerchantResponse) {
-    option (google.api.http).get = "/stateset/orders/v1/orders/merchant/{merchant}";
-  }
-
-  // OrdersByStatus queries orders by status
-  rpc OrdersByStatus(QueryOrdersByStatusRequest) returns (QueryOrdersByStatusResponse) {
-    option (google.api.http).get = "/stateset/orders/v1/orders/status/{status}";
-  }
-
-  // OrderStats queries order statistics
-  rpc OrderStats(QueryOrderStatsRequest) returns (QueryOrderStatsResponse) {
-    option (google.api.http).get = "/stateset/orders/v1/stats";
-  }
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse);
+  rpc Order(QueryOrderRequest) returns (QueryOrderResponse);
+  rpc Orders(QueryOrdersRequest) returns (QueryOrdersResponse);
 }
 
-// QueryOrderRequest is the request type for the Query/Order RPC method
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1;
+}
+
 message QueryOrderRequest {
-  string id = 1;
+  uint64 id = 1;
 }
 
-// QueryOrderResponse is the response type for the Query/Order RPC method
 message QueryOrderResponse {
   Order order = 1;
 }
 
-// QueryOrdersRequest is the request type for the Query/Orders RPC method
 message QueryOrdersRequest {
-  cosmos.base.query.v1beta1.PageRequest pagination = 1;
+  string customer = 1;
+  string merchant = 2;
+  string status = 3;
+  uint64 offset = 4;
+  uint64 limit = 5;
 }
 
-// QueryOrdersResponse is the response type for the Query/Orders RPC method
 message QueryOrdersResponse {
   repeated Order orders = 1;
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
+  uint64 total = 2;
 }
 
-// QueryOrdersByCustomerRequest is the request type for the Query/OrdersByCustomer RPC method
-message QueryOrdersByCustomerRequest {
-  string customer = 1;
-  cosmos.base.query.v1beta1.PageRequest pagination = 2;
-}
-
-// QueryOrdersByCustomerResponse is the response type for the Query/OrdersByCustomer RPC method
-message QueryOrdersByCustomerResponse {
-  repeated Order orders = 1;
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-// QueryOrdersByMerchantRequest is the request type for the Query/OrdersByMerchant RPC method
-message QueryOrdersByMerchantRequest {
-  string merchant = 1;
-  cosmos.base.query.v1beta1.PageRequest pagination = 2;
-}
-
-// QueryOrdersByMerchantResponse is the response type for the Query/OrdersByMerchant RPC method
-message QueryOrdersByMerchantResponse {
-  repeated Order orders = 1;
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-// QueryOrdersByStatusRequest is the request type for the Query/OrdersByStatus RPC method
-message QueryOrdersByStatusRequest {
-  string status = 1;
-  cosmos.base.query.v1beta1.PageRequest pagination = 2;
-}
-
-// QueryOrdersByStatusResponse is the response type for the Query/OrdersByStatus RPC method
-message QueryOrdersByStatusResponse {
-  repeated Order orders = 1;
-  cosmos.base.query.v1beta1.PageResponse pagination = 2;
-}
-
-// QueryOrderStatsRequest is the request type for the Query/OrderStats RPC method
-message QueryOrderStatsRequest {
-  string time_range = 1; // day, week, month, year
-  string merchant = 2; // optional filter by merchant
-}
-
-// QueryOrderStatsResponse is the response type for the Query/OrderStats RPC method
-message QueryOrderStatsResponse {
-  uint64 total_orders = 1;
-  uint64 pending_orders = 2;
-  uint64 confirmed_orders = 3;
-  uint64 shipped_orders = 4;
-  uint64 delivered_orders = 5;
-  uint64 cancelled_orders = 6;
-  uint64 refunded_orders = 7;
-  string total_revenue = 8;
-  string average_order_value = 9;
-}

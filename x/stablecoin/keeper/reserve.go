@@ -54,10 +54,11 @@ func (k Keeper) GetReserve(ctx sdk.Context) types.Reserve {
 	store := ctx.KVStore(k.storeKey)
 	if !store.Has(types.ReserveKey) {
 		return types.Reserve{
-			TotalDeposited: sdk.NewCoins(),
-			TotalValue:     sdkmath.ZeroInt(),
-			TotalMinted:    sdkmath.ZeroInt(),
-			LastUpdated:    ctx.BlockHeight(),
+			TotalDeposited:    sdk.NewCoins(),
+			TotalValue:        sdkmath.ZeroInt(),
+			TotalMinted:       sdkmath.ZeroInt(),
+			LastUpdatedHeight: ctx.BlockHeight(),
+			LastUpdatedTime:   ctx.BlockTime(),
 		}
 	}
 	var reserve types.Reserve
@@ -69,7 +70,8 @@ func (k Keeper) GetReserve(ctx sdk.Context) types.Reserve {
 // SetReserve updates the reserve state
 func (k Keeper) SetReserve(ctx sdk.Context, reserve types.Reserve) {
 	reserve.TotalMinted = k.getStablecoinSupply(ctx)
-	reserve.LastUpdated = ctx.BlockHeight()
+	reserve.LastUpdatedHeight = ctx.BlockHeight()
+	reserve.LastUpdatedTime = ctx.BlockTime()
 	store := ctx.KVStore(k.storeKey)
 	store.Set(types.ReserveKey, types.ModuleCdc.MustMarshalJSON(&reserve))
 }
@@ -91,8 +93,13 @@ func (k Keeper) UpdateReserveValue(ctx sdk.Context) error {
 		// Get price from oracle
 		price, err := k.oracleKeeper.GetPriceDec(wrappedCtx, ttConfig.OracleDenom)
 		if err != nil {
-			// Use fallback price of 1 USD for stablecoins
-			price = sdkmath.LegacyOneDec()
+			// Use fallback price of 1 USD only for cash-equivalent reserves.
+			if ttConfig.UnderlyingType == types.ReserveAssetCash {
+				price = sdkmath.LegacyOneDec()
+			} else {
+				// Skip assets without a reliable price to avoid overstating reserves.
+				continue
+			}
 		}
 
 		// Calculate value with haircut
@@ -197,8 +204,12 @@ func (k Keeper) DepositReserve(ctx sdk.Context, depositor sdk.AccAddress, amount
 	// Get price from oracle
 	price, err := k.oracleKeeper.GetPriceDec(wrappedCtx, ttConfig.OracleDenom)
 	if err != nil {
-		// Default to 1 USD for stablecoins like USDC
-		price = sdkmath.LegacyOneDec()
+		// Only allow a 1 USD fallback for cash-equivalent reserves.
+		if ttConfig.UnderlyingType == types.ReserveAssetCash {
+			price = sdkmath.LegacyOneDec()
+		} else {
+			return 0, sdkmath.ZeroInt(), errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
+		}
 	}
 
 	// Calculate USD value (with haircut)
@@ -299,7 +310,11 @@ func (k Keeper) checkAllocationLimit(ctx sdk.Context, amount sdk.Coin, ttConfig 
 	wrappedCtx := sdk.WrapSDKContext(ctx)
 	price, err := k.oracleKeeper.GetPriceDec(wrappedCtx, ttConfig.OracleDenom)
 	if err != nil {
-		price = sdkmath.LegacyOneDec()
+		if ttConfig.UnderlyingType == types.ReserveAssetCash {
+			price = sdkmath.LegacyOneDec()
+		} else {
+			return errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
+		}
 	}
 
 	newAllocationValue := price.MulInt(newAllocation).TruncateInt()
@@ -410,7 +425,11 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 	// Get output price
 	price, err := k.oracleKeeper.GetPriceDec(wrappedCtx, ttConfig.OracleDenom)
 	if err != nil {
-		price = sdkmath.LegacyOneDec()
+		if ttConfig.UnderlyingType == types.ReserveAssetCash {
+			price = sdkmath.LegacyOneDec()
+		} else {
+			return 0, errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
+		}
 	}
 
 	// Calculate output tokens needed
@@ -446,19 +465,15 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 		Status:          types.RedeemStatusPending,
 	}
 
-	// If no delay, execute immediately
-	if params.RedemptionDelay == 0 {
-		return k.executeRedemption(ctx, &request, outputAmount)
-	}
-
+	// Store request and bump ID regardless of delay so IDs/statistics remain consistent.
 	k.setRedemptionRequest(ctx, request)
 	k.setNextRedemptionID(ctx, redemptionID+1)
 
-	// Update daily stats
+	// Update daily stats regardless of delay (requests are counted when made).
 	dailyStats.TotalRedeemed = dailyStats.TotalRedeemed.Add(ssusdAmount)
 	k.SetDailyMintStats(ctx, dailyStats)
 
-	// Emit event
+	// Emit requested event regardless of delay.
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(
 			types.EventTypeRedemptionRequested,
@@ -468,6 +483,12 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 			sdk.NewAttribute(types.AttributeKeyReserveAsset, outputDenom),
 		),
 	)
+
+	// If no delay, execute immediately after storing.
+	if params.RedemptionDelay == 0 {
+		_, err := k.executeRedemption(ctx, &request, outputAmount)
+		return redemptionID, err
+	}
 
 	return redemptionID, nil
 }
@@ -533,9 +554,23 @@ func (k Keeper) ExecutePendingRedemption(ctx sdk.Context, redemptionID uint64) e
 
 	// Calculate output amount
 	params := k.GetReserveParams(ctx)
-	ttConfig, _ := params.GetTokenizedTreasury(request.OutputDenom)
+	ttConfig, found := params.GetTokenizedTreasury(request.OutputDenom)
+	if !found || !ttConfig.Active {
+		return errorsmod.Wrapf(types.ErrUnsupportedReserveAsset, "output denom %s not approved", request.OutputDenom)
+	}
 
 	wrappedCtx := sdk.WrapSDKContext(ctx)
+	// Re-check compliance if required.
+	if params.RequireKYC {
+		requesterAddr, err := sdk.AccAddressFromBech32(request.Requester)
+		if err != nil {
+			return errorsmod.Wrap(types.ErrInvalidReserve, "invalid requester address")
+		}
+		if err := k.complianceKeeper.AssertCompliant(wrappedCtx, requesterAddr); err != nil {
+			return errorsmod.Wrap(types.ErrKYCRequired, err.Error())
+		}
+	}
+
 	price, err := k.oracleKeeper.GetPriceDec(wrappedCtx, ttConfig.OracleDenom)
 	if err != nil {
 		price = sdkmath.LegacyOneDec()
@@ -544,6 +579,14 @@ func (k Keeper) ExecutePendingRedemption(ctx sdk.Context, redemptionID uint64) e
 	feeMultiplier := sdkmath.LegacyNewDec(10000 - int64(params.RedeemFeeBps)).Quo(sdkmath.LegacyNewDec(10000))
 	ssusdAfterFee := feeMultiplier.MulInt(request.SsusdAmount).TruncateInt()
 	outputAmount := sdkmath.LegacyNewDecFromInt(ssusdAfterFee).Quo(price).TruncateInt()
+
+	// Ensure reserves still have sufficient output denom at execution time.
+	reserve := k.GetReserve(ctx)
+	outputAvailable := reserve.TotalDeposited.AmountOf(request.OutputDenom)
+	if outputAmount.GT(outputAvailable) {
+		return errorsmod.Wrapf(types.ErrInsufficientReserves,
+			"requested %s %s but only %s available", outputAmount, request.OutputDenom, outputAvailable)
+	}
 
 	_, err = k.executeRedemption(ctx, &request, outputAmount)
 	return err
@@ -558,6 +601,11 @@ func (k Keeper) CancelRedemption(ctx sdk.Context, authority string, redemptionID
 
 	if request.Status != types.RedeemStatusPending {
 		return errorsmod.Wrapf(types.ErrRedemptionNotFound, "redemption %d is not pending", redemptionID)
+	}
+
+	// Verify authority
+	if authority != k.GetAuthority() {
+		return errorsmod.Wrapf(types.ErrUnauthorized, "invalid authority: expected %s, got %s", k.GetAuthority(), authority)
 	}
 
 	// Refund ssUSD to requester
@@ -744,12 +792,17 @@ func (k Keeper) GetTotalReserves(ctx sdk.Context) types.TotalReserves {
 	// In production, this should query the bank module's total supply
 	totalSupply := reserve.TotalMinted
 
+	lastOnChainUpdate := reserve.LastUpdatedTime
+	if lastOnChainUpdate.IsZero() {
+		lastOnChainUpdate = ctx.BlockTime()
+	}
+
 	totalReserves := types.TotalReserves{
 		OnChainValue:       reserve.TotalValue,
 		OffChainValue:      offChainValue,
 		TotalValue:         totalValue,
 		TotalSupply:        totalSupply,
-		LastOnChainUpdate:  time.Unix(0, 0).Add(time.Duration(reserve.LastUpdated) * time.Second),
+		LastOnChainUpdate:  lastOnChainUpdate,
 		LastOffChainUpdate: lastOffChainUpdate,
 	}
 	totalReserves.ReserveRatioBps = totalReserves.CalculateReserveRatio()

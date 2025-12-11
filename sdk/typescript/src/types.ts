@@ -29,15 +29,8 @@ export interface Vault {
   owner: string;
   collateral: Coin;
   debt: Coin;
-  createdAt: Date;
-  lastUpdated: Date;
-}
-
-export interface VaultStats {
-  totalVaults: number;
-  totalCollateral: Coin;
-  totalDebt: Coin;
-  averageCollateralRatio: number;
+  collateralDenom: string;
+  lastAccrued: number;
 }
 
 export interface CreateVaultParams {

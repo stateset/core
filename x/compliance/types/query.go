@@ -1,13 +1,12 @@
 package types
 
-// QueryServer defines the gRPC query server interface for the compliance module
+import "context"
+
+// QueryServer defines the gRPC query server interface for the compliance module.
 type QueryServer interface {
-	// Profile returns a compliance profile by address
-	Profile(*QueryProfileRequest) (*QueryProfileResponse, error)
-	// Profiles returns all profiles with pagination
-	Profiles(*QueryProfilesRequest) (*QueryProfilesResponse, error)
-	// ProfilesByStatus returns profiles filtered by status
-	ProfilesByStatus(*QueryProfilesByStatusRequest) (*QueryProfilesByStatusResponse, error)
+	Profile(context.Context, *QueryProfileRequest) (*QueryProfileResponse, error)
+	Profiles(context.Context, *QueryProfilesRequest) (*QueryProfilesResponse, error)
+	ProfilesByStatus(context.Context, *QueryProfilesByStatusRequest) (*QueryProfilesByStatusResponse, error)
 }
 
 // QueryProfileRequest is the request for a single profile

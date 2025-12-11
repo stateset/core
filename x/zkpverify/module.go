@@ -87,11 +87,8 @@ func NewAppModule(k keeper.Keeper) AppModule {
 
 // RegisterServices registers module services
 func (am AppModule) RegisterServices(cfg module.Configurator) {
-	// Register the MsgServer and QueryServer implementations
-	// Note: In production, you would use protobuf-generated registration functions
-	// For now, we use the configurator directly
-	_ = cfg.MsgServer()
-	_ = cfg.QueryServer()
+	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
+	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServerImpl(am.keeper))
 }
 
 // InitGenesis initializes the module's genesis state

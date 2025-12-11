@@ -1,66 +1,78 @@
-# Stablecoin Module
+# Stablecoin Module (`x/stablecoin`)
 
-The Stablecoin module manages the native stablecoin (ssUSD) for the Stateset blockchain, including vault-based collateral management.
+The Stablecoin module manages the native stablecoin `ssUSD` on Stateset. It supports two minting paths:
 
-## Overview
-
-The stablecoin module handles:
-- **Vault Management**: Create and manage collateral vaults
-- **Collateral Operations**: Deposit and withdraw collateral
-- **Minting/Burning**: Mint and burn stablecoins
-- **Reserve Management**: Track collateralization ratios
+1. **Vault-based CDPs**: Users lock approved collateral (e.g., `stst`) in personal vaults to mint `ssusd`.
+2. **Reserve-backed issuance**: Users deposit approved tokenized US Treasury assets (e.g., `usdy`, `stbt`, `ousg`) to mint `ssusd` 1:1 and redeem back into those assets.
 
 ## Features
 
-### Vault-Based Collateral
+### Vault-based collateral
 - Individual vaults per user
-- Collateralized debt positions
-- Over-collateralization requirements
+- Over-collateralized debt positions
+- Oracle-valued collateral with automatic liquidation
 
-### Stablecoin Operations
-- Mint ssUSD against collateral
-- Burn ssUSD to reduce debt
-- Automatic reserve ratio tracking
-
-### Oracle Integration
-- Real-time collateral valuation
-- Price-based liquidation triggers
+### Reserve-backed stablecoin
+- 100%+ reserve ratio enforced via `ReserveParams`
+- Minting from tokenized treasuries with haircuts and allocation limits
+- Redemption queue with optional delay, KYC gating, and daily limits
+- Off-chain attestations folded into total backing
 
 ## Messages
 
-| Message | Description |
-|---------|-------------|
-| `MsgCreateVault` | Create new collateral vault |
-| `MsgDeposit` | Add collateral to vault |
-| `MsgWithdraw` | Remove collateral from vault |
-| `MsgMint` | Mint stablecoins |
-| `MsgBurn` | Burn stablecoins |
-| `MsgLiquidate` | Liquidate undercollateralized vault |
+| Message | Purpose |
+|---------|---------|
+| `MsgCreateVault` | Create a new collateral vault |
+| `MsgDepositCollateral` | Add collateral to a vault |
+| `MsgWithdrawCollateral` | Withdraw collateral from a vault |
+| `MsgMintStablecoin` | Mint `ssusd` against vault collateral |
+| `MsgRepayStablecoin` | Repay vault debt with `ssusd` |
+| `MsgLiquidateVault` | Liquidate an unhealthy vault |
+| `MsgDepositReserve` | Deposit approved tokenized treasuries to mint `ssusd` |
+| `MsgRequestRedemption` | Request redemption of `ssusd` into an approved reserve asset |
+| `MsgExecuteRedemption` | Execute a pending redemption (authority or auto) |
+| `MsgCancelRedemption` | Cancel a pending redemption (authority only) |
+| `MsgUpdateReserveParams` | Update reserve policy (governance) |
+| `MsgRecordAttestation` | Record off-chain reserve attestation (approved attester) |
+| `MsgSetApprovedAttester` | Add/remove approved attesters (authority only) |
 
 ## Parameters
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `min_collateral_ratio` | 150% | Minimum collateralization |
-| `liquidation_ratio` | 120% | Liquidation trigger ratio |
-| `stability_fee` | 2% | Annual stability fee |
-| `liquidation_penalty` | 13% | Liquidation penalty |
+### Vault params (`Params`)
+- `collateral_params`: per-denom risk config (`liquidation_ratio`, `stability_fee`, `debt_limit`, `active`)
+
+### Reserve params (`ReserveParams`)
+- Reserve ratio targets and daily mint/redeem limits
+- Mint/redeem fees, minimum amounts, optional redemption delay
+- Approved `tokenized_treasuries` list (haircuts, allocation caps, oracle denom)
+- `require_kyc`, `mint_paused`, `redeem_paused`
 
 ## State
 
-| Key | Value |
-|-----|-------|
+| Key Prefix | Value |
+|------------|-------|
 | `0x01{id}` | Vault |
-| `0x02` | NextVaultID |
-| `0x03` | TotalSupply |
-| `0x04` | Params |
+| `0x02` | Vault `Params` |
+| `0x03` | Next vault ID |
+| `0x10` | `ReserveParams` |
+| `0x11` | `Reserve` |
+| `0x12{id}` | `ReserveDeposit` |
+| `0x13{id}` | `RedemptionRequest` |
+| `0x14{date}` | `DailyMintStats` |
+| `0x15{id}` | `OffChainReserveAttestation` |
+| `0x16` | Next deposit ID |
+| `0x17` | Next redemption ID |
+| `0x18` | Next attestation ID |
+| `0x19{addr}` | Approved attester flag |
 
 ## Events
 
-| Event | Attributes |
-|-------|------------|
-| `vault_created` | id, owner |
-| `collateral_deposited` | vault_id, amount |
-| `stablecoin_minted` | vault_id, amount |
-| `stablecoin_burned` | vault_id, amount |
-| `vault_liquidated` | vault_id, debt, penalty |
+**Vault events**
+- `vault_created`, `collateral_deposited`, `collateral_withdrawn`
+- `stablecoin_minted`, `stablecoin_repaid`, `vault_liquidated`
+
+**Reserve events**
+- `reserve_deposit`, `reserve_mint`
+- `redemption_requested`, `redemption_executed`, `redemption_cancelled`
+- `reserve_attestation`, `reserve_params_updated`
+

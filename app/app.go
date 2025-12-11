@@ -101,6 +101,9 @@ import (
 	oracle "github.com/stateset/core/x/oracle"
 	oraclekeeper "github.com/stateset/core/x/oracle/keeper"
 	oracletypes "github.com/stateset/core/x/oracle/types"
+	orders "github.com/stateset/core/x/orders"
+	orderskeeper "github.com/stateset/core/x/orders/keeper"
+	orderstypes "github.com/stateset/core/x/orders/types"
 	payments "github.com/stateset/core/x/payments"
 	paymentskeeper "github.com/stateset/core/x/payments/keeper"
 	paymentstypes "github.com/stateset/core/x/payments/types"
@@ -202,6 +205,7 @@ var (
 		govtypes.ModuleName:               {authtypes.Burner},
 		ibctransfertypes.ModuleName:       {authtypes.Minter, authtypes.Burner},
 		stablecointypes.ModuleAccountName: {authtypes.Minter, authtypes.Burner},
+		orderstypes.ModuleAccountName:     nil,
 		paymentstypes.ModuleAccountName:   nil,
 		settlementtypes.ModuleAccountName: nil,
 		// this line is used by starport scaffolding # stargate/app/maccPerms
@@ -253,6 +257,7 @@ func initModuleBasics() {
 		oracle.AppModuleBasic{},
 		compliance.AppModuleBasic{},
 		treasury.AppModuleBasic{},
+		orders.AppModuleBasic{},
 		payments.AppModuleBasic{},
 		stablecoin.AppModuleBasic{},
 		settlement.AppModuleBasic{},
@@ -301,6 +306,7 @@ type App struct {
 	OracleKeeper          oraclekeeper.Keeper
 	ComplianceKeeper      compliancekeeper.Keeper
 	TreasuryKeeper        treasurykeeper.Keeper
+	OrdersKeeper          orderskeeper.Keeper
 	PaymentsKeeper        paymentskeeper.Keeper
 	StablecoinKeeper      stablecoinkeeper.Keeper
 	SettlementKeeper      settlementkeeper.Keeper
@@ -347,7 +353,7 @@ func New(
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
 		govtypes.StoreKey, paramstypes.StoreKey, ibcexported.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey, consensusparamtypes.StoreKey,
-		oracletypes.StoreKey, compliancetypes.StoreKey, treasurytypes.StoreKey, paymentstypes.StoreKey, stablecointypes.StoreKey, settlementtypes.StoreKey, feemarkettypes.StoreKey,
+		oracletypes.StoreKey, compliancetypes.StoreKey, treasurytypes.StoreKey, orderstypes.StoreKey, paymentstypes.StoreKey, stablecointypes.StoreKey, settlementtypes.StoreKey, feemarkettypes.StoreKey,
 		circuittypes.StoreKey, metricstypes.StoreKey, zkpverifytypes.StoreKey,
 		// this line is used by starport scaffolding # stargate/app/storeKey
 		// wasm.StoreKey, // Temporarily commented out due to dependency conflicts
@@ -546,6 +552,16 @@ func New(
 		oracleAuthority,
 	)
 
+	app.OrdersKeeper = orderskeeper.NewKeeper(
+		appCodec,
+		keys[orderstypes.StoreKey],
+		oracleAuthority,
+		app.BankKeeper,
+		app.ComplianceKeeper,
+		app.SettlementKeeper,
+		app.AccountKeeper,
+	)
+
 	app.FeeMarketKeeper = feemarketkeeper.NewKeeper(
 		appCodec,
 		keys[feemarkettypes.StoreKey],
@@ -653,6 +669,7 @@ func New(
 		oracle.NewAppModule(app.OracleKeeper),
 		compliance.NewAppModule(app.ComplianceKeeper),
 		treasury.NewAppModule(app.TreasuryKeeper),
+		orders.NewAppModule(app.OrdersKeeper),
 		payments.NewAppModule(app.PaymentsKeeper),
 		stablecoin.NewAppModule(app.StablecoinKeeper),
 		settlement.NewAppModule(app.SettlementKeeper),
@@ -676,7 +693,7 @@ func New(
 	)
 
 	app.mm.SetOrderEndBlockers(crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, consensusparamtypes.ModuleName,
-		feemarkettypes.ModuleName, oracletypes.ModuleName, compliancetypes.ModuleName, treasurytypes.ModuleName, paymentstypes.ModuleName, stablecointypes.ModuleName, settlementtypes.ModuleName,
+		feemarkettypes.ModuleName, oracletypes.ModuleName, compliancetypes.ModuleName, treasurytypes.ModuleName, orderstypes.ModuleName, paymentstypes.ModuleName, stablecointypes.ModuleName, settlementtypes.ModuleName,
 		zkpverifytypes.ModuleName,                        // ZKP verification at end of block
 		circuittypes.ModuleName, metricstypes.ModuleName, // Metrics checks alerts at end of block
 	)
@@ -705,6 +722,7 @@ func New(
 		oracletypes.ModuleName,
 		compliancetypes.ModuleName,
 		treasurytypes.ModuleName,
+		orderstypes.ModuleName,
 		paymentstypes.ModuleName,
 		stablecointypes.ModuleName,
 		settlementtypes.ModuleName,
