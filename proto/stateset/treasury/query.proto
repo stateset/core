@@ -1,0 +1,80 @@
+syntax = "proto3";
+package stateset.treasury;
+
+option go_package = "github.com/stateset/core/x/treasury/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "stateset/treasury/treasury.proto";
+
+// Query defines the treasury gRPC query service.
+service Query {
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse);
+  rpc SpendProposal(QuerySpendProposalRequest) returns (QuerySpendProposalResponse);
+  rpc SpendProposals(QuerySpendProposalsRequest) returns (QuerySpendProposalsResponse);
+  rpc Budget(QueryBudgetRequest) returns (QueryBudgetResponse);
+  rpc Budgets(QueryBudgetsRequest) returns (QueryBudgetsResponse);
+  rpc TreasuryBalance(QueryTreasuryBalanceRequest) returns (QueryTreasuryBalanceResponse);
+  rpc LatestSnapshot(QueryLatestSnapshotRequest) returns (QueryLatestSnapshotResponse);
+  rpc Allocation(QueryAllocationRequest) returns (QueryAllocationResponse);
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  TreasuryParams params = 1 [(gogoproto.nullable) = false];
+}
+
+message QuerySpendProposalRequest {
+  uint64 proposal_id = 1;
+}
+
+message QuerySpendProposalResponse {
+  SpendProposal proposal = 1 [(gogoproto.nullable) = false];
+}
+
+message QuerySpendProposalsRequest {
+  string status = 1;
+}
+
+message QuerySpendProposalsResponse {
+  repeated SpendProposal proposals = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryBudgetRequest {
+  string category = 1;
+}
+
+message QueryBudgetResponse {
+  Budget budget = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryBudgetsRequest {}
+
+message QueryBudgetsResponse {
+  repeated Budget budgets = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryTreasuryBalanceRequest {}
+
+message QueryTreasuryBalanceResponse {
+  repeated cosmos.base.v1beta1.Coin balance = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+}
+
+message QueryLatestSnapshotRequest {}
+
+message QueryLatestSnapshotResponse {
+  ReserveSnapshot snapshot = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAllocationRequest {
+  string recipient = 1;
+}
+
+message QueryAllocationResponse {
+  Allocation allocation = 1 [(gogoproto.nullable) = false];
+}
+

@@ -405,7 +405,7 @@ func TestLimitReset_MonthlyReset(t *testing.T) {
 }
 
 // TestSuspendProfile tests profile suspension
-func TestSuspendProfile(t *testing.T) {
+func TestSuspendProfile_EdgeCases(t *testing.T) {
 	k, ctx := setupBasicKeeper(t)
 
 	addr := newBasicAddress()
@@ -445,7 +445,7 @@ func TestSuspendProfile_NotFound(t *testing.T) {
 }
 
 // TestReactivateProfile tests profile reactivation
-func TestReactivateProfile(t *testing.T) {
+func TestReactivateProfile_EdgeCases(t *testing.T) {
 	k, ctx := setupBasicKeeper(t)
 
 	addr := newBasicAddress()
@@ -493,7 +493,7 @@ func TestReactivateProfile_NotSuspended(t *testing.T) {
 }
 
 // TestUpdateKYCLevel tests KYC level updates
-func TestUpdateKYCLevel(t *testing.T) {
+func TestUpdateKYCLevel_EdgeCases(t *testing.T) {
 	k, ctx := setupBasicKeeper(t)
 
 	addr := newBasicAddress()
@@ -560,7 +560,7 @@ func TestUpdateKYCLevel_ProfileNotFound(t *testing.T) {
 }
 
 // TestIterateProfiles tests profile iteration
-func TestIterateProfiles(t *testing.T) {
+func TestIterateProfiles_EdgeCases(t *testing.T) {
 	k, ctx := setupBasicKeeper(t)
 
 	wctx := sdk.WrapSDKContext(ctx)
@@ -615,7 +615,7 @@ func TestIterateProfiles_EarlyStop(t *testing.T) {
 }
 
 // TestGenesisExportImport tests genesis state
-func TestGenesisExportImport(t *testing.T) {
+func TestGenesisExportImport_EdgeCases(t *testing.T) {
 	k, ctx := setupBasicKeeper(t)
 
 	wctx := sdk.WrapSDKContext(ctx)

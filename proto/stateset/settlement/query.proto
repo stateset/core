@@ -1,0 +1,123 @@
+syntax = "proto3";
+package stateset.settlement;
+
+option go_package = "github.com/stateset/core/x/settlement/types";
+
+import "gogoproto/gogo.proto";
+import "stateset/settlement/settlement.proto";
+
+// Query defines the settlement gRPC query service.
+service Query {
+  rpc Settlement(QuerySettlementRequest) returns (QuerySettlementResponse);
+  rpc Settlements(QuerySettlementsRequest) returns (QuerySettlementsResponse);
+  rpc SettlementsByStatus(QuerySettlementsByStatusRequest) returns (QuerySettlementsByStatusResponse);
+  rpc Batch(QueryBatchRequest) returns (QueryBatchResponse);
+  rpc Batches(QueryBatchesRequest) returns (QueryBatchesResponse);
+  rpc Channel(QueryChannelRequest) returns (QueryChannelResponse);
+  rpc Channels(QueryChannelsRequest) returns (QueryChannelsResponse);
+  rpc ChannelsByParty(QueryChannelsByPartyRequest) returns (QueryChannelsByPartyResponse);
+  rpc Merchant(QueryMerchantRequest) returns (QueryMerchantResponse);
+  rpc Merchants(QueryMerchantsRequest) returns (QueryMerchantsResponse);
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse);
+}
+
+message QuerySettlementRequest {
+  uint64 id = 1;
+}
+
+message QuerySettlementResponse {
+  Settlement settlement = 1 [(gogoproto.nullable) = false];
+}
+
+message QuerySettlementsRequest {
+  uint64 offset = 1;
+  uint64 limit = 2;
+}
+
+message QuerySettlementsResponse {
+  repeated Settlement settlements = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+
+message QuerySettlementsByStatusRequest {
+  string status = 1 [(gogoproto.casttype) = "SettlementStatus"];
+  uint64 offset = 2;
+  uint64 limit = 3;
+}
+
+message QuerySettlementsByStatusResponse {
+  repeated Settlement settlements = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+
+message QueryBatchRequest {
+  uint64 id = 1;
+}
+
+message QueryBatchResponse {
+  BatchSettlement batch = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryBatchesRequest {
+  uint64 offset = 1;
+  uint64 limit = 2;
+}
+
+message QueryBatchesResponse {
+  repeated BatchSettlement batches = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+
+message QueryChannelRequest {
+  uint64 id = 1;
+}
+
+message QueryChannelResponse {
+  PaymentChannel channel = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryChannelsRequest {
+  uint64 offset = 1;
+  uint64 limit = 2;
+}
+
+message QueryChannelsResponse {
+  repeated PaymentChannel channels = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+
+message QueryChannelsByPartyRequest {
+  string address = 1;
+  uint64 offset = 2;
+  uint64 limit = 3;
+}
+
+message QueryChannelsByPartyResponse {
+  repeated PaymentChannel channels = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+
+message QueryMerchantRequest {
+  string address = 1;
+}
+
+message QueryMerchantResponse {
+  MerchantConfig merchant = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryMerchantsRequest {
+  uint64 offset = 1;
+  uint64 limit = 2;
+}
+
+message QueryMerchantsResponse {
+  repeated MerchantConfig merchants = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+

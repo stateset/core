@@ -1,0 +1,31 @@
+syntax = "proto3";
+package stateset.oracle;
+
+option go_package = "github.com/stateset/core/x/oracle/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/msg/v1/msg.proto";
+
+// Msg defines the oracle Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  rpc UpdatePrice(MsgUpdatePrice) returns (MsgUpdatePriceResponse);
+}
+
+// MsgUpdatePrice defines a message for updating the price of a denom.
+message MsgUpdatePrice {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string denom = 2;
+  string price = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+}
+
+message MsgUpdatePriceResponse {}
+

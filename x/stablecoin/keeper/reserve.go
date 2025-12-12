@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"encoding/binary"
 	"fmt"
 	"time"
@@ -10,6 +11,7 @@ import (
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	oracletypes "github.com/stateset/core/x/oracle/types"
 	"github.com/stateset/core/x/stablecoin/types"
 )
 
@@ -91,7 +93,7 @@ func (k Keeper) UpdateReserveValue(ctx sdk.Context) error {
 		}
 
 		// Get price from oracle
-		price, err := k.oracleKeeper.GetPriceDec(wrappedCtx, ttConfig.OracleDenom)
+		price, err := k.oracleKeeper.GetPriceDecSafe(wrappedCtx, ttConfig.OracleDenom)
 		if err != nil {
 			// Use fallback price of 1 USD only for cash-equivalent reserves.
 			if ttConfig.UnderlyingType == types.ReserveAssetCash {
@@ -195,19 +197,22 @@ func (k Keeper) DepositReserve(ctx sdk.Context, depositor sdk.AccAddress, amount
 	}
 
 	// Check KYC if required
-	if params.RequireKYC {
+	if params.RequireKyc {
 		if err := k.complianceKeeper.AssertCompliant(wrappedCtx, depositor); err != nil {
 			return 0, sdkmath.ZeroInt(), errorsmod.Wrap(types.ErrKYCRequired, err.Error())
 		}
 	}
 
 	// Get price from oracle
-	price, err := k.oracleKeeper.GetPriceDec(wrappedCtx, ttConfig.OracleDenom)
+	price, err := k.oracleKeeper.GetPriceDecSafe(wrappedCtx, ttConfig.OracleDenom)
 	if err != nil {
 		// Only allow a 1 USD fallback for cash-equivalent reserves.
 		if ttConfig.UnderlyingType == types.ReserveAssetCash {
 			price = sdkmath.LegacyOneDec()
 		} else {
+			if errors.Is(err, oracletypes.ErrPriceStale) {
+				return 0, sdkmath.ZeroInt(), errorsmod.Wrapf(types.ErrPriceStale, "price for %s is stale", ttConfig.OracleDenom)
+			}
 			return 0, sdkmath.ZeroInt(), errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
 		}
 	}
@@ -308,11 +313,14 @@ func (k Keeper) checkAllocationLimit(ctx sdk.Context, amount sdk.Coin, ttConfig 
 
 	// Get price
 	wrappedCtx := sdk.WrapSDKContext(ctx)
-	price, err := k.oracleKeeper.GetPriceDec(wrappedCtx, ttConfig.OracleDenom)
+	price, err := k.oracleKeeper.GetPriceDecSafe(wrappedCtx, ttConfig.OracleDenom)
 	if err != nil {
 		if ttConfig.UnderlyingType == types.ReserveAssetCash {
 			price = sdkmath.LegacyOneDec()
 		} else {
+			if errors.Is(err, oracletypes.ErrPriceStale) {
+				return errorsmod.Wrapf(types.ErrPriceStale, "price for %s is stale", ttConfig.OracleDenom)
+			}
 			return errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
 		}
 	}
@@ -397,7 +405,7 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 	}
 
 	// Check KYC if required
-	if params.RequireKYC {
+	if params.RequireKyc {
 		if err := k.complianceKeeper.AssertCompliant(wrappedCtx, requester); err != nil {
 			return 0, errorsmod.Wrap(types.ErrKYCRequired, err.Error())
 		}
@@ -423,11 +431,14 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 	ssusdAfterFee := feeMultiplier.MulInt(ssusdAmount).TruncateInt()
 
 	// Get output price
-	price, err := k.oracleKeeper.GetPriceDec(wrappedCtx, ttConfig.OracleDenom)
+	price, err := k.oracleKeeper.GetPriceDecSafe(wrappedCtx, ttConfig.OracleDenom)
 	if err != nil {
 		if ttConfig.UnderlyingType == types.ReserveAssetCash {
 			price = sdkmath.LegacyOneDec()
 		} else {
+			if errors.Is(err, oracletypes.ErrPriceStale) {
+				return 0, errorsmod.Wrapf(types.ErrPriceStale, "price for %s is stale", ttConfig.OracleDenom)
+			}
 			return 0, errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
 		}
 	}
@@ -561,7 +572,7 @@ func (k Keeper) ExecutePendingRedemption(ctx sdk.Context, redemptionID uint64) e
 
 	wrappedCtx := sdk.WrapSDKContext(ctx)
 	// Re-check compliance if required.
-	if params.RequireKYC {
+	if params.RequireKyc {
 		requesterAddr, err := sdk.AccAddressFromBech32(request.Requester)
 		if err != nil {
 			return errorsmod.Wrap(types.ErrInvalidReserve, "invalid requester address")
@@ -571,9 +582,16 @@ func (k Keeper) ExecutePendingRedemption(ctx sdk.Context, redemptionID uint64) e
 		}
 	}
 
-	price, err := k.oracleKeeper.GetPriceDec(wrappedCtx, ttConfig.OracleDenom)
+	price, err := k.oracleKeeper.GetPriceDecSafe(wrappedCtx, ttConfig.OracleDenom)
 	if err != nil {
-		price = sdkmath.LegacyOneDec()
+		if ttConfig.UnderlyingType == types.ReserveAssetCash {
+			price = sdkmath.LegacyOneDec()
+		} else {
+			if errors.Is(err, oracletypes.ErrPriceStale) {
+				return errorsmod.Wrapf(types.ErrPriceStale, "price for %s is stale", ttConfig.OracleDenom)
+			}
+			return errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
+		}
 	}
 
 	feeMultiplier := sdkmath.LegacyNewDec(10000 - int64(params.RedeemFeeBps)).Quo(sdkmath.LegacyNewDec(10000))

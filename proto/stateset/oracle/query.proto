@@ -1,0 +1,68 @@
+syntax = "proto3";
+package stateset.oracle;
+
+option go_package = "github.com/stateset/core/x/oracle/types";
+
+import "gogoproto/gogo.proto";
+import "stateset/oracle/oracle.proto";
+
+// Query defines the oracle gRPC query service.
+service Query {
+  rpc Price(QueryPriceRequest) returns (QueryPriceResponse);
+  rpc Prices(QueryPricesRequest) returns (QueryPricesResponse);
+  rpc OracleConfig(QueryOracleConfigRequest) returns (QueryOracleConfigResponse);
+  rpc Provider(QueryProviderRequest) returns (QueryProviderResponse);
+  rpc Providers(QueryProvidersRequest) returns (QueryProvidersResponse);
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse);
+}
+
+message QueryPriceRequest {
+  string denom = 1;
+}
+
+message QueryPriceResponse {
+  Price price = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryPricesRequest {
+  uint64 limit = 1;
+  uint64 offset = 2;
+}
+
+message QueryPricesResponse {
+  repeated Price prices = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+
+message QueryOracleConfigRequest {
+  string denom = 1;
+}
+
+message QueryOracleConfigResponse {
+  OracleConfig config = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryProviderRequest {
+  string address = 1;
+}
+
+message QueryProviderResponse {
+  OracleProvider provider = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryProvidersRequest {
+  uint64 limit = 1;
+  uint64 offset = 2;
+}
+
+message QueryProvidersResponse {
+  repeated OracleProvider providers = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  OracleParams params = 1 [(gogoproto.nullable) = false];
+}
+

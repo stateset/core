@@ -115,6 +115,17 @@ func (m *benchBankKeeper) BurnCoins(_ context.Context, module string, amt sdk.Co
 	return nil
 }
 
+func (m *benchBankKeeper) GetSupply(_ context.Context, denom string) sdk.Coin {
+	total := sdkmath.ZeroInt()
+	for _, coins := range m.balances {
+		total = total.Add(coins.AmountOf(denom))
+	}
+	for _, coins := range m.moduleBalances {
+		total = total.Add(coins.AmountOf(denom))
+	}
+	return sdk.NewCoin(denom, total)
+}
+
 type benchAccountKeeper struct {
 	addresses map[string]sdk.AccAddress
 }
@@ -157,6 +168,10 @@ func (m *benchOracleKeeper) GetPriceDec(_ context.Context, denom string) (sdkmat
 		return sdkmath.LegacyDec{}, stablecointypes.ErrPriceNotFound
 	}
 	return price, nil
+}
+
+func (m *benchOracleKeeper) GetPriceDecSafe(ctx context.Context, denom string) (sdkmath.LegacyDec, error) {
+	return m.GetPriceDec(ctx, denom)
 }
 
 type benchComplianceKeeper struct{}

@@ -1,0 +1,93 @@
+syntax = "proto3";
+package stateset.oracle;
+
+option go_package = "github.com/stateset/core/x/oracle/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "google/protobuf/timestamp.proto";
+
+// Price represents the current oracle price for a denom.
+message Price {
+  string denom = 1;
+  string amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string last_updater = 3;
+  int64 last_height = 4;
+  google.protobuf.Timestamp updated_at = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// OracleConfig holds configuration for oracle price updates.
+message OracleConfig {
+  string denom = 1;
+  uint64 max_deviation_bps = 2;
+  int64 staleness_threshold_seconds = 3;
+  int64 min_update_interval_seconds = 4;
+  uint32 required_confirmations = 5;
+  bool enabled = 6;
+}
+
+// OracleProvider represents a registered oracle provider.
+message OracleProvider {
+  string address = 1;
+  string name = 2;
+  uint64 weight = 3;
+  bool is_active = 4;
+  uint64 total_submissions = 5;
+  uint64 successful_submissions = 6;
+  bool slashed = 7;
+  uint32 slash_count = 8;
+}
+
+// PendingPrice represents a price awaiting confirmation.
+message PendingPrice {
+  string denom = 1;
+  string amount = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string provider = 3;
+  google.protobuf.Timestamp submitted_at = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  repeated string confirmations = 5;
+}
+
+// PricePoint is a single historical price entry.
+message PricePoint {
+  string amount = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  google.protobuf.Timestamp timestamp = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  int64 height = 3;
+}
+
+// PriceHistory stores historical price data for a denom.
+message PriceHistory {
+  string denom = 1;
+  repeated PricePoint prices = 2 [(gogoproto.nullable) = false];
+  uint32 max_size = 3;
+}
+
+// OracleParams holds module parameters.
+message OracleParams {
+  uint64 default_max_deviation_bps = 1;
+  int64 default_staleness_threshold = 2;
+  uint64 slash_fraction_bps = 3;
+  uint32 max_providers = 4;
+  uint32 price_history_size = 5;
+}
+

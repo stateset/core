@@ -118,9 +118,12 @@ func VaultCollateralizationInvariant(k Keeper) sdk.Invariant {
 
 			// Get oracle price
 			wrappedCtx := sdk.WrapSDKContext(ctx)
-			price, err := k.oracleKeeper.GetPriceDec(wrappedCtx, vault.CollateralDenom)
+			price, err := k.oracleKeeper.GetPriceDecSafe(wrappedCtx, vault.CollateralDenom)
 			if err != nil {
-				// Can't verify without price - skip
+				brokenVaults = append(brokenVaults, fmt.Sprintf(
+					"vault %d cannot verify collateralization for %s: %v",
+					vault.Id, vault.CollateralDenom, err,
+				))
 				return false
 			}
 

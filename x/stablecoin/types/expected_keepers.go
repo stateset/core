@@ -25,6 +25,8 @@ type AccountKeeper interface {
 // OracleKeeper exposes price lookups.
 type OracleKeeper interface {
 	GetPriceDec(ctx context.Context, denom string) (sdkmath.LegacyDec, error)
+	// GetPriceDecSafe returns the current price with staleness checks enforced.
+	GetPriceDecSafe(ctx context.Context, denom string) (sdkmath.LegacyDec, error)
 }
 
 // ComplianceKeeper ensures addresses are cleared.

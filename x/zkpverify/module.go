@@ -44,13 +44,17 @@ func (AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 
 // DefaultGenesis returns the module's default genesis state
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	return cdc.MustMarshalJSON(types.DefaultGenesis())
+	bz, err := json.Marshal(types.DefaultGenesis())
+	if err != nil {
+		panic(fmt.Sprintf("failed to marshal %s default genesis: %v", types.ModuleName, err))
+	}
+	return bz
 }
 
 // ValidateGenesis validates the module's genesis state
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
 	var genesis types.GenesisState
-	if err := cdc.UnmarshalJSON(bz, &genesis); err != nil {
+	if err := json.Unmarshal(bz, &genesis); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
 	return genesis.Validate()
@@ -94,7 +98,9 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 // InitGenesis initializes the module's genesis state
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) {
 	var genesis types.GenesisState
-	cdc.MustUnmarshalJSON(data, &genesis)
+	if err := json.Unmarshal(data, &genesis); err != nil {
+		panic(fmt.Sprintf("failed to unmarshal %s genesis state: %v", types.ModuleName, err))
+	}
 
 	if err := am.keeper.InitGenesis(ctx, &genesis); err != nil {
 		panic(fmt.Sprintf("failed to initialize %s genesis state: %v", types.ModuleName, err))
@@ -104,7 +110,11 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 // ExportGenesis exports the module's genesis state
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
 	genesis := am.keeper.ExportGenesis(ctx)
-	return cdc.MustMarshalJSON(genesis)
+	bz, err := json.Marshal(genesis)
+	if err != nil {
+		panic(fmt.Sprintf("failed to marshal %s genesis state: %v", types.ModuleName, err))
+	}
+	return bz
 }
 
 // ConsensusVersion returns the consensus version

@@ -24,6 +24,10 @@ func NewMsgServerImpl(keeper Keeper) types.MsgServer {
 func (m msgServer) InstantTransfer(goCtx context.Context, msg *types.MsgInstantTransfer) (*types.MsgInstantTransferResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
 	settlementId, err := m.Keeper.InstantTransfer(ctx, msg.Sender, msg.Recipient, msg.Amount, msg.Reference, msg.Metadata)
 	if err != nil {
 		return nil, err
@@ -38,6 +42,10 @@ func (m msgServer) InstantTransfer(goCtx context.Context, msg *types.MsgInstantT
 // CreateEscrow creates an escrow settlement
 func (m msgServer) CreateEscrow(goCtx context.Context, msg *types.MsgCreateEscrow) (*types.MsgCreateEscrowResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
 
 	// Convert duration to seconds
 	expirationSeconds := int64(msg.ExpiresIn.Seconds())
@@ -60,6 +68,10 @@ func (m msgServer) CreateEscrow(goCtx context.Context, msg *types.MsgCreateEscro
 func (m msgServer) ReleaseEscrow(goCtx context.Context, msg *types.MsgReleaseEscrow) (*types.MsgReleaseEscrowResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
 	senderAddr, err := sdk.AccAddressFromBech32(msg.Sender)
 	if err != nil {
 		return nil, types.ErrInvalidSettlement
@@ -76,6 +88,10 @@ func (m msgServer) ReleaseEscrow(goCtx context.Context, msg *types.MsgReleaseEsc
 func (m msgServer) RefundEscrow(goCtx context.Context, msg *types.MsgRefundEscrow) (*types.MsgRefundEscrowResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
 	recipientAddr, err := sdk.AccAddressFromBech32(msg.Recipient)
 	if err != nil {
 		return nil, types.ErrInvalidSettlement
@@ -91,6 +107,10 @@ func (m msgServer) RefundEscrow(goCtx context.Context, msg *types.MsgRefundEscro
 // CreateBatch creates a batch settlement
 func (m msgServer) CreateBatch(goCtx context.Context, msg *types.MsgCreateBatch) (*types.MsgCreateBatchResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
 
 	// Only module authority can create batches since this message can move funds for many senders.
 	if msg.Authority != m.Keeper.GetAuthority() {
@@ -112,6 +132,10 @@ func (m msgServer) CreateBatch(goCtx context.Context, msg *types.MsgCreateBatch)
 func (m msgServer) SettleBatch(goCtx context.Context, msg *types.MsgSettleBatch) (*types.MsgSettleBatchResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
 	if err := m.Keeper.SettleBatch(ctx, msg.BatchId, msg.Authority); err != nil {
 		return nil, err
 	}
@@ -129,6 +153,10 @@ func (m msgServer) SettleBatch(goCtx context.Context, msg *types.MsgSettleBatch)
 func (m msgServer) OpenChannel(goCtx context.Context, msg *types.MsgOpenChannel) (*types.MsgOpenChannelResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
 	channelId, err := m.Keeper.OpenChannel(ctx, msg.Sender, msg.Recipient, msg.Deposit, msg.ExpiresInBlocks)
 	if err != nil {
 		return nil, err
@@ -143,6 +171,10 @@ func (m msgServer) OpenChannel(goCtx context.Context, msg *types.MsgOpenChannel)
 // CloseChannel closes a payment channel
 func (m msgServer) CloseChannel(goCtx context.Context, msg *types.MsgCloseChannel) (*types.MsgCloseChannelResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
 
 	closerAddr, err := sdk.AccAddressFromBech32(msg.Closer)
 	if err != nil {
@@ -162,6 +194,10 @@ func (m msgServer) CloseChannel(goCtx context.Context, msg *types.MsgCloseChanne
 // ClaimChannel claims funds from a payment channel
 func (m msgServer) ClaimChannel(goCtx context.Context, msg *types.MsgClaimChannel) (*types.MsgClaimChannelResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
 
 	recipientAddr, err := sdk.AccAddressFromBech32(msg.Recipient)
 	if err != nil {
@@ -183,6 +219,10 @@ func (m msgServer) ClaimChannel(goCtx context.Context, msg *types.MsgClaimChanne
 // RegisterMerchant registers a new merchant
 func (m msgServer) RegisterMerchant(goCtx context.Context, msg *types.MsgRegisterMerchant) (*types.MsgRegisterMerchantResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
 
 	// Only the merchant itself or module authority may register a merchant configuration.
 	if msg.Authority != msg.Merchant && msg.Authority != m.Keeper.GetAuthority() {
@@ -212,6 +252,10 @@ func (m msgServer) RegisterMerchant(goCtx context.Context, msg *types.MsgRegiste
 // UpdateMerchant updates a merchant configuration
 func (m msgServer) UpdateMerchant(goCtx context.Context, msg *types.MsgUpdateMerchant) (*types.MsgUpdateMerchantResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
 
 	// Only the merchant itself or module authority may update merchant configuration.
 	if msg.Authority != msg.Merchant && msg.Authority != m.Keeper.GetAuthority() {
@@ -244,6 +288,10 @@ func (m msgServer) UpdateMerchant(goCtx context.Context, msg *types.MsgUpdateMer
 func (m msgServer) InstantCheckout(goCtx context.Context, msg *types.MsgInstantCheckout) (*types.MsgInstantCheckoutResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
 	settlementId, netAmount, fee, err := m.Keeper.InstantCheckout(
 		ctx,
 		msg.Customer,
@@ -273,6 +321,10 @@ func (m msgServer) InstantCheckout(goCtx context.Context, msg *types.MsgInstantC
 // PartialRefund handles partial refunds for settlements
 func (m msgServer) PartialRefund(goCtx context.Context, msg *types.MsgPartialRefund) (*types.MsgPartialRefundResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
 
 	remainingAmount, err := m.Keeper.PartialRefund(
 		ctx,

@@ -42,4 +42,5 @@ var (
 	ErrWebhookURLBlacklisted      = errorsmod.Register(ModuleName, 34, "webhook URL contains blacklisted host")
 	ErrSettlementNotCompleted     = errorsmod.Register(ModuleName, 35, "settlement not in completed status")
 	ErrRefundTooLarge             = errorsmod.Register(ModuleName, 36, "refund amount exceeds settlement amount")
+	ErrFeatureDisabled            = errorsmod.Register(ModuleName, 37, "feature disabled")
 )

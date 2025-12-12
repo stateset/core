@@ -1,0 +1,53 @@
+syntax = "proto3";
+package stateset.payments;
+
+option go_package = "github.com/stateset/core/x/payments/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+
+// Msg defines the payments Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  rpc CreatePayment(MsgCreatePayment) returns (MsgCreatePaymentResponse);
+  rpc SettlePayment(MsgSettlePayment) returns (MsgSettlePaymentResponse);
+  rpc CancelPayment(MsgCancelPayment) returns (MsgCancelPaymentResponse);
+}
+
+message MsgCreatePayment {
+  option (cosmos.msg.v1.signer) = "payer";
+
+  string payer = 1;
+  string payee = 2;
+  cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string metadata = 4;
+}
+
+message MsgCreatePaymentResponse {
+  uint64 payment_id = 1;
+}
+
+message MsgSettlePayment {
+  option (cosmos.msg.v1.signer) = "payee";
+
+  string payee = 1;
+  uint64 payment_id = 2;
+}
+
+message MsgSettlePaymentResponse {}
+
+message MsgCancelPayment {
+  option (cosmos.msg.v1.signer) = "payer";
+
+  string payer = 1;
+  uint64 payment_id = 2;
+  string reason = 3;
+}
+
+message MsgCancelPaymentResponse {}
+

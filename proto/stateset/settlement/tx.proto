@@ -1,0 +1,292 @@
+syntax = "proto3";
+package stateset.settlement;
+
+option go_package = "github.com/stateset/core/x/settlement/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+import "stateset/settlement/settlement.proto";
+
+// Msg defines the settlement Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  rpc InstantTransfer(MsgInstantTransfer) returns (MsgInstantTransferResponse);
+  rpc CreateEscrow(MsgCreateEscrow) returns (MsgCreateEscrowResponse);
+  rpc ReleaseEscrow(MsgReleaseEscrow) returns (MsgReleaseEscrowResponse);
+  rpc RefundEscrow(MsgRefundEscrow) returns (MsgRefundEscrowResponse);
+  rpc CreateBatch(MsgCreateBatch) returns (MsgCreateBatchResponse);
+  rpc SettleBatch(MsgSettleBatch) returns (MsgSettleBatchResponse);
+  rpc OpenChannel(MsgOpenChannel) returns (MsgOpenChannelResponse);
+  rpc CloseChannel(MsgCloseChannel) returns (MsgCloseChannelResponse);
+  rpc ClaimChannel(MsgClaimChannel) returns (MsgClaimChannelResponse);
+  rpc RegisterMerchant(MsgRegisterMerchant) returns (MsgRegisterMerchantResponse);
+  rpc UpdateMerchant(MsgUpdateMerchant) returns (MsgUpdateMerchantResponse);
+  rpc InstantCheckout(MsgInstantCheckout) returns (MsgInstantCheckoutResponse);
+  rpc PartialRefund(MsgPartialRefund) returns (MsgPartialRefundResponse);
+}
+
+message MsgInstantTransfer {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string recipient = 2;
+  cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string reference = 4;
+  string metadata = 5;
+}
+
+message MsgInstantTransferResponse {
+  uint64 settlement_id = 1;
+  string tx_hash = 2;
+}
+
+message MsgCreateEscrow {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string recipient = 2;
+  cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string reference = 4;
+  string metadata = 5;
+  google.protobuf.Duration expires_in = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+}
+
+message MsgCreateEscrowResponse {
+  uint64 settlement_id = 1;
+  google.protobuf.Timestamp expires_at = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+message MsgReleaseEscrow {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  uint64 settlement_id = 2;
+}
+
+message MsgReleaseEscrowResponse {}
+
+message MsgRefundEscrow {
+  option (cosmos.msg.v1.signer) = "recipient";
+
+  string recipient = 1;
+  uint64 settlement_id = 2;
+  string reason = 3;
+}
+
+message MsgRefundEscrowResponse {}
+
+message MsgCreateBatch {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string merchant = 2;
+  repeated string senders = 3;
+  repeated cosmos.base.v1beta1.Coin amounts = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  repeated string references = 5;
+}
+
+message MsgCreateBatchResponse {
+  uint64 batch_id = 1;
+  repeated uint64 settlement_ids = 2;
+}
+
+message MsgSettleBatch {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  uint64 batch_id = 2;
+}
+
+message MsgSettleBatchResponse {
+  cosmos.base.v1beta1.Coin total_amount = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin total_fees = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin net_amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+
+message MsgOpenChannel {
+  option (cosmos.msg.v1.signer) = "sender";
+
+  string sender = 1;
+  string recipient = 2;
+  cosmos.base.v1beta1.Coin deposit = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  int64 expires_in_blocks = 4;
+}
+
+message MsgOpenChannelResponse {
+  uint64 channel_id = 1;
+  int64 expires_at_height = 2;
+}
+
+message MsgCloseChannel {
+  option (cosmos.msg.v1.signer) = "closer";
+
+  string closer = 1;
+  uint64 channel_id = 2;
+}
+
+message MsgCloseChannelResponse {
+  cosmos.base.v1beta1.Coin final_balance = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+
+message MsgClaimChannel {
+  option (cosmos.msg.v1.signer) = "recipient";
+
+  string recipient = 1;
+  uint64 channel_id = 2;
+  cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  uint64 nonce = 4;
+  string signature = 5;
+}
+
+message MsgClaimChannelResponse {
+  cosmos.base.v1beta1.Coin amount_claimed = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin remaining_balance = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+
+message MsgRegisterMerchant {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string merchant = 2;
+  string name = 3;
+  uint32 fee_rate_bps = 4;
+  cosmos.base.v1beta1.Coin min_settlement = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin max_settlement = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  bool batch_enabled = 7;
+  cosmos.base.v1beta1.Coin batch_threshold = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string webhook_url = 9;
+}
+
+message MsgRegisterMerchantResponse {}
+
+message MsgUpdateMerchant {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string merchant = 2;
+  string name = 3;
+  uint32 fee_rate_bps = 4;
+  cosmos.base.v1beta1.Coin min_settlement = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin max_settlement = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  google.protobuf.BoolValue batch_enabled = 7 [(gogoproto.wktpointer) = true];
+  cosmos.base.v1beta1.Coin batch_threshold = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  google.protobuf.BoolValue is_active = 9 [(gogoproto.wktpointer) = true];
+  string webhook_url = 10;
+}
+
+message MsgUpdateMerchantResponse {}
+
+message MsgInstantCheckout {
+  option (cosmos.msg.v1.signer) = "customer";
+
+  string customer = 1;
+  string merchant = 2;
+  cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string order_reference = 4;
+  bool use_escrow = 5;
+  repeated CheckoutItem items = 6 [(gogoproto.nullable) = false];
+  string metadata = 7;
+}
+
+message MsgInstantCheckoutResponse {
+  uint64 settlement_id = 1;
+  string status = 2;
+  cosmos.base.v1beta1.Coin net_amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin fee = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string transaction_id = 5;
+}
+
+message MsgPartialRefund {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  uint64 settlement_id = 2;
+  cosmos.base.v1beta1.Coin refund_amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string reason = 4;
+}
+
+message MsgPartialRefundResponse {
+  cosmos.base.v1beta1.Coin refunded_amount = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin remaining_amount = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+

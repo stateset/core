@@ -1,0 +1,67 @@
+syntax = "proto3";
+package stateset.circuit;
+
+option go_package = "github.com/stateset/core/x/circuit/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
+import "stateset/circuit/circuit.proto";
+
+// Msg defines the circuit breaker Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  rpc PauseSystem(MsgPauseSystem) returns (MsgPauseSystemResponse);
+  rpc ResumeSystem(MsgResumeSystem) returns (MsgResumeSystemResponse);
+  rpc TripCircuit(MsgTripCircuit) returns (MsgTripCircuitResponse);
+  rpc ResetCircuit(MsgResetCircuit) returns (MsgResetCircuitResponse);
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+}
+
+message MsgPauseSystem {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string reason = 2;
+  int64 duration_seconds = 3;
+}
+
+message MsgPauseSystemResponse {}
+
+message MsgResumeSystem {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+}
+
+message MsgResumeSystemResponse {}
+
+message MsgTripCircuit {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string module_name = 2;
+  string reason = 3;
+  repeated string disable_messages = 4;
+}
+
+message MsgTripCircuitResponse {}
+
+message MsgResetCircuit {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string module_name = 2;
+}
+
+message MsgResetCircuitResponse {}
+
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  Params params = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgUpdateParamsResponse {}
+

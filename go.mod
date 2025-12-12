@@ -1,6 +1,6 @@
 module github.com/stateset/core
 
-go 1.23
+go 1.23.2
 
 toolchain go1.23.4
 
@@ -28,6 +28,7 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/grpc v1.72.2
+	google.golang.org/protobuf v1.36.6
 )
 
 require (
@@ -212,7 +213,6 @@ require (
 	google.golang.org/genproto v0.0.0-20241118233622-e639e219e697 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250528174236-200df99c418a // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a // indirect
-	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gotest.tools/v3 v3.5.2 // indirect

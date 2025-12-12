@@ -1,0 +1,68 @@
+syntax = "proto3";
+package stateset.payments;
+
+option go_package = "github.com/stateset/core/x/payments/types";
+
+import "gogoproto/gogo.proto";
+import "stateset/payments/payment.proto";
+
+// Query defines the payments gRPC query service.
+service Query {
+  rpc Payment(QueryPaymentRequest) returns (QueryPaymentResponse);
+  rpc Payments(QueryPaymentsRequest) returns (QueryPaymentsResponse);
+  rpc PaymentsByPayer(QueryPaymentsByPayerRequest) returns (QueryPaymentsByPayerResponse);
+  rpc PaymentsByPayee(QueryPaymentsByPayeeRequest) returns (QueryPaymentsByPayeeResponse);
+  rpc PaymentsByStatus(QueryPaymentsByStatusRequest) returns (QueryPaymentsByStatusResponse);
+}
+
+message QueryPaymentRequest {
+  uint64 id = 1;
+}
+
+message QueryPaymentResponse {
+  PaymentIntent payment = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryPaymentsRequest {
+  uint64 offset = 1;
+  uint64 limit = 2;
+}
+
+message QueryPaymentsResponse {
+  repeated PaymentIntent payments = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+
+message QueryPaymentsByPayerRequest {
+  string payer = 1;
+  uint64 offset = 2;
+  uint64 limit = 3;
+}
+
+message QueryPaymentsByPayerResponse {
+  repeated PaymentIntent payments = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+
+message QueryPaymentsByPayeeRequest {
+  string payee = 1;
+  uint64 offset = 2;
+  uint64 limit = 3;
+}
+
+message QueryPaymentsByPayeeResponse {
+  repeated PaymentIntent payments = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+
+message QueryPaymentsByStatusRequest {
+  string status = 1;
+  uint64 offset = 2;
+  uint64 limit = 3;
+}
+
+message QueryPaymentsByStatusResponse {
+  repeated PaymentIntent payments = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+

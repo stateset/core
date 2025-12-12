@@ -1,0 +1,120 @@
+syntax = "proto3";
+package stateset.circuit;
+
+option go_package = "github.com/stateset/core/x/circuit/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "google/protobuf/timestamp.proto";
+
+// CircuitStatus represents the state of a circuit breaker.
+enum CircuitStatus {
+  // CIRCUIT_CLOSED means the circuit is functioning normally.
+  CIRCUIT_CLOSED = 0;
+  // CIRCUIT_OPEN means the circuit is tripped and operations are blocked.
+  CIRCUIT_OPEN = 1;
+  // CIRCUIT_HALF_OPEN means the circuit is in recovery mode.
+  CIRCUIT_HALF_OPEN = 2;
+}
+
+// CircuitState represents the global circuit breaker state.
+message CircuitState {
+  bool global_paused = 1;
+  google.protobuf.Timestamp paused_at = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  string paused_by = 3;
+  string reason = 4;
+  google.protobuf.Timestamp auto_resume_at = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// ModuleCircuitState represents circuit breaker state for a specific module.
+message ModuleCircuitState {
+  string module_name = 1;
+  CircuitStatus status = 2;
+  google.protobuf.Timestamp tripped_at = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  string tripped_by = 4;
+  string reason = 5;
+  uint64 failure_count = 6;
+  uint64 failure_threshold = 7;
+  google.protobuf.Timestamp recovery_time = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  repeated string disabled_messages = 9;
+}
+
+// RateLimitConfig defines rate limiting configuration.
+message RateLimitConfig {
+  string name = 1;
+  uint64 max_requests = 2;
+  int64 window_seconds = 3;
+  bool per_address = 4;
+  bool enabled = 5;
+  repeated string message_types = 6;
+}
+
+// RateLimitState tracks current rate limit usage.
+message RateLimitState {
+  string config_name = 1;
+  string address = 2;
+  uint64 request_count = 3;
+  google.protobuf.Timestamp window_start = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// Params defines the circuit breaker module parameters.
+message Params {
+  repeated string authorities = 1;
+  uint64 default_failure_threshold = 2;
+  int64 default_recovery_period = 3;
+  int64 max_pause_duration = 4;
+  repeated RateLimitConfig rate_limits = 5 [(gogoproto.nullable) = false];
+}
+
+// OracleDeviationConfig defines price deviation thresholds.
+message OracleDeviationConfig {
+  string denom = 1;
+  uint64 max_deviation_bps = 2;
+  uint64 max_daily_deviation_bps = 3;
+  int64 staleness_threshold = 4;
+  int64 min_update_interval = 5;
+}
+
+// LiquidationSurgeProtection defines protection against liquidation cascades.
+message LiquidationSurgeProtection {
+  uint64 max_liquidations_per_block = 1;
+  string max_liquidation_value = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  uint64 cooldown_blocks = 3;
+  uint64 current_block_liquidations = 4;
+  string current_block_value = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  int64 last_reset_height = 6;
+}
+
+// GenesisState defines the circuit module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+  CircuitState circuit_state = 2 [(gogoproto.nullable) = false];
+  repeated ModuleCircuitState module_circuits = 3 [(gogoproto.nullable) = false];
+  repeated RateLimitState rate_limit_states = 4 [(gogoproto.nullable) = false];
+  repeated OracleDeviationConfig oracle_deviation_configs = 5 [(gogoproto.nullable) = false];
+  LiquidationSurgeProtection liquidation_protection = 6 [(gogoproto.nullable) = false];
+}
+

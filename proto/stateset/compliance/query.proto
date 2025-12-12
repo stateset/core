@@ -1,0 +1,44 @@
+syntax = "proto3";
+package stateset.compliance;
+
+option go_package = "github.com/stateset/core/x/compliance/types";
+
+import "gogoproto/gogo.proto";
+import "stateset/compliance/profile.proto";
+
+// Query defines the compliance gRPC query service.
+service Query {
+  rpc Profile(QueryProfileRequest) returns (QueryProfileResponse);
+  rpc Profiles(QueryProfilesRequest) returns (QueryProfilesResponse);
+  rpc ProfilesByStatus(QueryProfilesByStatusRequest) returns (QueryProfilesByStatusResponse);
+}
+
+message QueryProfileRequest {
+  string address = 1;
+}
+
+message QueryProfileResponse {
+  Profile profile = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryProfilesRequest {
+  uint64 limit = 1;
+  uint64 offset = 2;
+}
+
+message QueryProfilesResponse {
+  repeated Profile profiles = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+
+message QueryProfilesByStatusRequest {
+  string status = 1;
+  uint64 limit = 2;
+  uint64 offset = 3;
+}
+
+message QueryProfilesByStatusResponse {
+  repeated Profile profiles = 1 [(gogoproto.nullable) = false];
+  uint64 total = 2;
+}
+

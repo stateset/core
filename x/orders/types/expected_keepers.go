@@ -4,6 +4,8 @@ import (
 	"context"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
+
+	settlementtypes "github.com/stateset/core/x/settlement/types"
 )
 
 // BankKeeper defines the expected bank keeper interface.
@@ -25,7 +27,7 @@ type SettlementKeeper interface {
 	CreateEscrow(ctx sdk.Context, sender, recipient string, amount sdk.Coin, reference, metadata string, expirationSeconds int64) (uint64, error)
 	ReleaseEscrow(ctx sdk.Context, settlementId uint64, sender sdk.AccAddress) error
 	RefundEscrow(ctx sdk.Context, settlementId uint64, recipient sdk.AccAddress, reason string) error
-	GetMerchant(ctx sdk.Context, address string) (interface{}, bool)
+	GetMerchant(ctx sdk.Context, address string) (settlementtypes.MerchantConfig, bool)
 }
 
 // AccountKeeper defines the expected account keeper interface.

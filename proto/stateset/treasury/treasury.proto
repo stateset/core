@@ -1,0 +1,152 @@
+syntax = "proto3";
+package stateset.treasury;
+
+option go_package = "github.com/stateset/core/x/treasury/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+// TreasuryParams defines the parameters for the treasury module.
+message TreasuryParams {
+  google.protobuf.Duration min_timelock_duration = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  google.protobuf.Duration max_timelock_duration = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  google.protobuf.Duration proposal_expiry_duration = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  uint32 max_pending_proposals = 4;
+  uint32 emergency_multisig_threshold = 5;
+  uint32 base_burn_rate = 6;
+  uint32 validator_reward_rate = 7;
+  uint32 community_pool_rate = 8;
+}
+
+// SpendProposal represents a time-locked treasury spend proposal.
+message SpendProposal {
+  uint64 id = 1;
+  string proposer = 2;
+  string recipient = 3;
+  repeated cosmos.base.v1beta1.Coin amount = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  string category = 5;
+  string description = 6;
+  string status = 7;
+  google.protobuf.Timestamp created_at = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp execute_after = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp expires_at = 10 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp executed_at = 11 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  string tx_hash = 12;
+}
+
+// Budget represents a category budget with limits.
+message Budget {
+  string category = 1;
+  repeated cosmos.base.v1beta1.Coin total_limit = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  repeated cosmos.base.v1beta1.Coin period_limit = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  repeated cosmos.base.v1beta1.Coin period_spent = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  repeated cosmos.base.v1beta1.Coin total_spent = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  google.protobuf.Timestamp period_start = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Duration period_duration = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  bool enabled = 8;
+}
+
+// Allocation tracks funds allocated to a specific recipient.
+message Allocation {
+  string recipient = 1;
+  repeated cosmos.base.v1beta1.Coin total_allocated = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  repeated cosmos.base.v1beta1.Coin total_disbursed = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  repeated cosmos.base.v1beta1.Coin pending = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  google.protobuf.Timestamp last_updated = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// RevenueRecord tracks incoming revenue to the treasury.
+message RevenueRecord {
+  uint64 id = 1;
+  string source = 2;
+  repeated cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  google.protobuf.Timestamp timestamp = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  string tx_hash = 5;
+  string metadata = 6;
+}
+
+// ReserveSnapshot captures the off-chain reserve attestations aligned with on-chain supply.
+message ReserveSnapshot {
+  uint64 id = 1;
+  string reporter = 2;
+  cosmos.base.v1beta1.Coin total_supply = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin fiat_reserves = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  repeated cosmos.base.v1beta1.Coin other_reserves = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  google.protobuf.Timestamp timestamp = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  string metadata = 7;
+}
+

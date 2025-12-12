@@ -38,7 +38,11 @@ func (AppModuleBasic) RegisterInterfaces(registry codectypes.InterfaceRegistry) 
 }
 
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	return cdc.MustMarshalJSON(types.DefaultGenesis())
+	bz, err := json.Marshal(types.DefaultGenesis())
+	if err != nil {
+		panic(fmt.Sprintf("failed to marshal %s default genesis: %v", types.ModuleName, err))
+	}
+	return bz
 }
 
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingConfig, bz json.RawMessage) error {
@@ -46,7 +50,7 @@ func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, _ client.TxEncodingCo
 	if len(bz) == 0 {
 		return nil
 	}
-	if err := cdc.UnmarshalJSON(bz, &state); err != nil {
+	if err := json.Unmarshal(bz, &state); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
 	return state.Validate()
@@ -86,14 +90,20 @@ func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.
 	if len(data) == 0 {
 		state = *types.DefaultGenesis()
 	} else {
-		cdc.MustUnmarshalJSON(data, &state)
+		if err := json.Unmarshal(data, &state); err != nil {
+			panic(fmt.Sprintf("failed to unmarshal %s genesis state: %v", types.ModuleName, err))
+		}
 	}
 	InitGenesis(ctx, am.keeper, &state)
 }
 
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
 	state := ExportGenesis(ctx, am.keeper)
-	return cdc.MustMarshalJSON(state)
+	bz, err := json.Marshal(state)
+	if err != nil {
+		panic(fmt.Sprintf("failed to marshal %s genesis state: %v", types.ModuleName, err))
+	}
+	return bz
 }
 
 // BeginBlock is currently a no-op.

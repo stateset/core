@@ -125,28 +125,15 @@ When adding new features, ensure these security aspects are tested:
 
 ## Current Status
 
-### Implemented Tests
+The security suites are fully implemented and run in CI via `go test ./...`.
 
-The test files contain comprehensive test templates that document all security test scenarios. These include:
-
-- ✅ Authorization test templates for all critical operations
-- ✅ Reentrancy protection documentation (Cosmos SDK provides this)
-- ✅ Input validation test templates
-- ✅ State consistency test templates
-- ✅ Invariant test templates
-- ✅ Edge case test templates
-- ✅ Attack simulation templates
-- ✅ Security model documentation
-
-### Pending Implementation
-
-The test templates use `suite.T().Skip("Requires full keeper setup")` as placeholders. To fully implement:
-
-1. **Setup Test Fixtures**: Create proper keeper initialization for each module
-2. **Mock Dependencies**: Set up mock bank, oracle, and compliance keepers
-3. **Implement Test Logic**: Fill in the TODO sections with actual test code
-4. **Add Assertions**: Verify expected behavior with require/assert statements
-5. **Run and Validate**: Execute tests and verify they catch security issues
+Coverage highlights:
+- Authorization and state-machine safety for `x/payments` and `x/settlement`
+- Compliance gating across modules (blocked profiles cannot transact)
+- Settlement feature-flag and parameter enforcement (min/max, expirations)
+- Payment channel signature + nonce replay protection
+- Stablecoin oracle staleness handling (fails safe) and liquidation safety
+- Reserve-backed controls: authority-only params/attesters and redemption delay
 
 ## Integration with CI/CD
 

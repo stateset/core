@@ -1,0 +1,205 @@
+syntax = "proto3";
+package stateset.metrics;
+
+option go_package = "github.com/stateset/core/x/metrics/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+// Metric represents a single metric data point.
+message Metric {
+  string name = 1;
+  string type = 2 [(gogoproto.casttype) = "MetricType"];
+  string value = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  map<string, string> labels = 4;
+  google.protobuf.Timestamp timestamp = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  int64 height = 6;
+}
+
+// Counter represents a monotonically increasing counter.
+message Counter {
+  string name = 1;
+  uint64 value = 2;
+  map<string, string> labels = 3;
+}
+
+// Gauge represents a value that can go up and down.
+message Gauge {
+  string name = 1;
+  string value = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  map<string, string> labels = 3;
+  google.protobuf.Timestamp updated_at = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// HistogramBucket represents a single bucket in a histogram.
+message HistogramBucket {
+  string lower_bound = 1 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string upper_bound = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  uint64 count = 3;
+}
+
+// Histogram represents a distribution of values.
+message Histogram {
+  string name = 1;
+  repeated HistogramBucket buckets = 2 [(gogoproto.nullable) = false];
+  string sum = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  uint64 count = 4;
+  map<string, string> labels = 5;
+  google.protobuf.Timestamp updated_at = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// ModuleHealth represents the health status of a module.
+message ModuleHealth {
+  string module = 1;
+  string status = 2;
+  double error_rate = 3;
+  double latency = 4;
+  string last_error = 5;
+  google.protobuf.Timestamp last_error_at = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  uint64 transactions = 7;
+}
+
+// SystemMetrics represents overall system metrics.
+message SystemMetrics {
+  int64 last_block_height = 1;
+  google.protobuf.Timestamp last_block_time = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Duration average_block_time = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  uint64 transactions_total = 4;
+
+  map<string, ModuleHealth> module_health = 5;
+
+  string total_collateral_value = 6 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_debt_value = 7 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string system_collateral_ratio = 8 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+
+  uint64 total_settlements = 9;
+  string total_settlement_volume = 10 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  uint64 active_escrows = 11;
+  uint64 active_channels = 12;
+
+  uint64 prices_updated = 13;
+  uint64 stale_price_count = 14;
+
+  uint64 circuit_trips = 15;
+  uint64 rate_limit_hits = 16;
+  uint64 compliance_blocks = 17;
+}
+
+// AlertConfig defines an alert configuration.
+message AlertConfig {
+  string name = 1;
+  string metric_name = 2;
+  string condition = 3 [(gogoproto.casttype) = "AlertCondition"];
+  string threshold = 4 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  google.protobuf.Duration duration = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  string severity = 6 [(gogoproto.casttype) = "AlertSeverity"];
+  bool enabled = 7;
+}
+
+// Alert represents a triggered alert.
+message Alert {
+  string id = 1;
+  string config_name = 2;
+  string metric_name = 3;
+  string value = 4 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string threshold = 5 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string severity = 6 [(gogoproto.casttype) = "AlertSeverity"];
+  string message = 7;
+  google.protobuf.Timestamp triggered_at = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp resolved_at = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  bool resolved = 10;
+}
+
+// PerformanceStats represents performance statistics.
+message PerformanceStats {
+  string module = 1;
+  string operation = 2;
+  uint64 total_calls = 3;
+  double total_duration = 4;
+  double average_duration = 5;
+  double min_duration = 6;
+  double max_duration = 7;
+  uint64 error_count = 8;
+  google.protobuf.Timestamp last_called = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+

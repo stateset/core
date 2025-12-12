@@ -4,11 +4,9 @@ import (
 	"testing"
 
 	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/leanovate/gopter"
 	"github.com/leanovate/gopter/gen"
 	"github.com/leanovate/gopter/prop"
-	"github.com/stretchr/testify/require"
 )
 
 // Property-based testing for settlement module invariants
@@ -263,9 +261,9 @@ func TestProperty_EscrowTimeoutConsistency(t *testing.T) {
 				return currentTime < timeoutAt
 			}
 		},
-		gen.Int64Range(1000000, 2000000),    // deposit time
-		gen.Int64Range(1000000, 3000000),    // current time
-		gen.Int64Range(1000, 100000),        // timeout duration
+		gen.Int64Range(1000000, 2000000), // deposit time
+		gen.Int64Range(1000000, 3000000), // current time
+		gen.Int64Range(1000, 100000),     // timeout duration
 	))
 
 	properties.TestingRun(t)

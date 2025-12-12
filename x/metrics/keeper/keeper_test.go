@@ -4,13 +4,13 @@ import (
 	"testing"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/log"
+	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
-	dbm "github.com/cosmos/cosmos-db"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -140,6 +140,7 @@ func TestModuleHealth(t *testing.T) {
 
 	health, ok := metricsData.ModuleHealth["settlement"]
 	require.True(t, ok)
+	require.NotNil(t, health)
 	require.Equal(t, "healthy", health.Status)
 	require.Equal(t, 0.01, health.ErrorRate)
 	require.Equal(t, 50.0, health.Latency)
@@ -158,6 +159,7 @@ func TestRecordModuleError(t *testing.T) {
 
 	metricsData := k.GetSystemMetrics(ctx)
 	health := metricsData.ModuleHealth["payments"]
+	require.NotNil(t, health)
 
 	require.Equal(t, "connection timeout", health.LastError)
 	require.False(t, health.LastErrorAt.IsZero())
@@ -356,6 +358,7 @@ func TestRecordTransaction(t *testing.T) {
 
 	metricsData := k.GetSystemMetrics(ctx)
 	health := metricsData.ModuleHealth["settlement"]
+	require.NotNil(t, health)
 	require.Equal(t, uint64(1), health.Transactions)
 	require.Equal(t, 25.5, health.Latency)
 	require.Equal(t, float64(0), health.ErrorRate)
@@ -365,6 +368,7 @@ func TestRecordTransaction(t *testing.T) {
 
 	metricsData = k.GetSystemMetrics(ctx)
 	health = metricsData.ModuleHealth["settlement"]
+	require.NotNil(t, health)
 	require.Equal(t, uint64(2), health.Transactions)
 	require.Greater(t, health.ErrorRate, float64(0))
 }
@@ -430,6 +434,7 @@ func TestMultipleModuleHealth(t *testing.T) {
 	for _, module := range modules {
 		health, ok := metricsData.ModuleHealth[module]
 		require.True(t, ok, "module %s should exist", module)
+		require.NotNil(t, health)
 		require.Equal(t, module, health.Module)
 	}
 }

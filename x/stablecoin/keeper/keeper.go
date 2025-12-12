@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	"errors"
 	"encoding/binary"
 
 	errorsmod "cosmossdk.io/errors"
@@ -10,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
+	oracletypes "github.com/stateset/core/x/oracle/types"
 	"github.com/stateset/core/x/stablecoin/types"
 )
 
@@ -341,6 +343,9 @@ func (k Keeper) LiquidateVault(ctx sdk.Context, liquidator sdk.AccAddress, id ui
 
 	if err := k.assertCollateralization(ctx, vault.Collateral, vault.Debt, cp); err == nil {
 		return nil, errorsmod.Wrap(types.ErrVaultHealthy, "vault still healthy")
+	} else if !errors.Is(err, types.ErrUnderCollateralized) {
+		// Fail safely if collateralization cannot be verified (e.g. missing/stale oracle price).
+		return nil, err
 	}
 
 	// Liquidator must repay the outstanding stablecoin debt before collateral is released.
@@ -366,8 +371,11 @@ func (k Keeper) assertCollateralization(ctx sdk.Context, collateral sdk.Coin, de
 	if debt.IsZero() {
 		return nil
 	}
-	price, err := k.oracleKeeper.GetPriceDec(sdk.WrapSDKContext(ctx), collateral.Denom)
+	price, err := k.oracleKeeper.GetPriceDecSafe(sdk.WrapSDKContext(ctx), collateral.Denom)
 	if err != nil {
+		if errors.Is(err, oracletypes.ErrPriceStale) {
+			return types.ErrPriceStale
+		}
 		return types.ErrPriceNotFound
 	}
 

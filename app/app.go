@@ -29,6 +29,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/server/api"
 	"github.com/cosmos/cosmos-sdk/server/config"
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
+	"github.com/cosmos/cosmos-sdk/std"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/version"
@@ -39,6 +40,7 @@ import (
 	authtx "github.com/cosmos/cosmos-sdk/x/auth/tx"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
+	vestingtypes "github.com/cosmos/cosmos-sdk/x/auth/vesting/types"
 	"github.com/cosmos/cosmos-sdk/x/bank"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
@@ -179,6 +181,9 @@ func MakeEncodingConfig(mb module.BasicManager) EncodingConfig {
 		TxConfig:          txCfg,
 		Amino:             amino,
 	}
+
+	std.RegisterLegacyAminoCodec(encodingConfig.Amino)
+	std.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 
 	mb.RegisterLegacyAminoCodec(encodingConfig.Amino)
 	mb.RegisterInterfaces(encodingConfig.InterfaceRegistry)
@@ -351,7 +356,7 @@ func New(
 	keys := storetypes.NewKVStoreKeys(
 		authtypes.StoreKey, banktypes.StoreKey, stakingtypes.StoreKey,
 		minttypes.StoreKey, distrtypes.StoreKey, slashingtypes.StoreKey,
-		govtypes.StoreKey, paramstypes.StoreKey, ibcexported.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
+		govtypes.StoreKey, crisistypes.StoreKey, paramstypes.StoreKey, ibcexported.StoreKey, upgradetypes.StoreKey, feegrant.StoreKey,
 		evidencetypes.StoreKey, ibctransfertypes.StoreKey, capabilitytypes.StoreKey, consensusparamtypes.StoreKey,
 		oracletypes.StoreKey, compliancetypes.StoreKey, treasurytypes.StoreKey, orderstypes.StoreKey, paymentstypes.StoreKey, stablecointypes.StoreKey, settlementtypes.StoreKey, feemarkettypes.StoreKey,
 		circuittypes.StoreKey, metricstypes.StoreKey, zkpverifytypes.StoreKey,
@@ -693,6 +698,7 @@ func New(
 	)
 
 	app.mm.SetOrderEndBlockers(crisistypes.ModuleName, govtypes.ModuleName, stakingtypes.ModuleName, consensusparamtypes.ModuleName,
+		feegrant.ModuleName,
 		feemarkettypes.ModuleName, oracletypes.ModuleName, compliancetypes.ModuleName, treasurytypes.ModuleName, orderstypes.ModuleName, paymentstypes.ModuleName, stablecointypes.ModuleName, settlementtypes.ModuleName,
 		zkpverifytypes.ModuleName,                        // ZKP verification at end of block
 		circuittypes.ModuleName, metricstypes.ModuleName, // Metrics checks alerts at end of block
@@ -706,13 +712,16 @@ func New(
 	app.mm.SetOrderInitGenesis(
 		capabilitytypes.ModuleName,
 		authtypes.ModuleName,
+		vestingtypes.ModuleName,
 		banktypes.ModuleName,
+		feegrant.ModuleName,
 		distrtypes.ModuleName,
 		stakingtypes.ModuleName,
 		slashingtypes.ModuleName,
 		govtypes.ModuleName,
 		minttypes.ModuleName,
 		crisistypes.ModuleName,
+		upgradetypes.ModuleName,
 		ibcexported.ModuleName,
 		genutiltypes.ModuleName,
 		evidencetypes.ModuleName,
@@ -734,6 +743,7 @@ func New(
 	)
 
 	app.mm.RegisterInvariants(app.CrisisKeeper)
+
 	app.mm.RegisterServices(module.NewConfigurator(app.appCodec, app.MsgServiceRouter(), app.GRPCQueryRouter()))
 
 	// initialize stores

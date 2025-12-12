@@ -46,13 +46,17 @@ func (AppModuleBasic) RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
 
 // DefaultGenesis returns default genesis state as raw bytes for the module
 func (AppModuleBasic) DefaultGenesis(cdc codec.JSONCodec) json.RawMessage {
-	return cdc.MustMarshalJSON(types.DefaultGenesis())
+	bz, err := json.Marshal(types.DefaultGenesis())
+	if err != nil {
+		panic(fmt.Sprintf("failed to marshal %s default genesis: %v", types.ModuleName, err))
+	}
+	return bz
 }
 
 // ValidateGenesis performs genesis state validation for the module
 func (AppModuleBasic) ValidateGenesis(cdc codec.JSONCodec, config client.TxEncodingConfig, bz json.RawMessage) error {
 	var genState types.GenesisState
-	if err := cdc.UnmarshalJSON(bz, &genState); err != nil {
+	if err := json.Unmarshal(bz, &genState); err != nil {
 		return fmt.Errorf("failed to unmarshal %s genesis state: %w", types.ModuleName, err)
 	}
 	return genState.Validate()
@@ -102,14 +106,20 @@ func (am AppModule) RegisterServices(cfg module.Configurator) {
 // InitGenesis performs genesis initialization for the module
 func (am AppModule) InitGenesis(ctx sdk.Context, cdc codec.JSONCodec, data json.RawMessage) {
 	var genState types.GenesisState
-	cdc.MustUnmarshalJSON(data, &genState)
+	if err := json.Unmarshal(data, &genState); err != nil {
+		panic(fmt.Sprintf("failed to unmarshal %s genesis state: %v", types.ModuleName, err))
+	}
 	am.keeper.InitGenesis(ctx, &genState)
 }
 
 // ExportGenesis returns the exported genesis state as raw bytes for the module
 func (am AppModule) ExportGenesis(ctx sdk.Context, cdc codec.JSONCodec) json.RawMessage {
 	genState := am.keeper.ExportGenesis(ctx)
-	return cdc.MustMarshalJSON(genState)
+	bz, err := json.Marshal(genState)
+	if err != nil {
+		panic(fmt.Sprintf("failed to marshal %s genesis state: %v", types.ModuleName, err))
+	}
+	return bz
 }
 
 // ConsensusVersion returns the consensus state-breaking version for the module

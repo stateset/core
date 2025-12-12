@@ -3,6 +3,7 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
 var ModuleCdc = codec.NewLegacyAmino()
@@ -24,9 +25,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
-	// Note: In SDK 0.53+, messages need proper protobuf definitions for interface registration.
-	// For now, using legacy amino registration is sufficient for basic functionality.
-	// Full protobuf support requires generating .pb.go files from proto definitions.
+	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
 
 func init() {

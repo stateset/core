@@ -537,6 +537,7 @@ func TestMsgServer_CloseChannel(t *testing.T) {
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
 	deposit := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
+	params := k.GetParams(ctx)
 
 	bankKeeper.SetBalance(sender.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
@@ -545,13 +546,13 @@ func TestMsgServer_CloseChannel(t *testing.T) {
 		Sender:          sender.String(),
 		Recipient:       recipient.String(),
 		Deposit:         deposit,
-		ExpiresInBlocks: 10,
+		ExpiresInBlocks: params.MinChannelExpiration,
 	}
 	openResp, err := msgServer.OpenChannel(sdk.WrapSDKContext(ctx), openMsg)
 	require.NoError(t, err)
 
 	// Move past expiration
-	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 11)
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + params.MinChannelExpiration + 1)
 
 	// Close channel
 	closeMsg := &types.MsgCloseChannel{
@@ -708,10 +709,9 @@ func TestMsgServer_RegisterMerchant_EmptyName(t *testing.T) {
 		FeeRateBps: 25,
 	}
 
-	resp, err := msgServer.RegisterMerchant(sdk.WrapSDKContext(ctx), msg)
-	// Empty name should be allowed but stored
-	require.NoError(t, err)
-	require.NotNil(t, resp)
+	_, err := msgServer.RegisterMerchant(sdk.WrapSDKContext(ctx), msg)
+	require.Error(t, err)
+	require.ErrorIs(t, err, types.ErrInvalidSettlement)
 }
 
 func TestMsgServer_RegisterMerchant_Unauthorized(t *testing.T) {

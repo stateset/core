@@ -1,0 +1,51 @@
+syntax = "proto3";
+package stateset.circuit;
+
+option go_package = "github.com/stateset/core/x/circuit/types";
+
+import "gogoproto/gogo.proto";
+import "stateset/circuit/circuit.proto";
+
+// Query defines the circuit breaker gRPC query service.
+service Query {
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse);
+  rpc CircuitState(QueryCircuitStateRequest) returns (QueryCircuitStateResponse);
+  rpc ModuleCircuit(QueryModuleCircuitRequest) returns (QueryModuleCircuitResponse);
+  rpc RateLimits(QueryRateLimitsRequest) returns (QueryRateLimitsResponse);
+  rpc LiquidationProtection(QueryLiquidationProtectionRequest) returns (QueryLiquidationProtectionResponse);
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryCircuitStateRequest {}
+
+message QueryCircuitStateResponse {
+  CircuitState state = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryModuleCircuitRequest {
+  string module_name = 1;
+}
+
+message QueryModuleCircuitResponse {
+  ModuleCircuitState state = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryRateLimitsRequest {
+  string address = 1;
+}
+
+message QueryRateLimitsResponse {
+  repeated RateLimitState rate_limits = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryLiquidationProtectionRequest {}
+
+message QueryLiquidationProtectionResponse {
+  LiquidationSurgeProtection protection = 1 [(gogoproto.nullable) = false];
+}
+

@@ -25,11 +25,6 @@ func (m *mockComplianceKeeper) SetSanctioned(addr string, sanctioned bool) {
 	}
 }
 
-// Helper to set balance using string address
-func (m *mockBankKeeper) SetBalance(addr string, coins sdk.Coins) {
-	m.balances[addr] = coins.Sort()
-}
-
 // TestPaymentLifecycle_CreatePayment tests creating a payment intent
 func TestPaymentLifecycle_CreatePayment(t *testing.T) {
 	k, ctx, bankKeeper, _ := setupPaymentKeeper(t)
@@ -39,7 +34,7 @@ func TestPaymentLifecycle_CreatePayment(t *testing.T) {
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
 	// Fund payer
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	intent := types.PaymentIntent{
 		Payer:    payer.String(),
@@ -101,7 +96,7 @@ func TestPaymentLifecycle_CreatePayment_SamePayerPayee(t *testing.T) {
 	addr := newPaymentAddress()
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
-	bankKeeper.SetBalance(addr.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(addr, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	intent := types.PaymentIntent{
 		Payer:  addr.String(),
@@ -120,7 +115,7 @@ func TestPaymentLifecycle_CreatePayment_ZeroAmount(t *testing.T) {
 	payer := newPaymentAddress()
 	payee := newPaymentAddress()
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	intent := types.PaymentIntent{
 		Payer:  payer.String(),
@@ -139,7 +134,7 @@ func TestPaymentLifecycle_CreatePayment_NegativeAmount(t *testing.T) {
 	payer := newPaymentAddress()
 	payee := newPaymentAddress()
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	intent := types.PaymentIntent{
 		Payer:  payer.String(),
@@ -159,7 +154,7 @@ func TestPaymentLifecycle_CreatePayment_InsufficientBalance(t *testing.T) {
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
 	// Fund payer with less than needed
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(500000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(500000))))
 
 	intent := types.PaymentIntent{
 		Payer:  payer.String(),
@@ -179,7 +174,7 @@ func TestPaymentLifecycle_CreatePayment_SanctionedPayer(t *testing.T) {
 	payee := newPaymentAddress()
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 	compKeeper.SetSanctioned(payer.String(), true)
 
 	intent := types.PaymentIntent{
@@ -199,7 +194,7 @@ func TestPaymentLifecycle_CreatePayment_SanctionedPayee(t *testing.T) {
 	payee := newPaymentAddress()
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 	compKeeper.SetSanctioned(payee.String(), true)
 
 	intent := types.PaymentIntent{
@@ -220,7 +215,7 @@ func TestPaymentLifecycle_SettlePayment(t *testing.T) {
 	payee := newPaymentAddress()
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	// Create payment
 	intent := types.PaymentIntent{
@@ -260,7 +255,7 @@ func TestPaymentLifecycle_SettlePayment_WrongPayee(t *testing.T) {
 	wrongPayee := newPaymentAddress()
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	// Create payment
 	intent := types.PaymentIntent{
@@ -284,7 +279,7 @@ func TestPaymentLifecycle_SettlePayment_AlreadySettled(t *testing.T) {
 	payee := newPaymentAddress()
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	// Create payment
 	intent := types.PaymentIntent{
@@ -312,7 +307,7 @@ func TestPaymentLifecycle_SettlePayment_Cancelled(t *testing.T) {
 	payee := newPaymentAddress()
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	// Create payment
 	intent := types.PaymentIntent{
@@ -341,7 +336,7 @@ func TestPaymentLifecycle_CancelPayment(t *testing.T) {
 	payee := newPaymentAddress()
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	// Create payment
 	intent := types.PaymentIntent{
@@ -380,7 +375,7 @@ func TestPaymentLifecycle_CancelPayment_WrongPayer(t *testing.T) {
 	wrongPayer := newPaymentAddress()
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	// Create payment
 	intent := types.PaymentIntent{
@@ -404,7 +399,7 @@ func TestPaymentLifecycle_CancelPayment_AlreadySettled(t *testing.T) {
 	payee := newPaymentAddress()
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	// Create payment
 	intent := types.PaymentIntent{
@@ -432,7 +427,7 @@ func TestPaymentLifecycle_CancelPayment_AlreadyCancelled(t *testing.T) {
 	payee := newPaymentAddress()
 	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	// Create payment
 	intent := types.PaymentIntent{
@@ -462,7 +457,7 @@ func TestPaymentLifecycle_MultiplePayments(t *testing.T) {
 	payee2 := newPaymentAddress()
 	payee3 := newPaymentAddress()
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(10000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(10000000))))
 
 	// Create multiple payments
 	payees := []sdk.AccAddress{payee1, payee2, payee3}
@@ -493,7 +488,7 @@ func TestPaymentLifecycle_IteratePayments(t *testing.T) {
 	payer := newPaymentAddress()
 	payee := newPaymentAddress()
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(10000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(10000000))))
 
 	// Create multiple payments
 	for i := 0; i < 5; i++ {
@@ -522,7 +517,7 @@ func TestPaymentLifecycle_IteratePayments_EarlyStop(t *testing.T) {
 	payer := newPaymentAddress()
 	payee := newPaymentAddress()
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(10000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(10000000))))
 
 	// Create multiple payments
 	for i := 0; i < 10; i++ {
@@ -552,7 +547,7 @@ func TestPaymentLifecycle_GenesisExportImport(t *testing.T) {
 	payer := newPaymentAddress()
 	payee := newPaymentAddress()
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(10000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(10000000))))
 
 	// Create payments
 	for i := 0; i < 3; i++ {
@@ -573,7 +568,7 @@ func TestPaymentLifecycle_GenesisExportImport(t *testing.T) {
 	require.Equal(t, uint64(4), genesis.NextPaymentId)
 
 	// Create new keeper and import
-	k2, ctx2, _, _ := setupPaymentKeeper(t)
+	k2, ctx2, bankKeeper2, _ := setupPaymentKeeper(t)
 	k2.InitGenesis(ctx2, genesis)
 
 	// Verify imported payments
@@ -584,8 +579,19 @@ func TestPaymentLifecycle_GenesisExportImport(t *testing.T) {
 	})
 	require.Equal(t, 3, count)
 
-	// Verify next ID
-	nextID := k2.getNextID(ctx2)
+	// Verify next ID by creating the next payment.
+	payer2 := newPaymentAddress()
+	payee2 := newPaymentAddress()
+	bankKeeper2.SetBalance(payer2, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))))
+
+	nextIntent := types.PaymentIntent{
+		Payer:  payer2.String(),
+		Payee:  payee2.String(),
+		Amount: sdk.NewCoin("ssusd", sdkmath.NewInt(100000)),
+	}
+
+	nextID, err := k2.CreatePayment(ctx2, nextIntent)
+	require.NoError(t, err)
 	require.Equal(t, uint64(4), nextID)
 }
 
@@ -598,7 +604,7 @@ func TestPaymentLifecycle_LargeAmount(t *testing.T) {
 	// 1 billion units
 	largeAmount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000000000))
 
-	bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000000000))))
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000000000))))
 
 	intent := types.PaymentIntent{
 		Payer:  payer.String(),
@@ -624,7 +630,7 @@ func TestPaymentLifecycle_DifferentDenominations(t *testing.T) {
 	// Setup different denominations
 	denoms := []string{"ssusd", "atom", "osmo"}
 	for _, denom := range denoms {
-		bankKeeper.SetBalance(payer.String(), sdk.NewCoins(sdk.NewCoin(denom, sdkmath.NewInt(2000000))))
+		bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin(denom, sdkmath.NewInt(2000000))))
 
 		amount := sdk.NewCoin(denom, sdkmath.NewInt(1000000))
 		intent := types.PaymentIntent{

@@ -176,17 +176,18 @@ func (k Keeper) UpdateModuleHealth(ctx sdk.Context, module string, status string
 	metrics := k.GetSystemMetrics(ctx)
 
 	if metrics.ModuleHealth == nil {
-		metrics.ModuleHealth = make(map[string]types.ModuleHealth)
+		metrics.ModuleHealth = make(map[string]*types.ModuleHealth)
 	}
 
 	health := metrics.ModuleHealth[module]
-	health.Module = module
+	if health == nil {
+		health = &types.ModuleHealth{Module: module}
+		metrics.ModuleHealth[module] = health
+	}
 	health.Status = status
 	health.ErrorRate = errorRate
 	health.Latency = latency
 	health.Transactions++
-
-	metrics.ModuleHealth[module] = health
 	k.SetSystemMetrics(ctx, metrics)
 }
 
@@ -195,11 +196,14 @@ func (k Keeper) RecordModuleError(ctx sdk.Context, module string, errorMsg strin
 	metrics := k.GetSystemMetrics(ctx)
 
 	if metrics.ModuleHealth == nil {
-		metrics.ModuleHealth = make(map[string]types.ModuleHealth)
+		metrics.ModuleHealth = make(map[string]*types.ModuleHealth)
 	}
 
 	health := metrics.ModuleHealth[module]
-	health.Module = module
+	if health == nil {
+		health = &types.ModuleHealth{Module: module}
+		metrics.ModuleHealth[module] = health
+	}
 	health.LastError = errorMsg
 	health.LastErrorAt = ctx.BlockTime()
 
@@ -215,7 +219,6 @@ func (k Keeper) RecordModuleError(ctx sdk.Context, module string, errorMsg strin
 		health.Status = "healthy"
 	}
 
-	metrics.ModuleHealth[module] = health
 	k.SetSystemMetrics(ctx, metrics)
 }
 
@@ -389,7 +392,7 @@ func (k Keeper) CheckAlerts(ctx sdk.Context) []types.Alert {
 
 		if triggered {
 			alert := types.Alert{
-				ID:          fmt.Sprintf("%s-%d", config.Name, ctx.BlockHeight()),
+				Id:          fmt.Sprintf("%s-%d", config.Name, ctx.BlockHeight()),
 				ConfigName:  config.Name,
 				MetricName:  config.MetricName,
 				Value:       value,
@@ -459,11 +462,14 @@ func (k Keeper) RecordTransaction(ctx context.Context, module string, success bo
 	// Update module health
 	metrics := k.GetSystemMetrics(sdkCtx)
 	if metrics.ModuleHealth == nil {
-		metrics.ModuleHealth = make(map[string]types.ModuleHealth)
+		metrics.ModuleHealth = make(map[string]*types.ModuleHealth)
 	}
 
 	health := metrics.ModuleHealth[module]
-	health.Module = module
+	if health == nil {
+		health = &types.ModuleHealth{Module: module}
+		metrics.ModuleHealth[module] = health
+	}
 	health.Transactions++
 
 	// Update average latency
@@ -475,6 +481,5 @@ func (k Keeper) RecordTransaction(ctx context.Context, module string, success bo
 		health.ErrorRate = (health.ErrorRate * float64(health.Transactions-1)) / float64(health.Transactions)
 	}
 
-	metrics.ModuleHealth[module] = health
 	k.SetSystemMetrics(sdkCtx, metrics)
 }

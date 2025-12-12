@@ -212,6 +212,10 @@ func (m *mockOracleKeeper) GetPriceDec(_ context.Context, denom string) (sdkmath
 	return price, nil
 }
 
+func (m *mockOracleKeeper) GetPriceDecSafe(ctx context.Context, denom string) (sdkmath.LegacyDec, error) {
+	return m.GetPriceDec(ctx, denom)
+}
+
 type mockComplianceKeeper struct {
 	blocked map[string]bool
 }

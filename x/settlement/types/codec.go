@@ -3,6 +3,7 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
 var (
@@ -22,10 +23,12 @@ func RegisterCodec(cdc *codec.LegacyAmino) {
 	cdc.RegisterConcrete(&MsgClaimChannel{}, "settlement/ClaimChannel", nil)
 	cdc.RegisterConcrete(&MsgRegisterMerchant{}, "settlement/RegisterMerchant", nil)
 	cdc.RegisterConcrete(&MsgUpdateMerchant{}, "settlement/UpdateMerchant", nil)
+	cdc.RegisterConcrete(&MsgInstantCheckout{}, "settlement/InstantCheckout", nil)
+	cdc.RegisterConcrete(&MsgPartialRefund{}, "settlement/PartialRefund", nil)
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
-	_ = registry
+	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
 
 func init() {

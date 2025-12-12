@@ -1,0 +1,117 @@
+syntax = "proto3";
+package stateset.treasury;
+
+option go_package = "github.com/stateset/core/x/treasury/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "cosmos/msg/v1/msg.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "stateset/treasury/treasury.proto";
+
+// Msg defines the treasury Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  rpc RecordReserve(MsgRecordReserve) returns (MsgRecordReserveResponse);
+  rpc ProposeSpend(MsgProposeSpend) returns (MsgProposeSpendResponse);
+  rpc ExecuteSpend(MsgExecuteSpend) returns (MsgExecuteSpendResponse);
+  rpc CancelSpend(MsgCancelSpend) returns (MsgCancelSpendResponse);
+  rpc SetBudget(MsgSetBudget) returns (MsgSetBudgetResponse);
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+}
+
+message MsgRecordReserve {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  ReserveSnapshot snapshot = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgRecordReserveResponse {
+  uint64 snapshot_id = 1 [(gogoproto.customname) = "SnapshotID"];
+}
+
+message MsgProposeSpend {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string recipient = 2;
+  repeated cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  string category = 4;
+  string description = 5;
+  uint64 timelock_seconds = 6;
+}
+
+message MsgProposeSpendResponse {
+  uint64 proposal_id = 1 [(gogoproto.customname) = "ProposalID"];
+  google.protobuf.Timestamp execute_after = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp expires_at = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+message MsgExecuteSpend {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  uint64 proposal_id = 2 [(gogoproto.customname) = "ProposalID"];
+}
+
+message MsgExecuteSpendResponse {
+  string recipient = 1;
+  repeated cosmos.base.v1beta1.Coin amount = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  string tx_hash = 3;
+}
+
+message MsgCancelSpend {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  uint64 proposal_id = 2 [(gogoproto.customname) = "ProposalID"];
+  string reason = 3;
+}
+
+message MsgCancelSpendResponse {}
+
+message MsgSetBudget {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string category = 2;
+  repeated cosmos.base.v1beta1.Coin total_limit = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  repeated cosmos.base.v1beta1.Coin period_limit = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  google.protobuf.Duration period_duration = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  bool enabled = 6;
+}
+
+message MsgSetBudgetResponse {}
+
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  TreasuryParams params = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgUpdateParamsResponse {}

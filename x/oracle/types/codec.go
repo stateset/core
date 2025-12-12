@@ -3,6 +3,7 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/types/msgservice"
 )
 
 // ModuleCdc references the global module codec.
@@ -15,9 +16,7 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 
 // RegisterInterfaces registers module interfaces to protobuf type registry.
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
-	// Note: Full interface registration requires protobuf-generated code.
-	// Legacy amino registration handles basic functionality.
-	_ = registry
+	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
 
 func init() {

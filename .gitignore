@@ -3,6 +3,10 @@ vue/dist
 release/
 build/
 
+# Local toolchains and build cache
+.tools/
+.gocache/
+
 # Local data and keyring
 data/
 

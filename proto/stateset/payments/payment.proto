@@ -1,0 +1,34 @@
+syntax = "proto3";
+package stateset.payments;
+
+option go_package = "github.com/stateset/core/x/payments/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "google/protobuf/timestamp.proto";
+
+// PaymentIntent holds metadata for pending settlements.
+message PaymentIntent {
+  uint64 id = 1;
+  string payer = 2;
+  string payee = 3;
+
+  cosmos.base.v1beta1.Coin amount = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+
+  string status = 5;
+  string metadata = 6;
+  int64 created_height = 7;
+  google.protobuf.Timestamp created_time = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  int64 settled_height = 9;
+  google.protobuf.Timestamp settled_time = 10 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+

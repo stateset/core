@@ -69,11 +69,11 @@ func (k Keeper) ModuleHealth(goCtx context.Context, req *types.QueryModuleHealth
 
 	if req.Module != "" {
 		health, exists := metrics.ModuleHealth[req.Module]
-		if !exists {
+		if !exists || health == nil {
 			return nil, fmt.Errorf("module %s not found", req.Module)
 		}
 		return &types.QueryModuleHealthResponse{
-			Health: map[string]types.ModuleHealth{req.Module: health},
+			Health: map[string]*types.ModuleHealth{req.Module: health},
 		}, nil
 	}
 
@@ -196,6 +196,9 @@ func (k Keeper) PrometheusMetrics(goCtx context.Context, req *types.QueryPrometh
 		output.WriteString("# HELP stateset_module_error_rate Module error rate\n")
 		output.WriteString("# TYPE stateset_module_error_rate gauge\n")
 		for module, health := range metrics.ModuleHealth {
+			if health == nil {
+				continue
+			}
 			output.WriteString(fmt.Sprintf("stateset_module_error_rate{module=\"%s\"} %.6f\n", module, health.ErrorRate))
 		}
 		output.WriteString("\n")
@@ -203,6 +206,9 @@ func (k Keeper) PrometheusMetrics(goCtx context.Context, req *types.QueryPrometh
 		output.WriteString("# HELP stateset_module_latency Module average latency in milliseconds\n")
 		output.WriteString("# TYPE stateset_module_latency gauge\n")
 		for module, health := range metrics.ModuleHealth {
+			if health == nil {
+				continue
+			}
 			output.WriteString(fmt.Sprintf("stateset_module_latency{module=\"%s\"} %.2f\n", module, health.Latency))
 		}
 		output.WriteString("\n")
@@ -210,6 +216,9 @@ func (k Keeper) PrometheusMetrics(goCtx context.Context, req *types.QueryPrometh
 		output.WriteString("# HELP stateset_module_transactions Total transactions per module\n")
 		output.WriteString("# TYPE stateset_module_transactions counter\n")
 		for module, health := range metrics.ModuleHealth {
+			if health == nil {
+				continue
+			}
 			output.WriteString(fmt.Sprintf("stateset_module_transactions{module=\"%s\"} %d\n", module, health.Transactions))
 		}
 		output.WriteString("\n")
@@ -217,6 +226,9 @@ func (k Keeper) PrometheusMetrics(goCtx context.Context, req *types.QueryPrometh
 		output.WriteString("# HELP stateset_module_healthy Module health status (1=healthy, 0=unhealthy)\n")
 		output.WriteString("# TYPE stateset_module_healthy gauge\n")
 		for module, health := range metrics.ModuleHealth {
+			if health == nil {
+				continue
+			}
 			healthValue := 0
 			if health.Status == "healthy" {
 				healthValue = 1

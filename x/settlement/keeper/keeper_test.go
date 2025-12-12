@@ -478,12 +478,13 @@ func TestCloseChannel(t *testing.T) {
 	sender := newSettlementAddress()
 	recipient := newSettlementAddress()
 	deposit := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
+	params := k.GetParams(ctx)
 
 	// Fund sender
 	bankKeeper.SetBalance(sender.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
 
 	// Open channel with short expiration
-	channelId, err := k.OpenChannel(ctx, sender.String(), recipient.String(), deposit, 10)
+	channelId, err := k.OpenChannel(ctx, sender.String(), recipient.String(), deposit, params.MinChannelExpiration)
 	require.NoError(t, err)
 
 	// Try to close before expiration (should fail)
@@ -493,7 +494,7 @@ func TestCloseChannel(t *testing.T) {
 	require.ErrorIs(t, err, types.ErrChannelNotExpired)
 
 	// Move block height past expiration
-	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + 11)
+	ctx = ctx.WithBlockHeight(ctx.BlockHeight() + params.MinChannelExpiration + 1)
 
 	// Now close should work
 	balance, err := k.CloseChannel(ctx, channelId, senderAddr)

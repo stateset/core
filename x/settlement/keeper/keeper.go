@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	storetypes "cosmossdk.io/store/types"
@@ -174,6 +175,9 @@ func (k Keeper) InstantTransfer(ctx sdk.Context, sender, recipient string, amoun
 
 	// Validate amount against params
 	params := k.GetParams(ctx)
+	if !params.InstantTransfersEnabled {
+		return 0, errorsmod.Wrap(types.ErrFeatureDisabled, "instant transfers are disabled")
+	}
 	if amount.IsLT(params.MinSettlementAmount) {
 		return 0, types.ErrSettlementTooSmall
 	}
@@ -273,6 +277,9 @@ func (k Keeper) CreateEscrow(ctx sdk.Context, sender, recipient string, amount s
 
 	// Validate amount against params
 	params := k.GetParams(ctx)
+	if !params.EscrowEnabled {
+		return 0, errorsmod.Wrap(types.ErrFeatureDisabled, "escrow settlements are disabled")
+	}
 	if amount.IsLT(params.MinSettlementAmount) {
 		return 0, types.ErrSettlementTooSmall
 	}
@@ -703,6 +710,14 @@ func (k Keeper) OpenChannel(ctx sdk.Context, sender, recipient string, deposit s
 	}
 	if senderAddr.Equals(recipientAddr) {
 		return 0, types.ErrInvalidRecipient.Wrap("sender and recipient must be different")
+	}
+
+	params := k.GetParams(ctx)
+	if !params.ChannelsEnabled {
+		return 0, errorsmod.Wrap(types.ErrFeatureDisabled, "payment channels are disabled")
+	}
+	if expiresInBlocks < params.MinChannelExpiration || expiresInBlocks > params.MaxChannelExpiration {
+		return 0, errorsmod.Wrapf(types.ErrInvalidChannelExpiration, "expires_in_blocks must be between %d and %d", params.MinChannelExpiration, params.MaxChannelExpiration)
 	}
 
 	// Check compliance

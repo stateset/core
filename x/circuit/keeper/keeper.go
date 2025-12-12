@@ -18,9 +18,9 @@ import (
 
 // Keeper manages circuit breaker state
 type Keeper struct {
-	storeKey   storetypes.StoreKey
-	cdc        codec.BinaryCodec
-	authority  string
+	storeKey  storetypes.StoreKey
+	cdc       codec.BinaryCodec
+	authority string
 }
 
 // NewKeeper creates a new circuit keeper
@@ -96,7 +96,7 @@ func (k Keeper) GetCircuitState(ctx sdk.Context) types.CircuitState {
 // SetCircuitState sets the global circuit state
 func (k Keeper) SetCircuitState(ctx sdk.Context, state types.CircuitState) error {
 	store := ctx.KVStore(k.storeKey)
-	bz, err := state.Marshal()
+	bz, err := types.MarshalCircuitState(state)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to marshal circuit state")
 	}
@@ -209,7 +209,7 @@ func (k Keeper) GetModuleCircuitState(ctx sdk.Context, moduleName string) (types
 // SetModuleCircuitState sets the circuit state for a specific module
 func (k Keeper) SetModuleCircuitState(ctx sdk.Context, state types.ModuleCircuitState) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.ModuleCircuitKeyPrefix)
-	bz, err := state.Marshal()
+	bz, err := types.MarshalModuleCircuitState(state)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to marshal module circuit state")
 	}
@@ -410,7 +410,7 @@ func (k Keeper) GetRateLimitState(ctx sdk.Context, configName, address string) (
 func (k Keeper) SetRateLimitState(ctx sdk.Context, state types.RateLimitState) error {
 	store := prefix.NewStore(ctx.KVStore(k.storeKey), types.RateLimitKeyPrefix)
 	key := k.getRateLimitKey(state.ConfigName, state.Address)
-	bz, err := state.Marshal()
+	bz, err := types.MarshalRateLimitState(state)
 	if err != nil {
 		return errorsmod.Wrap(err, "failed to marshal rate limit state")
 	}

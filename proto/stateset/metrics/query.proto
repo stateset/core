@@ -1,0 +1,65 @@
+syntax = "proto3";
+package stateset.metrics;
+
+option go_package = "github.com/stateset/core/x/metrics/types";
+
+import "gogoproto/gogo.proto";
+import "stateset/metrics/metrics.proto";
+
+// Query defines the metrics gRPC query service.
+service Query {
+  rpc SystemMetrics(QuerySystemMetricsRequest) returns (QuerySystemMetricsResponse);
+  rpc Counter(QueryCounterRequest) returns (QueryCounterResponse);
+  rpc Gauge(QueryGaugeRequest) returns (QueryGaugeResponse);
+  rpc ModuleHealth(QueryModuleHealthRequest) returns (QueryModuleHealthResponse);
+  rpc Alerts(QueryAlertsRequest) returns (QueryAlertsResponse);
+  rpc PrometheusMetrics(QueryPrometheusMetricsRequest) returns (QueryPrometheusMetricsResponse);
+}
+
+message QuerySystemMetricsRequest {}
+
+message QuerySystemMetricsResponse {
+  SystemMetrics metrics = 1;
+}
+
+message QueryCounterRequest {
+  string name = 1;
+  map<string, string> labels = 2;
+}
+
+message QueryCounterResponse {
+  Counter counter = 1;
+}
+
+message QueryGaugeRequest {
+  string name = 1;
+  map<string, string> labels = 2;
+}
+
+message QueryGaugeResponse {
+  Gauge gauge = 1;
+}
+
+message QueryModuleHealthRequest {
+  string module = 1;
+}
+
+message QueryModuleHealthResponse {
+  map<string, ModuleHealth> health = 1;
+}
+
+message QueryAlertsRequest {
+  bool active = 1;
+}
+
+message QueryAlertsResponse {
+  repeated Alert alerts = 1 [(gogoproto.nullable) = false];
+  repeated AlertConfig alert_configs = 2 [(gogoproto.nullable) = false];
+}
+
+message QueryPrometheusMetricsRequest {}
+
+message QueryPrometheusMetricsResponse {
+  string metrics = 1;
+}
+

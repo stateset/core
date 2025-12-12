@@ -22,6 +22,7 @@ import (
 
 	"github.com/stateset/core/x/orders/keeper"
 	ordertypes "github.com/stateset/core/x/orders/types"
+	settlementtypes "github.com/stateset/core/x/settlement/types"
 	stablecointypes "github.com/stateset/core/x/stablecoin/types"
 )
 
@@ -136,8 +137,8 @@ func (m *mockSettlementKeeper) RefundEscrow(_ sdk.Context, _ uint64, _ sdk.AccAd
 	return nil
 }
 
-func (m *mockSettlementKeeper) GetMerchant(_ sdk.Context, _ string) (interface{}, bool) {
-	return nil, false
+func (m *mockSettlementKeeper) GetMerchant(_ sdk.Context, _ string) (settlementtypes.MerchantConfig, bool) {
+	return settlementtypes.MerchantConfig{}, false
 }
 
 type mockAccountKeeper struct{}

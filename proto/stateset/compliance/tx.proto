@@ -1,0 +1,39 @@
+syntax = "proto3";
+package stateset.compliance;
+
+option go_package = "github.com/stateset/core/x/compliance/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
+import "stateset/compliance/profile.proto";
+
+// Msg defines the compliance Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  rpc UpsertProfile(MsgUpsertProfile) returns (MsgUpsertProfileResponse);
+  rpc SetSanction(MsgSetSanction) returns (MsgSetSanctionResponse);
+}
+
+// MsgUpsertProfile allows compliance operators to create or update a profile.
+message MsgUpsertProfile {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  Profile profile = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgUpsertProfileResponse {}
+
+// MsgSetSanction toggles the sanction flag for a profile.
+message MsgSetSanction {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string address = 2;
+  bool sanction = 3;
+  string reason = 4;
+}
+
+message MsgSetSanctionResponse {}
+

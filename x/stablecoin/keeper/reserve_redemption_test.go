@@ -15,13 +15,13 @@ func TestReserveRedemption_ImmediateUpdatesStatsAndIDs(t *testing.T) {
 	k, ctx, bank, oracle, _ := setupKeeper(t)
 
 	depositor := newAddress()
-	amount := sdk.NewInt64Coin("usdy", 1_000)
+	amount := sdk.NewInt64Coin("usdy", 200_000_000) // 200 USDY, above default minimums
 	bank.SetBalance(depositor, sdk.NewCoins(amount))
 	oracle.SetPrice("usdy", sdkmath.LegacyMustNewDecFromStr("1.0"))
 
 	_, minted, err := k.DepositReserve(ctx, depositor, amount)
 	require.NoError(t, err)
-	require.True(t, minted.Equal(sdkmath.NewInt(994)))
+	require.True(t, minted.Equal(sdkmath.NewInt(198_801_000)))
 
 	redemptionID, err := k.RequestRedemption(ctx, depositor, minted, "usdy")
 	require.NoError(t, err)
@@ -31,10 +31,20 @@ func TestReserveRedemption_ImmediateUpdatesStatsAndIDs(t *testing.T) {
 	require.True(t, found)
 	require.Equal(t, types.RedeemStatusExecuted, req.Status)
 	require.Equal(t, "usdy", req.OutputAmount.Denom)
-	require.True(t, req.OutputAmount.Amount.Equal(sdkmath.NewInt(993)))
+	require.True(t, req.OutputAmount.Amount.Equal(sdkmath.NewInt(198_602_199)))
 
 	stats := k.GetDailyMintStats(ctx)
 	require.True(t, stats.TotalRedeemed.Equal(minted))
+
+	// Relax allocation constraints so a second USDY deposit can be tested in isolation.
+	params := k.GetReserveParams(ctx)
+	for i, cfg := range params.TokenizedTreasuries {
+		if cfg.Denom == "usdy" {
+			cfg.MaxAllocationBps = 10000
+			params.TokenizedTreasuries[i] = cfg
+		}
+	}
+	require.NoError(t, k.SetReserveParams(ctx, params))
 
 	// Second immediate redemption should increment ID.
 	depositor2 := newAddress()
@@ -51,7 +61,7 @@ func TestCancelRedemption_RequiresAuthority(t *testing.T) {
 	k, ctx, bank, oracle, _ := setupKeeper(t)
 
 	depositor := newAddress()
-	amount := sdk.NewInt64Coin("usdy", 1_000)
+	amount := sdk.NewInt64Coin("usdy", 200_000_000) // 200 USDY, above default minimums
 	bank.SetBalance(depositor, sdk.NewCoins(amount))
 	oracle.SetPrice("usdy", sdkmath.LegacyMustNewDecFromStr("1.0"))
 

@@ -1,0 +1,101 @@
+syntax = "proto3";
+package stateset.zkpverify;
+
+option go_package = "github.com/stateset/core/x/zkpverify/types";
+
+import "gogoproto/gogo.proto";
+import "google/protobuf/duration.proto";
+
+// PublicInputField defines expected structure of public inputs.
+message PublicInputField {
+  string name = 1;
+  string type = 2;
+  bool required = 3;
+}
+
+// Circuit represents a registered STARK verification circuit.
+message Circuit {
+  string name = 1;
+  bytes verification_key = 2;
+  string proof_system = 3;
+  repeated PublicInputField public_input_schema = 4 [(gogoproto.nullable) = false];
+  string constraint_hash = 5;
+  string owner = 6;
+  bool active = 7;
+  int64 created_at = 8;
+  string description = 9;
+  uint32 max_recursion_depth = 10;
+}
+
+// Condition represents a single condition in a rule.
+message Condition {
+  string field = 1;
+  string operator = 2;
+  string value = 3;
+  string ref_field = 4;
+}
+
+// SymbolicRule defines a logical constraint that must be satisfied.
+message SymbolicRule {
+  string name = 1;
+  string circuit_name = 2;
+  string rule_type = 3 [(gogoproto.casttype) = "RuleType"];
+  repeated Condition conditions = 4 [(gogoproto.nullable) = false];
+  string description = 5;
+  bool active = 6;
+  int64 created_at = 7;
+}
+
+// Proof represents a submitted ZKP for verification.
+message Proof {
+  uint64 id = 1 [(gogoproto.customname) = "ID"];
+  string circuit_name = 2;
+  bytes proof_data = 3;
+  bytes public_inputs = 4;
+  bytes data_commitment = 5;
+  repeated uint64 recursive_proofs = 6;
+  string submitter = 7;
+  int64 submitted_at = 8;
+  int64 submitted_height = 9;
+}
+
+// VerificationResult stores the outcome of proof verification.
+message VerificationResult {
+  uint64 proof_id = 1 [(gogoproto.customname) = "ProofID"];
+  string circuit_name = 2;
+  bool valid = 3;
+  int64 verified_at_height = 4;
+  int64 verified_at = 5;
+  bytes data_commitment = 6;
+  repeated string constraints_satisfied = 7;
+  string error = 8;
+  int64 verification_time_ms = 9;
+  uint32 recursion_depth = 10;
+  bool challenged = 11;
+  int64 challenge_deadline = 12;
+}
+
+// DataCommitmentRecord tracks off-chain data commitments (validium style).
+message DataCommitmentRecord {
+  bytes commitment = 1;
+  bytes data_hash = 2;
+  uint64 proof_id = 3 [(gogoproto.customname) = "ProofID"];
+  int64 committed_at = 4;
+  int64 committed_height = 5;
+  string data_uri = 6 [(gogoproto.customname) = "DataURI"];
+}
+
+// Params defines the module parameters.
+message Params {
+  uint64 max_proof_size = 1;
+  uint64 max_public_input_size = 2;
+  uint32 max_recursion_depth = 3;
+  google.protobuf.Duration challenge_window = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  uint64 min_verification_key_size = 5;
+  uint32 max_circuits_per_owner = 6;
+  string proof_submission_fee = 7;
+}
+

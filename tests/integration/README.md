@@ -165,35 +165,35 @@ Tests that compliance checks work consistently across all modules.
 ### Run All Integration Tests
 ```bash
 cd /home/dom/core
-go test ./tests/integration/... -v
+go test -tags=integration ./tests/integration/... -v
 ```
 
 ### Run Specific Test Suite
 ```bash
 # E-Commerce flow
-go test ./tests/integration -run TestECommerceFlowTestSuite -v
+go test -tags=integration ./tests/integration -run TestECommerceFlowTestSuite -v
 
 # Stablecoin lifecycle
-go test ./tests/integration -run TestStablecoinLifecycleTestSuite -v
+go test -tags=integration ./tests/integration -run TestStablecoinLifecycleTestSuite -v
 
 # AI Agent transactions
-go test ./tests/integration -run TestAIAgentTransactionTestSuite -v
+go test -tags=integration ./tests/integration -run TestAIAgentTransactionTestSuite -v
 
 # Circuit breaker
-go test ./tests/integration -run TestCircuitBreakerTestSuite -v
+go test -tags=integration ./tests/integration -run TestCircuitBreakerTestSuite -v
 
 # Cross-module compliance
-go test ./tests/integration -run TestCrossModuleComplianceTestSuite -v
+go test -tags=integration ./tests/integration -run TestCrossModuleComplianceTestSuite -v
 ```
 
 ### Run Specific Test Case
 ```bash
-go test ./tests/integration -run TestECommerceFlowTestSuite/TestSuccessfulECommerceFlow -v
+go test -tags=integration ./tests/integration -run TestECommerceFlowTestSuite/TestSuccessfulECommerceFlow -v
 ```
 
 ### Run with Coverage
 ```bash
-go test ./tests/integration/... -v -coverprofile=coverage.out
+go test -tags=integration ./tests/integration/... -v -coverprofile=coverage.out
 go tool cover -html=coverage.out
 ```
 

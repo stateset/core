@@ -1,0 +1,278 @@
+syntax = "proto3";
+package stateset.stablecoin;
+
+option go_package = "github.com/stateset/core/x/stablecoin/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos_proto/cosmos.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+// CollateralParam defines risk limits for a collateral type.
+message CollateralParam {
+  string denom = 1;
+  string liquidation_ratio = 2 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string stability_fee = 3 [
+    (cosmos_proto.scalar) = "cosmos.Dec",
+    (gogoproto.customtype) = "cosmossdk.io/math.LegacyDec",
+    (gogoproto.nullable) = false
+  ];
+  string debt_limit = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  bool active = 5;
+}
+
+// Params contains global vault parameters.
+message Params {
+  repeated CollateralParam collateral_params = 1 [(gogoproto.nullable) = false];
+  bool vault_minting_enabled = 2;
+}
+
+// Vault tracks a collateralized debt position for ssUSD issuance.
+message Vault {
+  uint64 id = 1;
+  string owner = 2;
+  cosmos.base.v1beta1.Coin collateral = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string collateral_denom = 4;
+  string debt = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  int64 last_accrued = 6;
+}
+
+// TokenizedTreasuryConfig defines an approved tokenized treasury token.
+message TokenizedTreasuryConfig {
+  string denom = 1;
+  string issuer = 2;
+  string underlying_type = 3;
+  bool active = 4;
+  uint32 haircut_bps = 5;
+  uint32 max_allocation_bps = 6;
+  string oracle_denom = 7;
+}
+
+// ReserveParams defines reserve-backed stablecoin policy.
+message ReserveParams {
+  uint32 min_reserve_ratio_bps = 1;
+  uint32 target_reserve_ratio_bps = 2;
+  uint32 mint_fee_bps = 3;
+  uint32 redeem_fee_bps = 4;
+  string min_mint_amount = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string min_redeem_amount = 6 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  google.protobuf.Duration redemption_delay = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  string max_daily_mint = 8 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string max_daily_redeem = 9 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  repeated TokenizedTreasuryConfig tokenized_treasuries = 10 [(gogoproto.nullable) = false];
+  bool require_kyc = 11;
+  bool mint_paused = 12;
+  bool redeem_paused = 13;
+}
+
+// Reserve represents the on-chain reserve backing for ssUSD.
+message Reserve {
+  repeated cosmos.base.v1beta1.Coin total_deposited = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.castrepeated) = "github.com/cosmos/cosmos-sdk/types.Coins"
+  ];
+  string total_value = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_minted = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  int64 last_updated = 4 [(gogoproto.customname) = "LastUpdatedHeight"];
+  google.protobuf.Timestamp last_updated_time = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// ReserveDeposit represents a deposit of approved tokenized treasuries.
+message ReserveDeposit {
+  uint64 id = 1;
+  string depositor = 2;
+  cosmos.base.v1beta1.Coin amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string usd_value = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string ssusd_minted = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  google.protobuf.Timestamp deposited_at = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  string status = 7;
+}
+
+// RedemptionRequest represents a request to redeem ssUSD into reserve assets.
+message RedemptionRequest {
+  uint64 id = 1;
+  string requester = 2;
+  string ssusd_amount = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string output_denom = 4;
+  google.protobuf.Timestamp requested_at = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp executable_after = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  string status = 7;
+  google.protobuf.Timestamp executed_at = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  cosmos.base.v1beta1.Coin output_amount = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+
+// DailyMintStats tracks daily minting/redemption totals.
+message DailyMintStats {
+  string date = 1;
+  string total_minted = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_redeemed = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+}
+
+// OffChainReserveAttestation represents an off-chain reserve attestation.
+message OffChainReserveAttestation {
+  uint64 id = 1;
+  string attester = 2;
+  string total_cash = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_tbills = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_tnotes = 5 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_tbonds = 6 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_repos = 7 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_mmf = 8 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_value = 9 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string custodian_name = 10;
+  string audit_firm = 11;
+  google.protobuf.Timestamp report_date = 12 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  string attestation_hash = 13;
+  google.protobuf.Timestamp timestamp = 14 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// TotalReserves aggregates on-chain and off-chain reserves.
+message TotalReserves {
+  string on_chain_value = 1 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string off_chain_value = 2 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_value = 3 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  string total_supply = 4 [
+    (cosmos_proto.scalar) = "cosmos.Int",
+    (gogoproto.customtype) = "cosmossdk.io/math.Int",
+    (gogoproto.nullable) = false
+  ];
+  uint32 reserve_ratio_bps = 5;
+  google.protobuf.Timestamp last_on_chain_update = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp last_off_chain_update = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}

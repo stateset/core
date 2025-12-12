@@ -1,0 +1,121 @@
+syntax = "proto3";
+package stateset.stablecoin;
+
+option go_package = "github.com/stateset/core/x/stablecoin/types";
+
+import "gogoproto/gogo.proto";
+import "stateset/stablecoin/stablecoin.proto";
+
+// Query defines the stablecoin gRPC query service.
+service Query {
+  rpc Params(QueryParamsRequest) returns (QueryParamsResponse);
+  rpc Vault(QueryVaultRequest) returns (QueryVaultResponse);
+  rpc Vaults(QueryVaultsRequest) returns (QueryVaultsResponse);
+
+  rpc ReserveParams(QueryReserveParamsRequest) returns (QueryReserveParamsResponse);
+  rpc Reserve(QueryReserveRequest) returns (QueryReserveResponse);
+  rpc TotalReserves(QueryTotalReservesRequest) returns (QueryTotalReservesResponse);
+
+  rpc ReserveDeposit(QueryReserveDepositRequest) returns (QueryReserveDepositResponse);
+  rpc ReserveDeposits(QueryReserveDepositsRequest) returns (QueryReserveDepositsResponse);
+
+  rpc RedemptionRequest(QueryRedemptionRequestRequest) returns (QueryRedemptionRequestResponse);
+  rpc RedemptionRequests(QueryRedemptionRequestsRequest) returns (QueryRedemptionRequestsResponse);
+
+  rpc LatestAttestation(QueryLatestAttestationRequest) returns (QueryLatestAttestationResponse);
+  rpc Attestation(QueryAttestationRequest) returns (QueryAttestationResponse);
+
+  rpc DailyStats(QueryDailyStatsRequest) returns (QueryDailyStatsResponse);
+}
+
+message QueryParamsRequest {}
+
+message QueryParamsResponse {
+  Params params = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryVaultRequest {
+  uint64 vault_id = 1;
+}
+
+message QueryVaultResponse {
+  Vault vault = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryVaultsRequest {
+  string owner = 1;
+}
+
+message QueryVaultsResponse {
+  repeated Vault vaults = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryReserveParamsRequest {}
+
+message QueryReserveParamsResponse {
+  ReserveParams params = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryReserveRequest {}
+
+message QueryReserveResponse {
+  Reserve reserve = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryTotalReservesRequest {}
+
+message QueryTotalReservesResponse {
+  TotalReserves total_reserves = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryReserveDepositRequest {
+  uint64 deposit_id = 1;
+}
+
+message QueryReserveDepositResponse {
+  ReserveDeposit deposit = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryReserveDepositsRequest {
+  string depositor = 1;
+}
+
+message QueryReserveDepositsResponse {
+  repeated ReserveDeposit deposits = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryRedemptionRequestRequest {
+  uint64 redemption_id = 1;
+}
+
+message QueryRedemptionRequestResponse {
+  RedemptionRequest redemption = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryRedemptionRequestsRequest {
+  string status = 1;
+}
+
+message QueryRedemptionRequestsResponse {
+  repeated RedemptionRequest redemptions = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryLatestAttestationRequest {}
+
+message QueryLatestAttestationResponse {
+  OffChainReserveAttestation attestation = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryAttestationRequest {
+  uint64 attestation_id = 1;
+}
+
+message QueryAttestationResponse {
+  OffChainReserveAttestation attestation = 1 [(gogoproto.nullable) = false];
+}
+
+message QueryDailyStatsRequest {}
+
+message QueryDailyStatsResponse {
+  DailyMintStats stats = 1 [(gogoproto.nullable) = false];
+}

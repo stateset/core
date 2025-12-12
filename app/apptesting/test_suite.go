@@ -1,19 +1,28 @@
 package apptesting
 
 import (
+	"encoding/json"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
 	"cosmossdk.io/log"
 	sdkmath "cosmossdk.io/math"
+	abci "github.com/cometbft/cometbft/abci/types"
+	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	cmttypes "github.com/cometbft/cometbft/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
+	"github.com/cosmos/cosmos-sdk/testutil/mock"
+	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
+	minttypes "github.com/cosmos/cosmos-sdk/x/mint/types"
 	"github.com/stretchr/testify/suite"
-	dbm "github.com/cosmos/cosmos-db"
 
 	"github.com/stateset/core/app"
 )
@@ -27,7 +36,25 @@ type KeeperTestHelper struct {
 	TestAccs    []sdk.AccAddress
 }
 
+type appOptions map[string]interface{}
+
+func (o appOptions) Get(key string) interface{} { return o[key] }
+
+var bech32ConfigOnce sync.Once
+
+func setupBech32Config() {
+	bech32ConfigOnce.Do(func() {
+		cfg := sdk.GetConfig()
+		cfg.SetBech32PrefixForAccount(app.AccountAddressPrefix, app.AccountAddressPrefix+"pub")
+		cfg.SetBech32PrefixForValidator(app.AccountAddressPrefix+"valoper", app.AccountAddressPrefix+"valoperpub")
+		cfg.SetBech32PrefixForConsensusNode(app.AccountAddressPrefix+"valcons", app.AccountAddressPrefix+"valconspub")
+		cfg.Seal()
+	})
+}
+
 func (s *KeeperTestHelper) Setup() {
+	setupBech32Config()
+
 	s.App = app.New(
 		log.NewNopLogger(),
 		dbm.NewMemDB(),
@@ -37,10 +64,36 @@ func (s *KeeperTestHelper) Setup() {
 		app.DefaultNodeHome,
 		5,
 		app.MakeEncodingConfig(app.ModuleBasics),
-		nil,
+		appOptions{},
 	)
-	s.Ctx = s.App.BaseApp.NewContext(false)
+	s.Ctx = s.App.BaseApp.NewUncachedContext(false, cmtproto.Header{})
 	s.Ctx = s.Ctx.WithBlockHeight(1).WithChainID("stateset-1").WithBlockTime(time.Now().UTC())
+
+	// Initialize modules with default genesis so module accounts/params exist.
+	genesisState := app.NewDefaultGenesisState(s.App.AppCodec())
+	privVal := mock.NewPV()
+	pubKey, err := privVal.GetPubKey()
+	s.Require().NoError(err)
+
+	validator := cmttypes.NewValidator(pubKey, 1)
+	valSet := cmttypes.NewValidatorSet([]*cmttypes.Validator{validator})
+
+	senderPrivKey := secp256k1.GenPrivKey()
+	genAcc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
+	balances := []banktypes.Balance{
+		{
+			Address: genAcc.GetAddress().String(),
+			Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdkmath.NewInt(100000000000000))),
+		},
+	}
+	genesisState, err = simtestutil.GenesisStateWithValSet(s.App.AppCodec(), genesisState, valSet, []authtypes.GenesisAccount{genAcc}, balances...)
+	s.Require().NoError(err)
+
+	stateBytes, err := json.Marshal(genesisState)
+	s.Require().NoError(err)
+	_, err = s.App.InitChainer(s.Ctx, &abci.RequestInitChain{AppStateBytes: stateBytes})
+	s.Require().NoError(err)
+
 	s.QueryHelper = &baseapp.QueryServiceTestHelper{
 		GRPCQueryRouter: s.App.GRPCQueryRouter(),
 		Ctx:             s.Ctx,
@@ -51,6 +104,8 @@ func (s *KeeperTestHelper) Setup() {
 
 func (s *KeeperTestHelper) SetupTestForInitGenesis() {
 	// Reset app state
+	setupBech32Config()
+
 	s.App = app.New(
 		log.NewNopLogger(),
 		dbm.NewMemDB(),
@@ -60,10 +115,34 @@ func (s *KeeperTestHelper) SetupTestForInitGenesis() {
 		app.DefaultNodeHome,
 		5,
 		app.MakeEncodingConfig(app.ModuleBasics),
-		nil,
+		appOptions{},
 	)
-	s.Ctx = s.App.BaseApp.NewContext(false)
+	s.Ctx = s.App.BaseApp.NewUncachedContext(false, cmtproto.Header{})
 	s.Ctx = s.Ctx.WithBlockHeight(1).WithChainID("stateset-1").WithBlockTime(time.Now().UTC())
+
+	genesisState := app.NewDefaultGenesisState(s.App.AppCodec())
+	privVal := mock.NewPV()
+	pubKey, err := privVal.GetPubKey()
+	s.Require().NoError(err)
+
+	validator := cmttypes.NewValidator(pubKey, 1)
+	valSet := cmttypes.NewValidatorSet([]*cmttypes.Validator{validator})
+
+	senderPrivKey := secp256k1.GenPrivKey()
+	genAcc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
+	balances := []banktypes.Balance{
+		{
+			Address: genAcc.GetAddress().String(),
+			Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdkmath.NewInt(100000000000000))),
+		},
+	}
+	genesisState, err = simtestutil.GenesisStateWithValSet(s.App.AppCodec(), genesisState, valSet, []authtypes.GenesisAccount{genAcc}, balances...)
+	s.Require().NoError(err)
+
+	stateBytes, err := json.Marshal(genesisState)
+	s.Require().NoError(err)
+	_, err = s.App.InitChainer(s.Ctx, &abci.RequestInitChain{AppStateBytes: stateBytes})
+	s.Require().NoError(err)
 }
 
 // CreateRandomAccounts is a function return a list of randomly generated AccAddresses
@@ -91,18 +170,18 @@ func (s *KeeperTestHelper) FundModuleAcc(moduleName string, amounts sdk.Coins) {
 
 // FundAccount mints coins and sends them to the given account.
 func FundAccount(bk bankkeeper.Keeper, ctx sdk.Context, addr sdk.AccAddress, amounts sdk.Coins) error {
-	if err := bk.MintCoins(ctx, banktypes.ModuleName, amounts); err != nil {
+	if err := bk.MintCoins(ctx, minttypes.ModuleName, amounts); err != nil {
 		return err
 	}
-	return bk.SendCoinsFromModuleToAccount(ctx, banktypes.ModuleName, addr, amounts)
+	return bk.SendCoinsFromModuleToAccount(ctx, minttypes.ModuleName, addr, amounts)
 }
 
 // FundModuleAccount mints coins and sends them to the given module account.
 func FundModuleAccount(bk bankkeeper.Keeper, ctx sdk.Context, recipientMod string, amounts sdk.Coins) error {
-	if err := bk.MintCoins(ctx, banktypes.ModuleName, amounts); err != nil {
+	if err := bk.MintCoins(ctx, minttypes.ModuleName, amounts); err != nil {
 		return err
 	}
-	return bk.SendCoinsFromModuleToModule(ctx, banktypes.ModuleName, recipientMod, amounts)
+	return bk.SendCoinsFromModuleToModule(ctx, minttypes.ModuleName, recipientMod, amounts)
 }
 
 func (s *KeeperTestHelper) RunMsg(msg sdk.Msg) (*sdk.Result, error) {

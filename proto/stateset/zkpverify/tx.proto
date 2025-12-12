@@ -1,0 +1,103 @@
+syntax = "proto3";
+package stateset.zkpverify;
+
+option go_package = "github.com/stateset/core/x/zkpverify/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/msg/v1/msg.proto";
+import "stateset/zkpverify/zkpverify.proto";
+
+// Msg defines the zkpverify Msg service.
+service Msg {
+  option (cosmos.msg.v1.service) = true;
+
+  rpc RegisterCircuit(MsgRegisterCircuit) returns (MsgRegisterCircuitResponse);
+  rpc DeactivateCircuit(MsgDeactivateCircuit) returns (MsgDeactivateCircuitResponse);
+  rpc RegisterSymbolicRule(MsgRegisterSymbolicRule) returns (MsgRegisterSymbolicRuleResponse);
+  rpc SubmitProof(MsgSubmitProof) returns (MsgSubmitProofResponse);
+  rpc ChallengeProof(MsgChallengeProof) returns (MsgChallengeProofResponse);
+  rpc UpdateParams(MsgUpdateParams) returns (MsgUpdateParamsResponse);
+}
+
+message MsgRegisterCircuit {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string name = 2;
+  bytes verification_key = 3;
+  repeated PublicInputField public_input_schema = 4 [(gogoproto.nullable) = false];
+  string description = 5;
+  uint32 max_recursion_depth = 6;
+}
+
+message MsgRegisterCircuitResponse {
+  string circuit_name = 1;
+  string constraint_hash = 2;
+}
+
+message MsgDeactivateCircuit {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string circuit_name = 2;
+}
+
+message MsgDeactivateCircuitResponse {}
+
+message MsgRegisterSymbolicRule {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  string circuit_name = 2;
+  string rule_name = 3;
+  string rule_type = 4 [(gogoproto.casttype) = "RuleType"];
+  repeated Condition conditions = 5 [(gogoproto.nullable) = false];
+  string description = 6;
+}
+
+message MsgRegisterSymbolicRuleResponse {
+  string rule_name = 1;
+}
+
+message MsgSubmitProof {
+  option (cosmos.msg.v1.signer) = "submitter";
+
+  string submitter = 1;
+  string circuit_name = 2;
+  bytes proof_data = 3;
+  bytes public_inputs = 4;
+  bytes data_commitment = 5;
+  repeated uint64 recursive_proofs = 6;
+}
+
+message MsgSubmitProofResponse {
+  uint64 proof_id = 1 [(gogoproto.customname) = "ProofID"];
+  bool valid = 2;
+  repeated string constraints_satisfied = 3;
+  string error = 4;
+}
+
+message MsgChallengeProof {
+  option (cosmos.msg.v1.signer) = "challenger";
+
+  string challenger = 1;
+  uint64 proof_id = 2 [(gogoproto.customname) = "ProofID"];
+  bytes fraud_proof = 3;
+  string reason = 4;
+}
+
+message MsgChallengeProofResponse {
+  bool challenge_accepted = 1;
+  bool proof_invalidated = 2;
+  string reason = 3;
+}
+
+message MsgUpdateParams {
+  option (cosmos.msg.v1.signer) = "authority";
+
+  string authority = 1;
+  Params params = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgUpdateParamsResponse {}
+

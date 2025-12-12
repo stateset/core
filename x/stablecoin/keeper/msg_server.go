@@ -313,15 +313,15 @@ func (m msgServer) RecordAttestation(goCtx context.Context, msg *types.MsgRecord
 	if err != nil {
 		return nil, err
 	}
-	totalTBills, err := parseInt(msg.TotalTBills, "total_t_bills")
+	totalTBills, err := parseInt(msg.TotalTbills, "total_t_bills")
 	if err != nil {
 		return nil, err
 	}
-	totalTNotes, err := parseInt(msg.TotalTNotes, "total_t_notes")
+	totalTNotes, err := parseInt(msg.TotalTnotes, "total_t_notes")
 	if err != nil {
 		return nil, err
 	}
-	totalTBonds, err := parseInt(msg.TotalTBonds, "total_t_bonds")
+	totalTBonds, err := parseInt(msg.TotalTbonds, "total_t_bonds")
 	if err != nil {
 		return nil, err
 	}
@@ -329,7 +329,7 @@ func (m msgServer) RecordAttestation(goCtx context.Context, msg *types.MsgRecord
 	if err != nil {
 		return nil, err
 	}
-	totalMMF, err := parseInt(msg.TotalMMF, "total_mmf")
+	totalMMF, err := parseInt(msg.TotalMmf, "total_mmf")
 	if err != nil {
 		return nil, err
 	}
@@ -347,11 +347,11 @@ func (m msgServer) RecordAttestation(goCtx context.Context, msg *types.MsgRecord
 	attestation := types.OffChainReserveAttestation{
 		Attester:        msg.Attester,
 		TotalCash:       totalCash,
-		TotalTBills:     totalTBills,
-		TotalTNotes:     totalTNotes,
-		TotalTBonds:     totalTBonds,
+		TotalTbills:     totalTBills,
+		TotalTnotes:     totalTNotes,
+		TotalTbonds:     totalTBonds,
 		TotalRepos:      totalRepos,
-		TotalMMF:        totalMMF,
+		TotalMmf:        totalMMF,
 		TotalValue:      totalValue,
 		CustodianName:   msg.CustodianName,
 		AuditFirm:       msg.AuditFirm,

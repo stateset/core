@@ -3,6 +3,7 @@ package keeper_test
 import (
 	"sync"
 	"testing"
+	"time"
 
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
@@ -39,6 +40,7 @@ func setupBasicKeeper(t *testing.T) (keeper.Keeper, sdk.Context) {
 	cdc := codec.NewProtoCodec(registry)
 
 	ctx := testutil.DefaultContext(storeKey, storetypes.NewTransientStoreKey("compliance-transient"))
+	ctx = ctx.WithBlockTime(time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC))
 
 	authority := newBasicAddress().String()
 	return keeper.NewKeeper(cdc, storeKey, authority), ctx

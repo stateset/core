@@ -1,0 +1,71 @@
+syntax = "proto3";
+package stateset.compliance;
+
+option go_package = "github.com/stateset/core/x/compliance/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "google/protobuf/timestamp.proto";
+
+// AuditEntry records a compliance action for audit purposes.
+message AuditEntry {
+  google.protobuf.Timestamp timestamp = 1 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  string action = 2;
+  string actor = 3;
+  string reason = 4;
+  string old_status = 5;
+  string new_status = 6;
+}
+
+// Profile captures compliance metadata tied to an address.
+message Profile {
+  string address = 1;
+  string kyc_level = 2 [(gogoproto.customname) = "KYCLevel"];
+  string risk = 3;
+  string status = 4;
+  bool sanction = 5;
+  string jurisdiction = 6;
+  string business_type = 7;
+
+  cosmos.base.v1beta1.Coin daily_limit = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin monthly_limit = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin daily_used = 10 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin monthly_used = 11 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+
+  google.protobuf.Timestamp last_limit_reset = 12 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp verified_at = 13 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp expires_at = 14 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+
+  string metadata = 15;
+  string updated_by = 16;
+  google.protobuf.Timestamp updated_at = 17 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+
+  repeated AuditEntry audit_log = 18 [(gogoproto.nullable) = false];
+}

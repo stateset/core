@@ -1,0 +1,209 @@
+syntax = "proto3";
+package stateset.settlement;
+
+option go_package = "github.com/stateset/core/x/settlement/types";
+
+import "gogoproto/gogo.proto";
+import "cosmos/base/v1beta1/coin.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+// Settlement represents a stablecoin settlement between parties.
+message Settlement {
+  uint64 id = 1;
+  string type = 2 [(gogoproto.casttype) = "SettlementType"];
+  string sender = 3;
+  string recipient = 4;
+  cosmos.base.v1beta1.Coin amount = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin fee = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin net_amount = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string status = 8 [(gogoproto.casttype) = "SettlementStatus"];
+  string reference = 9;
+  string metadata = 10;
+  int64 created_height = 11;
+  google.protobuf.Timestamp created_time = 12 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  int64 settled_height = 13;
+  google.protobuf.Timestamp settled_time = 14 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  google.protobuf.Timestamp expires_at = 15 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  uint64 batch_id = 16;
+}
+
+// BatchSettlement represents a batch of settlements processed together.
+message BatchSettlement {
+  uint64 id = 1;
+  string merchant = 2;
+  repeated uint64 settlement_ids = 3;
+  cosmos.base.v1beta1.Coin total_amount = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin total_fees = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin net_amount = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  uint64 count = 7;
+  string status = 8 [(gogoproto.casttype) = "SettlementStatus"];
+  int64 created_height = 9;
+  google.protobuf.Timestamp created_time = 10 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  int64 settled_height = 11;
+  google.protobuf.Timestamp settled_time = 12 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// PaymentChannel represents a payment channel for streaming payments.
+message PaymentChannel {
+  uint64 id = 1;
+  string sender = 2;
+  string recipient = 3;
+  cosmos.base.v1beta1.Coin deposit = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin spent = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin balance = 6 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  bool is_open = 7;
+  int64 opened_height = 8;
+  google.protobuf.Timestamp opened_time = 9 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  int64 closed_height = 10;
+  google.protobuf.Timestamp closed_time = 11 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  int64 expires_at_height = 12;
+  uint64 nonce = 13;
+}
+
+// MerchantConfig represents merchant-specific configuration.
+message MerchantConfig {
+  string address = 1;
+  string name = 2;
+  uint32 fee_rate_bps = 3;
+  cosmos.base.v1beta1.Coin min_settlement = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin max_settlement = 5 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  bool batch_enabled = 6;
+  cosmos.base.v1beta1.Coin batch_threshold = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  google.protobuf.Duration settlement_delay = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdduration) = true
+  ];
+  bool is_active = 9;
+  string webhook_url = 10;
+  google.protobuf.Timestamp registered_at = 11 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+}
+
+// CheckoutItem represents an item in a checkout.
+message CheckoutItem {
+  string product_id = 1;
+  uint64 quantity = 2;
+  cosmos.base.v1beta1.Coin unit_price = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string description = 4;
+}
+
+// TransferReceipt represents the receipt of a transfer.
+message TransferReceipt {
+  uint64 settlement_id = 1;
+  string tx_hash = 2;
+  int64 block_height = 3;
+  google.protobuf.Timestamp timestamp = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.stdtime) = true
+  ];
+  string sender = 5;
+  string recipient = 6;
+  cosmos.base.v1beta1.Coin amount = 7 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin fee = 8 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  string reference = 9;
+}
+
+// Params defines the parameters for the settlement module.
+message Params {
+  uint32 default_fee_rate_bps = 1;
+  string fee_collector = 2;
+  cosmos.base.v1beta1.Coin min_settlement_amount = 3 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  cosmos.base.v1beta1.Coin max_settlement_amount = 4 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+  int64 default_escrow_expiration = 5;
+  int64 max_escrow_expiration = 6;
+  int64 min_channel_expiration = 7;
+  int64 max_channel_expiration = 8;
+  uint32 max_batch_size = 9;
+  uint32 max_query_limit = 10;
+  bool instant_transfers_enabled = 11;
+  bool escrow_enabled = 12;
+  bool channels_enabled = 13;
+}
+
+// GenesisState defines the settlement module's genesis state.
+message GenesisState {
+  Params params = 1 [(gogoproto.nullable) = false];
+  repeated Settlement settlements = 2 [(gogoproto.nullable) = false];
+  repeated BatchSettlement batches = 3 [(gogoproto.nullable) = false];
+  repeated PaymentChannel channels = 4 [(gogoproto.nullable) = false];
+  repeated MerchantConfig merchants = 5 [(gogoproto.nullable) = false];
+  uint64 next_settlement_id = 6;
+  uint64 next_batch_id = 7;
+  uint64 next_channel_id = 8;
+}
+

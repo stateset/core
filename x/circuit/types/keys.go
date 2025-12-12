@@ -25,27 +25,8 @@ var (
 	RateLimitConfigKeyPrefix = []byte{0x04}
 )
 
-// CircuitStatus represents the state of a circuit breaker
-type CircuitStatus uint8
-
 const (
-	// CircuitClosed means the circuit is functioning normally
-	CircuitClosed CircuitStatus = iota
-	// CircuitOpen means the circuit is tripped and operations are blocked
-	CircuitOpen
-	// CircuitHalfOpen means the circuit is in recovery mode
-	CircuitHalfOpen
+	CircuitClosed   = CircuitStatus_CIRCUIT_CLOSED
+	CircuitOpen     = CircuitStatus_CIRCUIT_OPEN
+	CircuitHalfOpen = CircuitStatus_CIRCUIT_HALF_OPEN
 )
-
-func (s CircuitStatus) String() string {
-	switch s {
-	case CircuitClosed:
-		return "closed"
-	case CircuitOpen:
-		return "open"
-	case CircuitHalfOpen:
-		return "half_open"
-	default:
-		return "unknown"
-	}
-}
