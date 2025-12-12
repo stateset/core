@@ -6,9 +6,13 @@ build/
 # Local toolchains and build cache
 .tools/
 .gocache/
+.gomodcache/
+.gopath/
+.tmp-proto-gen/
 
 # Local data and keyring
 data/
+.localnet/
 
 # Backup files
 *.backup
