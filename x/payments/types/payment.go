@@ -37,6 +37,9 @@ func (p PaymentIntent) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(p.Payee); err != nil {
 		return errorsmod.Wrap(ErrInvalidPayment, err.Error())
 	}
+	if p.Payer == p.Payee {
+		return errorsmod.Wrap(ErrInvalidPayment, "payer and payee cannot be the same")
+	}
 	if !p.Amount.IsValid() || p.Amount.IsZero() {
 		return errorsmod.Wrap(ErrInvalidPayment, "amount must be positive")
 	}

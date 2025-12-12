@@ -37,6 +37,27 @@ func TestMsgServer_InstantTransfer(t *testing.T) {
 	require.Equal(t, uint64(1), resp.SettlementId)
 }
 
+func TestMsgServer_InstantTransfer_SelfTransfer(t *testing.T) {
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
+	msgServer := keeper.NewMsgServerImpl(k)
+
+	sender := newSettlementAddress()
+	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
+
+	bankKeeper.SetBalance(sender.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+
+	msg := &types.MsgInstantTransfer{
+		Sender:    sender.String(),
+		Recipient: sender.String(),
+		Amount:    amount,
+		Reference: "TEST001",
+	}
+
+	_, err := msgServer.InstantTransfer(sdk.WrapSDKContext(ctx), msg)
+	require.Error(t, err)
+	require.ErrorIs(t, err, types.ErrInvalidRecipient)
+}
+
 func TestMsgServer_InstantTransfer_InvalidSender(t *testing.T) {
 	k, ctx, _, _, _ := setupSettlementKeeper(t)
 	msgServer := keeper.NewMsgServerImpl(k)
@@ -114,6 +135,28 @@ func TestMsgServer_CreateEscrow(t *testing.T) {
 	require.NotNil(t, resp)
 	require.Equal(t, uint64(1), resp.SettlementId)
 	require.False(t, resp.ExpiresAt.IsZero())
+}
+
+func TestMsgServer_CreateEscrow_SelfTransfer(t *testing.T) {
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
+	msgServer := keeper.NewMsgServerImpl(k)
+
+	sender := newSettlementAddress()
+	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
+
+	bankKeeper.SetBalance(sender.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+
+	msg := &types.MsgCreateEscrow{
+		Sender:    sender.String(),
+		Recipient: sender.String(),
+		Amount:    amount,
+		Reference: "ESCROW001",
+		ExpiresIn: time.Hour * 24,
+	}
+
+	_, err := msgServer.CreateEscrow(sdk.WrapSDKContext(ctx), msg)
+	require.Error(t, err)
+	require.ErrorIs(t, err, types.ErrInvalidRecipient)
 }
 
 func TestMsgServer_CreateEscrow_ShortExpiration(t *testing.T) {
@@ -442,6 +485,27 @@ func TestMsgServer_OpenChannel(t *testing.T) {
 	require.NotNil(t, resp)
 	require.Equal(t, uint64(1), resp.ChannelId)
 	require.Equal(t, ctx.BlockHeight()+1000, resp.ExpiresAtHeight)
+}
+
+func TestMsgServer_OpenChannel_SelfTransfer(t *testing.T) {
+	k, ctx, bankKeeper, _, _ := setupSettlementKeeper(t)
+	msgServer := keeper.NewMsgServerImpl(k)
+
+	sender := newSettlementAddress()
+	deposit := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
+
+	bankKeeper.SetBalance(sender.String(), sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+
+	msg := &types.MsgOpenChannel{
+		Sender:          sender.String(),
+		Recipient:       sender.String(),
+		Deposit:         deposit,
+		ExpiresInBlocks: 1000,
+	}
+
+	_, err := msgServer.OpenChannel(sdk.WrapSDKContext(ctx), msg)
+	require.Error(t, err)
+	require.ErrorIs(t, err, types.ErrInvalidRecipient)
 }
 
 func TestMsgServer_OpenChannel_InsufficientBalance(t *testing.T) {

@@ -176,6 +176,20 @@ func TestMsgCreatePayment(t *testing.T) {
 	require.Equal(t, sdk.NewCoins(sdk.NewInt64Coin("ustate", 750)), bank.Balance(payer))
 }
 
+func TestMsgCreatePayment_SelfPayment(t *testing.T) {
+	k, ctx, bank, _ := setupPaymentsKeeper(t)
+	msgServer := keeper.NewMsgServerImpl(k)
+
+	payer := newPaymentsAddress()
+
+	bank.SetBalance(payer, sdk.NewCoins(sdk.NewInt64Coin("ustate", 1_000)))
+
+	msg := paymentstypes.NewMsgCreatePayment(payer.String(), payer.String(), sdk.NewInt64Coin("ustate", 250), "self")
+	_, err := msgServer.CreatePayment(sdk.WrapSDKContext(ctx), msg)
+	require.Error(t, err)
+	require.ErrorIs(t, err, paymentstypes.ErrInvalidPayment)
+}
+
 func TestMsgCreatePaymentInsufficientBalance(t *testing.T) {
 	k, ctx, _, _ := setupPaymentsKeeper(t)
 	msgServer := keeper.NewMsgServerImpl(k)

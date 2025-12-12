@@ -24,4 +24,5 @@ var (
 	ErrConfigDisabled      = errorsmod.Register(moduleName, 13, "oracle config is disabled")
 	ErrMaxProvidersReached = errorsmod.Register(moduleName, 14, "maximum oracle providers reached")
 	ErrInvalidProvider     = errorsmod.Register(moduleName, 15, "invalid oracle provider")
+	ErrInvalidParams       = errorsmod.Register(moduleName, 16, "invalid oracle params")
 )

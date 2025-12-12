@@ -134,6 +134,10 @@ func (k Keeper) CreateVault(ctx sdk.Context, owner sdk.AccAddress, collateral sd
 		return 0, err
 	}
 
+	if !collateral.IsValid() || collateral.IsZero() {
+		return 0, errorsmod.Wrap(types.ErrInvalidAmount, "collateral must be positive")
+	}
+
 	params := k.GetParams(ctx)
 	if !params.VaultMintingEnabled {
 		return 0, types.ErrVaultMintingDisabled

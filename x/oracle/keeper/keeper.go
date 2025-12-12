@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"time"
 
 	errorsmod "cosmossdk.io/errors"
@@ -18,10 +19,11 @@ import (
 )
 
 var (
-	paramsKey           = []byte("params")
-	configKeyPrefix     = []byte("config:")
-	providerKeyPrefix   = []byte("provider:")
-	priceHistoryPrefix  = []byte("history:")
+	paramsKey          = []byte("params")
+	configKeyPrefix    = []byte("config:")
+	providerKeyPrefix  = []byte("provider:")
+	priceHistoryPrefix = []byte("history:")
+	pendingPricePrefix = []byte("pending:")
 )
 
 // Keeper provides state access to the oracle module.
@@ -113,6 +115,25 @@ func (k Keeper) SetOracleConfig(ctx context.Context, config types.OracleConfig) 
 	}
 	store.Set([]byte(config.Denom), bz)
 	return nil
+}
+
+// IterateOracleConfigs iterates over all oracle configs.
+func (k Keeper) IterateOracleConfigs(ctx context.Context, cb func(types.OracleConfig) bool) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	store := prefix.NewStore(sdkCtx.KVStore(k.storeKey), configKeyPrefix)
+	iterator := store.Iterator(nil, nil)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var cfg types.OracleConfig
+		if err := json.Unmarshal(iterator.Value(), &cfg); err != nil {
+			sdkCtx.Logger().Error("failed to unmarshal oracle config during iteration", "error", err)
+			continue
+		}
+		if cb(cfg) {
+			break
+		}
+	}
 }
 
 // ============================================================================
@@ -226,7 +247,88 @@ func (k Keeper) SetPriceWithValidation(ctx context.Context, provider string, den
 		}
 	}
 
-	// Check deviation
+	// If multiple confirmations are required, stage as pending until threshold reached.
+	if config.RequiredConfirmations > 1 {
+		pending := k.getPendingPrices(ctx, denom)
+		pending = upsertPendingPrice(pending, denom, provider, amount, sdkCtx.BlockTime())
+
+		if err := k.setPendingPrices(ctx, denom, pending); err != nil {
+			return err
+		}
+
+		sdkCtx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				"oracle_price_pending",
+				sdk.NewAttribute("denom", denom),
+				sdk.NewAttribute("provider", provider),
+				sdk.NewAttribute("confirmations", fmt.Sprintf("%d/%d", len(pending), config.RequiredConfirmations)),
+			),
+		)
+
+		if uint32(len(pending)) < config.RequiredConfirmations {
+			// Not enough confirmations yet; keep pending state.
+			return nil
+		}
+
+		medianAmount, medianProvider := medianPendingPrice(pending)
+		k.clearPendingPrices(ctx, denom)
+
+		// Check deviation on aggregated median.
+		if hasExisting && !existingPrice.Amount.IsZero() {
+			deviation := types.CalculateDeviation(existingPrice.Amount, medianAmount)
+			maxDeviation := sdkmath.LegacyNewDec(int64(config.MaxDeviationBps))
+
+			if deviation.GT(maxDeviation) {
+				for _, p := range pending {
+					k.recordProviderFailure(ctx, p.Provider)
+				}
+
+				sdkCtx.EventManager().EmitEvent(
+					sdk.NewEvent(
+						"oracle_deviation_rejected",
+						sdk.NewAttribute("denom", denom),
+						sdk.NewAttribute("old_price", existingPrice.Amount.String()),
+						sdk.NewAttribute("new_price", medianAmount.String()),
+						sdk.NewAttribute("deviation_bps", deviation.String()),
+						sdk.NewAttribute("max_deviation_bps", maxDeviation.String()),
+						sdk.NewAttribute("provider", medianProvider),
+					),
+				)
+
+				return errorsmod.Wrapf(types.ErrDeviationTooLarge,
+					"aggregated deviation %s bps exceeds max %s bps",
+					deviation.String(), maxDeviation.String())
+			}
+		}
+
+		newPrice := types.Price{
+			Denom:       denom,
+			Amount:      medianAmount,
+			LastUpdater: medianProvider,
+			LastHeight:  sdkCtx.BlockHeight(),
+			UpdatedAt:   sdkCtx.BlockTime(),
+		}
+
+		k.SetPrice(ctx, newPrice)
+		k.recordPriceHistory(ctx, newPrice)
+
+		for _, p := range pending {
+			k.recordProviderSuccess(ctx, p.Provider)
+		}
+
+		sdkCtx.EventManager().EmitEvent(
+			sdk.NewEvent(
+				"price_updated",
+				sdk.NewAttribute("denom", denom),
+				sdk.NewAttribute("price", medianAmount.String()),
+				sdk.NewAttribute("provider", medianProvider),
+			),
+		)
+
+		return nil
+	}
+
+	// Single-confirmation path: check deviation per submission.
 	if hasExisting && !existingPrice.Amount.IsZero() {
 		deviation := types.CalculateDeviation(existingPrice.Amount, amount)
 		maxDeviation := sdkmath.LegacyNewDec(int64(config.MaxDeviationBps))
@@ -282,6 +384,78 @@ func (k Keeper) SetPriceWithValidation(ctx context.Context, provider string, den
 	)
 
 	return nil
+}
+
+// getPendingPrices returns pending submissions for a denom.
+func (k Keeper) getPendingPrices(ctx context.Context, denom string) []types.PendingPrice {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	store := prefix.NewStore(sdkCtx.KVStore(k.storeKey), pendingPricePrefix)
+	bz := store.Get([]byte(denom))
+	if len(bz) == 0 {
+		return nil
+	}
+
+	var pending []types.PendingPrice
+	if err := json.Unmarshal(bz, &pending); err != nil {
+		sdkCtx.Logger().Error("failed to unmarshal pending prices", "denom", denom, "error", err)
+		return nil
+	}
+	return pending
+}
+
+// setPendingPrices stores pending submissions for a denom.
+func (k Keeper) setPendingPrices(ctx context.Context, denom string, pending []types.PendingPrice) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	store := prefix.NewStore(sdkCtx.KVStore(k.storeKey), pendingPricePrefix)
+
+	bz, err := json.Marshal(pending)
+	if err != nil {
+		return errorsmod.Wrap(err, "failed to marshal pending prices")
+	}
+	store.Set([]byte(denom), bz)
+	return nil
+}
+
+// clearPendingPrices deletes pending submissions for a denom.
+func (k Keeper) clearPendingPrices(ctx context.Context, denom string) {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	store := prefix.NewStore(sdkCtx.KVStore(k.storeKey), pendingPricePrefix)
+	store.Delete([]byte(denom))
+}
+
+func upsertPendingPrice(pending []types.PendingPrice, denom, provider string, amount sdkmath.LegacyDec, submittedAt time.Time) []types.PendingPrice {
+	for i := range pending {
+		if pending[i].Provider == provider {
+			pending[i].Amount = amount
+			pending[i].SubmittedAt = submittedAt
+			pending[i].Confirmations = []string{provider}
+			return pending
+		}
+	}
+
+	return append(pending, types.PendingPrice{
+		Denom:         denom,
+		Amount:        amount,
+		Provider:      provider,
+		SubmittedAt:   submittedAt,
+		Confirmations: []string{provider},
+	})
+}
+
+func medianPendingPrice(pending []types.PendingPrice) (sdkmath.LegacyDec, string) {
+	sorted := make([]types.PendingPrice, len(pending))
+	copy(sorted, pending)
+	sort.Slice(sorted, func(i, j int) bool {
+		return sorted[i].Amount.LT(sorted[j].Amount)
+	})
+
+	mid := len(sorted) / 2
+	if len(sorted)%2 == 1 {
+		return sorted[mid].Amount, sorted[mid].Provider
+	}
+
+	avg := sorted[mid-1].Amount.Add(sorted[mid].Amount).QuoInt64(2)
+	return avg, sorted[mid].Provider
 }
 
 // GetPrice returns the price for a denom if present.
@@ -553,20 +727,74 @@ func (k Keeper) ProcessStalePrices(ctx sdk.Context) {
 func (k Keeper) ExportGenesis(ctx context.Context) *types.GenesisState {
 	genesis := types.DefaultGenesis()
 	genesis.Authority = k.authority
+	genesis.Params = k.GetParams(ctx)
 	k.IteratePrices(ctx, func(price types.Price) bool {
 		genesis.Prices = append(genesis.Prices, price)
 		return false
 	})
+
+	k.IterateOracleConfigs(ctx, func(cfg types.OracleConfig) bool {
+		genesis.Configs = append(genesis.Configs, cfg)
+		return false
+	})
+
+	k.IterateProviders(ctx, func(p types.OracleProvider) bool {
+		genesis.Providers = append(genesis.Providers, p)
+		return false
+	})
+
+	// Export pending price submissions.
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	pendingStore := prefix.NewStore(sdkCtx.KVStore(k.storeKey), pendingPricePrefix)
+	iterator := pendingStore.Iterator(nil, nil)
+	defer iterator.Close()
+
+	for ; iterator.Valid(); iterator.Next() {
+		var pending []types.PendingPrice
+		if err := json.Unmarshal(iterator.Value(), &pending); err != nil {
+			sdkCtx.Logger().Error("failed to unmarshal pending prices during export", "denom", string(iterator.Key()), "error", err)
+			continue
+		}
+		genesis.PendingPrices = append(genesis.PendingPrices, pending...)
+	}
+
 	return genesis
 }
 
 // InitGenesis initializes state from genesis configuration.
 func (k Keeper) InitGenesis(ctx context.Context, data *types.GenesisState) {
-	if data != nil {
-		k.authority = data.Authority
-		for _, price := range data.Prices {
-			k.SetPrice(ctx, price)
-		}
+	if data == nil {
+		data = types.DefaultGenesis()
+	}
+
+	k.authority = data.Authority
+
+	params := data.Params
+	if params.PriceHistorySize == 0 {
+		params = types.DefaultOracleParams()
+	}
+	_ = k.SetParams(ctx, params)
+
+	for _, cfg := range data.Configs {
+		_ = k.SetOracleConfig(ctx, cfg)
+	}
+
+	for _, provider := range data.Providers {
+		_ = k.SetProvider(ctx, provider)
+	}
+
+	for _, price := range data.Prices {
+		k.SetPrice(ctx, price)
+	}
+
+	// Rehydrate pending prices grouped by denom.
+	pendingByDenom := make(map[string][]types.PendingPrice)
+	for _, pending := range data.PendingPrices {
+		pendingByDenom[pending.Denom] = append(pendingByDenom[pending.Denom], pending)
+	}
+
+	for denom, pending := range pendingByDenom {
+		_ = k.setPendingPrices(ctx, denom, pending)
 	}
 }
 

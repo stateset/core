@@ -201,19 +201,7 @@ func FeeMarketCheckTxFeeWithMinGasPrices(fmk keeper.Keeper) authante.TxFeeChecke
 			minFee = params.MinBaseFee.MulInt64(int64(gas))
 		}
 
-		// Also check against validator's minimum gas prices (if set)
-		minGasPrices := ctx.MinGasPrices()
-		if !minGasPrices.IsZero() {
-			// Calculate minimum fee from validator settings
-			validatorMinFee := minGasPrices.AmountOf(feeCoins[0].Denom).MulInt64(int64(gas))
-
-			// Use the higher of the two
-			if validatorMinFee.GT(minFee) {
-				minFee = validatorMinFee
-			}
-		}
-
-		// Validate fee
+		// Validate fee early to avoid denom lookups on empty fees.
 		if feeCoins.IsZero() {
 			return nil, 0, errorsmod.Wrapf(
 				types.ErrInsufficientFee,
@@ -223,6 +211,19 @@ func FeeMarketCheckTxFeeWithMinGasPrices(fmk keeper.Keeper) authante.TxFeeChecke
 		}
 
 		feeCoin := feeCoins[0]
+
+		// Also check against validator's minimum gas prices (if set)
+		minGasPrices := ctx.MinGasPrices()
+		if !minGasPrices.IsZero() {
+			// Calculate minimum fee from validator settings
+			validatorMinFee := minGasPrices.AmountOf(feeCoin.Denom).MulInt64(int64(gas))
+
+			// Use the higher of the two
+			if validatorMinFee.GT(minFee) {
+				minFee = validatorMinFee
+			}
+		}
+
 		feeAmount := sdkmath.LegacyNewDecFromInt(feeCoin.Amount)
 
 		if feeAmount.LT(minFee) {

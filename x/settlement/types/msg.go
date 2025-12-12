@@ -83,19 +83,19 @@ func ValidateWebhookURL(webhookURL string) error {
 }
 
 const (
-	TypeMsgInstantTransfer   = "instant_transfer"
-	TypeMsgCreateEscrow      = "create_escrow"
-	TypeMsgReleaseEscrow     = "release_escrow"
-	TypeMsgRefundEscrow      = "refund_escrow"
-	TypeMsgCreateBatch       = "create_batch"
-	TypeMsgSettleBatch       = "settle_batch"
-	TypeMsgOpenChannel       = "open_channel"
-	TypeMsgCloseChannel      = "close_channel"
-	TypeMsgClaimChannel      = "claim_channel"
-	TypeMsgRegisterMerchant  = "register_merchant"
-	TypeMsgUpdateMerchant    = "update_merchant"
-	TypeMsgInstantCheckout   = "instant_checkout"
-	TypeMsgPartialRefund     = "partial_refund"
+	TypeMsgInstantTransfer  = "instant_transfer"
+	TypeMsgCreateEscrow     = "create_escrow"
+	TypeMsgReleaseEscrow    = "release_escrow"
+	TypeMsgRefundEscrow     = "refund_escrow"
+	TypeMsgCreateBatch      = "create_batch"
+	TypeMsgSettleBatch      = "settle_batch"
+	TypeMsgOpenChannel      = "open_channel"
+	TypeMsgCloseChannel     = "close_channel"
+	TypeMsgClaimChannel     = "claim_channel"
+	TypeMsgRegisterMerchant = "register_merchant"
+	TypeMsgUpdateMerchant   = "update_merchant"
+	TypeMsgInstantCheckout  = "instant_checkout"
+	TypeMsgPartialRefund    = "partial_refund"
 )
 
 var (
@@ -148,6 +148,9 @@ func (m MsgInstantTransfer) ValidateBasic() error {
 	}
 	if _, err := sdk.AccAddressFromBech32(m.Recipient); err != nil {
 		return errorsmod.Wrap(ErrInvalidRecipient, "invalid recipient address")
+	}
+	if m.Sender == m.Recipient {
+		return errorsmod.Wrap(ErrInvalidRecipient, "sender and recipient must be different")
 	}
 	if !m.Amount.IsValid() || m.Amount.IsZero() {
 		return errorsmod.Wrap(ErrInvalidAmount, "amount must be positive")
@@ -207,6 +210,9 @@ func (m MsgCreateEscrow) ValidateBasic() error {
 	}
 	if _, err := sdk.AccAddressFromBech32(m.Recipient); err != nil {
 		return errorsmod.Wrap(ErrInvalidRecipient, "invalid recipient address")
+	}
+	if m.Sender == m.Recipient {
+		return errorsmod.Wrap(ErrInvalidRecipient, "sender and recipient must be different")
 	}
 	if !m.Amount.IsValid() || m.Amount.IsZero() {
 		return errorsmod.Wrap(ErrInvalidAmount, "amount must be positive")
@@ -314,11 +320,11 @@ type MsgRefundEscrowResponse struct{}
 
 // MsgCreateBatch - create a batch settlement for multiple payments to a merchant
 type MsgCreateBatch struct {
-	Authority string   `json:"authority" yaml:"authority"`
-	Merchant  string   `json:"merchant" yaml:"merchant"`
-	Senders   []string `json:"senders" yaml:"senders"`
-	Amounts   []sdk.Coin `json:"amounts" yaml:"amounts"`
-	References []string `json:"references" yaml:"references"`
+	Authority  string     `json:"authority" yaml:"authority"`
+	Merchant   string     `json:"merchant" yaml:"merchant"`
+	Senders    []string   `json:"senders" yaml:"senders"`
+	Amounts    []sdk.Coin `json:"amounts" yaml:"amounts"`
+	References []string   `json:"references" yaml:"references"`
 }
 
 func (m *MsgCreateBatch) Reset() { *m = MsgCreateBatch{} }
@@ -453,6 +459,9 @@ func (m MsgOpenChannel) ValidateBasic() error {
 	if _, err := sdk.AccAddressFromBech32(m.Recipient); err != nil {
 		return errorsmod.Wrap(ErrInvalidRecipient, "invalid recipient address")
 	}
+	if m.Sender == m.Recipient {
+		return errorsmod.Wrap(ErrInvalidRecipient, "sender and recipient must be different")
+	}
 	if !m.Deposit.IsValid() || m.Deposit.IsZero() {
 		return errorsmod.Wrap(ErrInvalidAmount, "deposit must be positive")
 	}
@@ -579,21 +588,21 @@ func (m MsgClaimChannel) GetSignBytes() []byte {
 }
 
 type MsgClaimChannelResponse struct {
-	AmountClaimed sdk.Coin `json:"amount_claimed"`
+	AmountClaimed    sdk.Coin `json:"amount_claimed"`
 	RemainingBalance sdk.Coin `json:"remaining_balance"`
 }
 
 // MsgRegisterMerchant - register a merchant for settlements
 type MsgRegisterMerchant struct {
-	Authority       string   `json:"authority" yaml:"authority"`
-	Merchant        string   `json:"merchant" yaml:"merchant"`
-	Name            string   `json:"name" yaml:"name"`
-	FeeRateBps      uint32   `json:"fee_rate_bps" yaml:"fee_rate_bps"`
-	MinSettlement   sdk.Coin `json:"min_settlement" yaml:"min_settlement"`
-	MaxSettlement   sdk.Coin `json:"max_settlement" yaml:"max_settlement"`
-	BatchEnabled    bool     `json:"batch_enabled" yaml:"batch_enabled"`
-	BatchThreshold  sdk.Coin `json:"batch_threshold" yaml:"batch_threshold"`
-	WebhookUrl      string   `json:"webhook_url" yaml:"webhook_url"`
+	Authority      string   `json:"authority" yaml:"authority"`
+	Merchant       string   `json:"merchant" yaml:"merchant"`
+	Name           string   `json:"name" yaml:"name"`
+	FeeRateBps     uint32   `json:"fee_rate_bps" yaml:"fee_rate_bps"`
+	MinSettlement  sdk.Coin `json:"min_settlement" yaml:"min_settlement"`
+	MaxSettlement  sdk.Coin `json:"max_settlement" yaml:"max_settlement"`
+	BatchEnabled   bool     `json:"batch_enabled" yaml:"batch_enabled"`
+	BatchThreshold sdk.Coin `json:"batch_threshold" yaml:"batch_threshold"`
+	WebhookUrl     string   `json:"webhook_url" yaml:"webhook_url"`
 }
 
 func (m *MsgRegisterMerchant) Reset() { *m = MsgRegisterMerchant{} }
@@ -651,16 +660,16 @@ type MsgRegisterMerchantResponse struct{}
 
 // MsgUpdateMerchant - update merchant configuration
 type MsgUpdateMerchant struct {
-	Authority       string   `json:"authority" yaml:"authority"`
-	Merchant        string   `json:"merchant" yaml:"merchant"`
-	Name            string   `json:"name,omitempty" yaml:"name,omitempty"`
-	FeeRateBps      uint32   `json:"fee_rate_bps,omitempty" yaml:"fee_rate_bps,omitempty"`
-	MinSettlement   sdk.Coin `json:"min_settlement,omitempty" yaml:"min_settlement,omitempty"`
-	MaxSettlement   sdk.Coin `json:"max_settlement,omitempty" yaml:"max_settlement,omitempty"`
-	BatchEnabled    *bool    `json:"batch_enabled,omitempty" yaml:"batch_enabled,omitempty"`
-	BatchThreshold  sdk.Coin `json:"batch_threshold,omitempty" yaml:"batch_threshold,omitempty"`
-	IsActive        *bool    `json:"is_active,omitempty" yaml:"is_active,omitempty"`
-	WebhookUrl      string   `json:"webhook_url,omitempty" yaml:"webhook_url,omitempty"`
+	Authority      string   `json:"authority" yaml:"authority"`
+	Merchant       string   `json:"merchant" yaml:"merchant"`
+	Name           string   `json:"name,omitempty" yaml:"name,omitempty"`
+	FeeRateBps     uint32   `json:"fee_rate_bps,omitempty" yaml:"fee_rate_bps,omitempty"`
+	MinSettlement  sdk.Coin `json:"min_settlement,omitempty" yaml:"min_settlement,omitempty"`
+	MaxSettlement  sdk.Coin `json:"max_settlement,omitempty" yaml:"max_settlement,omitempty"`
+	BatchEnabled   *bool    `json:"batch_enabled,omitempty" yaml:"batch_enabled,omitempty"`
+	BatchThreshold sdk.Coin `json:"batch_threshold,omitempty" yaml:"batch_threshold,omitempty"`
+	IsActive       *bool    `json:"is_active,omitempty" yaml:"is_active,omitempty"`
+	WebhookUrl     string   `json:"webhook_url,omitempty" yaml:"webhook_url,omitempty"`
 }
 
 func (m *MsgUpdateMerchant) Reset() { *m = MsgUpdateMerchant{} }
@@ -708,13 +717,13 @@ type MsgUpdateMerchantResponse struct{}
 // MsgInstantCheckout - streamlined checkout for ecommerce with optional escrow
 // Combines compliance check, payment, and merchant notification in one operation
 type MsgInstantCheckout struct {
-	Customer       string      `json:"customer" yaml:"customer"`
-	Merchant       string      `json:"merchant" yaml:"merchant"`
-	Amount         sdk.Coin    `json:"amount" yaml:"amount"`
-	OrderReference string      `json:"order_reference" yaml:"order_reference"`
-	UseEscrow      bool        `json:"use_escrow" yaml:"use_escrow"`
+	Customer       string         `json:"customer" yaml:"customer"`
+	Merchant       string         `json:"merchant" yaml:"merchant"`
+	Amount         sdk.Coin       `json:"amount" yaml:"amount"`
+	OrderReference string         `json:"order_reference" yaml:"order_reference"`
+	UseEscrow      bool           `json:"use_escrow" yaml:"use_escrow"`
 	Items          []CheckoutItem `json:"items,omitempty" yaml:"items,omitempty"`
-	Metadata       string      `json:"metadata,omitempty" yaml:"metadata,omitempty"`
+	Metadata       string         `json:"metadata,omitempty" yaml:"metadata,omitempty"`
 }
 
 // CheckoutItem represents an item in a checkout
@@ -777,11 +786,11 @@ func (m MsgInstantCheckout) GetSignBytes() []byte {
 }
 
 type MsgInstantCheckoutResponse struct {
-	SettlementId   uint64   `json:"settlement_id"`
-	Status         string   `json:"status"`
-	NetAmount      sdk.Coin `json:"net_amount"`
-	Fee            sdk.Coin `json:"fee"`
-	TransactionId  string   `json:"transaction_id,omitempty"`
+	SettlementId  uint64   `json:"settlement_id"`
+	Status        string   `json:"status"`
+	NetAmount     sdk.Coin `json:"net_amount"`
+	Fee           sdk.Coin `json:"fee"`
+	TransactionId string   `json:"transaction_id,omitempty"`
 }
 
 // MsgPartialRefund - issue a partial refund for a settlement
@@ -835,7 +844,7 @@ func (m MsgPartialRefund) GetSignBytes() []byte {
 }
 
 type MsgPartialRefundResponse struct {
-	RefundedAmount sdk.Coin `json:"refunded_amount"`
+	RefundedAmount  sdk.Coin `json:"refunded_amount"`
 	RemainingAmount sdk.Coin `json:"remaining_amount"`
 }
 

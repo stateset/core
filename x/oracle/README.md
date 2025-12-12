@@ -16,7 +16,8 @@ The oracle module handles:
 - Multi-denomination price support
 - Timestamp-based staleness detection
 - Historical price tracking
-- Authority-based price updates
+- Authorized-provider price updates (governance authority or registered providers)
+- Optional multi-provider confirmation with median aggregation (`required_confirmations > 1`)
 
 ### Provider Management
 - Provider registration and deregistration
@@ -32,9 +33,9 @@ The oracle module handles:
 
 | Message | Description |
 |---------|-------------|
-| `MsgUpdatePrice` | Update price for a denomination |
-| `MsgRegisterProvider` | Register new oracle provider |
-| `MsgRemoveProvider` | Remove oracle provider |
+| `MsgUpdatePrice` | Submit a price update for a denomination (validated and optionally aggregated) |
+
+Provider and config management are currently performed via genesis/governance upgrades. `MsgRegisterProvider` / `MsgRemoveProvider` are roadmap items.
 
 ## Queries
 
@@ -50,11 +51,14 @@ The oracle module handles:
 
 | Parameter | Default | Description |
 |-----------|---------|-------------|
-| `staleness_threshold` | 1 hour | Price staleness limit |
-| `min_update_interval` | 1 minute | Minimum time between updates |
-| `deviation_threshold_atom` | 5% | ATOM price deviation limit |
-| `deviation_threshold_stable` | 1% | Stablecoin deviation limit |
-| `daily_deviation_cap` | 20% | Maximum daily price change |
+| `default_max_deviation_bps` | 500 | Default max deviation per update |
+| `default_staleness_threshold` | 3600s | Default staleness threshold |
+| `slash_fraction_bps` | 1000 | Oracle slashing fraction (bps) |
+| `max_providers` | 10 | Maximum registered providers |
+| `price_history_size` | 100 | History points kept per denom |
+
+Per-denom `OracleConfig` overrides defaults:
+`max_deviation_bps`, `staleness_threshold_seconds`, `min_update_interval_seconds`, `required_confirmations`, `enabled`.
 
 ## State
 
@@ -64,6 +68,7 @@ The oracle module handles:
 | `0x02{provider}` | ProviderInfo |
 | `0x03{denom}` | OracleConfig |
 | `0x04{denom}` | PriceHistory |
+| `pending:{denom}` | Pending submissions for aggregation |
 
 ## Events
 

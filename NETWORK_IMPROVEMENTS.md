@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-The StateSet blockchain has been transformed into a global distributed intelligent commerce operating system with advanced financial infrastructure, featuring the STST staking token and the new ssUSD stablecoin as core components.
+The StateSet blockchain is evolving into a global distributed intelligent‑commerce settlement network. This document mixes implemented features with roadmap items; where older text refers to `STST`, read it as the native `STATE` staking token (denom `ustate`).
 
 ## Architecture Overview
 
@@ -34,53 +34,21 @@ The StateSet blockchain has been transformed into a global distributed intellige
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Core Modules
+## Core Modules (current repo)
 
-### 1. STST Token Module (`x/stst`)
-- **Purpose**: Native staking and governance token
-- **Features**:
-  - Fixed supply of 1 billion tokens
-  - Staking with 21-day unbonding period
-  - Fee burning mechanism (25% of fees)
-  - Governance voting system
-  - Vesting schedules for stakeholders
-  - Slashing protection (5% rate)
+- `x/stablecoin`: `ssUSD` stablecoin engine (reserve‑backed by default, optional CDP vaults gated by governance).
+- `x/settlement`: Stablecoin settlement rails (instant transfers, escrow, batch settlement, payment channels, merchants).
+- `x/payments`: Payment intents and escrowed payments.
+- `x/orders`: Order lifecycle management.
+- `x/compliance`: KYC/AML profiles, sanctions, limits, jurisdiction rules.
+- `x/treasury`: Protocol treasury and reserve attestations.
+- `x/oracle`: Price feeds with staleness/deviation protections.
+- `x/circuit`: Circuit breakers, global pause, rate limiting, liquidation surge protection.
+- `x/feemarket`: EIP‑1559 style fee market and gas oracle.
+- `x/metrics`: On‑chain metrics and Prometheus export.
+- `x/zkpverify`: On‑chain zero‑knowledge proof verification.
 
-### 2. ssUSD Stablecoin Engine (`x/stablecoin`)
-- **Purpose**: USD-pegged stablecoin for commerce
-- **Key Features**:
-  - STST-collateralized minting (150% minimum ratio)
-  - Automated liquidation engine with Dutch auctions
-  - Stability pool for system resilience
-  - Agent-to-agent transfer system
-  - Oracle price feed integration
-  - Emergency shutdown mechanism
-
-### 3. Commerce Module (`x/commerce`)
-- **Enhanced Features**:
-  - Multi-hop payment routing optimization
-  - Trade finance instruments (LC, guarantees, factoring)
-  - Cross-border payment compliance
-  - Real-time risk assessment
-  - Installment payment plans
-  - Advanced analytics
-
-### 4. Orders Module (`x/orders`)
-- **Features**:
-  - Comprehensive order lifecycle management
-  - Stablecoin payment integration
-  - Escrow payment functionality
-  - Tax calculation and discount management
-  - Shipping and fulfillment tracking
-
-### 5. Compliance Module (`x/compliance`) - NEW
-- **Features**:
-  - KYC/AML screening
-  - Jurisdiction-specific rules
-  - Transaction monitoring
-  - Automated reporting
-  - Risk scoring system
-  - Sanctions screening
+Roadmap modules referenced later (commerce, agreements, invoices, loans, etc.) are planned additions and are not yet part of this repository.
 
 ## ssUSD Stablecoin Details
 

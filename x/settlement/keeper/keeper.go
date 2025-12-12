@@ -160,6 +160,9 @@ func (k Keeper) InstantTransfer(ctx sdk.Context, sender, recipient string, amoun
 	if err != nil {
 		return 0, types.ErrInvalidRecipient
 	}
+	if senderAddr.Equals(recipientAddr) {
+		return 0, types.ErrInvalidRecipient.Wrap("sender and recipient must be different")
+	}
 
 	// Check compliance for both parties
 	if err := k.compKeeper.AssertCompliant(wrappedCtx, senderAddr); err != nil {
@@ -255,6 +258,9 @@ func (k Keeper) CreateEscrow(ctx sdk.Context, sender, recipient string, amount s
 	recipientAddr, err := sdk.AccAddressFromBech32(recipient)
 	if err != nil {
 		return 0, types.ErrInvalidRecipient
+	}
+	if senderAddr.Equals(recipientAddr) {
+		return 0, types.ErrInvalidRecipient.Wrap("sender and recipient must be different")
 	}
 
 	// Check compliance
@@ -694,6 +700,9 @@ func (k Keeper) OpenChannel(ctx sdk.Context, sender, recipient string, deposit s
 	recipientAddr, err := sdk.AccAddressFromBech32(recipient)
 	if err != nil {
 		return 0, types.ErrInvalidRecipient
+	}
+	if senderAddr.Equals(recipientAddr) {
+		return 0, types.ErrInvalidRecipient.Wrap("sender and recipient must be different")
 	}
 
 	// Check compliance

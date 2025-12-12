@@ -98,7 +98,7 @@ func TestPriceDeviationRejection(t *testing.T) {
 	// Set up oracle config with strict deviation limit
 	config := types.DefaultOracleConfig("uusdc")
 	config.Enabled = true
-	config.MaxDeviationBps = 500    // 5%
+	config.MaxDeviationBps = 500        // 5%
 	config.MinUpdateIntervalSeconds = 0 // No minimum interval for testing
 	err := k.SetOracleConfig(ctx, config)
 	require.NoError(t, err)
@@ -111,6 +111,35 @@ func TestPriceDeviationRejection(t *testing.T) {
 	err = k.SetPriceWithValidation(ctx, "provider1", "uusdc", sdkmath.LegacyNewDec(120))
 	require.Error(t, err)
 	require.ErrorContains(t, err, "deviation")
+}
+
+func TestSetPriceWithValidation_RequiredConfirmations(t *testing.T) {
+	k, ctx := setupKeeper(t)
+
+	cfg := types.DefaultOracleConfig("uusdc")
+	cfg.Enabled = true
+	cfg.RequiredConfirmations = 2
+	cfg.MinUpdateIntervalSeconds = 0
+	cfg.MaxDeviationBps = 10000
+	err := k.SetOracleConfig(ctx, cfg)
+	require.NoError(t, err)
+
+	// Register two active providers.
+	require.NoError(t, k.SetProvider(ctx, types.OracleProvider{Address: "provider1", IsActive: true}))
+	require.NoError(t, k.SetProvider(ctx, types.OracleProvider{Address: "provider2", IsActive: true}))
+
+	// First submission should be pending and not set a price yet.
+	err = k.SetPriceWithValidation(ctx, "provider1", "uusdc", sdkmath.LegacyNewDec(100))
+	require.NoError(t, err)
+	_, found := k.GetPrice(ctx, "uusdc")
+	require.False(t, found)
+
+	// Second submission reaches confirmations; median should be applied.
+	err = k.SetPriceWithValidation(ctx, "provider2", "uusdc", sdkmath.LegacyNewDec(110))
+	require.NoError(t, err)
+	price, found := k.GetPrice(ctx, "uusdc")
+	require.True(t, found)
+	require.Equal(t, sdkmath.LegacyNewDec(105).String(), price.Amount.String())
 }
 
 func TestProviderManagement(t *testing.T) {
