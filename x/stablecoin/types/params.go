@@ -29,11 +29,15 @@ func (cp CollateralParam) ValidateBasic() error {
 
 // Params contains global module parameters.
 type Params struct {
-	CollateralParams []CollateralParam `json:"collateral_params" yaml:"collateral_params"`
+	// VaultMintingEnabled gates CDP-style ssUSD issuance.
+	// Default false to keep ssUSD strictly reserve-backed unless governance enables vaults.
+	VaultMintingEnabled bool              `json:"vault_minting_enabled" yaml:"vault_minting_enabled"`
+	CollateralParams    []CollateralParam `json:"collateral_params" yaml:"collateral_params"`
 }
 
 func DefaultParams() Params {
 	return Params{
+		VaultMintingEnabled: false,
 		CollateralParams: []CollateralParam{
 			{
 				Denom:            "stst",

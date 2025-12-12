@@ -2,7 +2,7 @@
 
 The Stablecoin module manages the native stablecoin `ssUSD` on Stateset. It supports two minting paths:
 
-1. **Vault-based CDPs**: Users lock approved collateral (e.g., `stst`) in personal vaults to mint `ssusd`.
+1. **Vault-based CDPs**: Users lock approved collateral (e.g., `stst`) in personal vaults to mint `ssusd`. Vault minting is **disabled by default** for a strictly reserve‑backed ssUSD; governance must enable `vault_minting_enabled=true` before CDPs can be used.
 2. **Reserve-backed issuance**: Users deposit approved tokenized US Treasury assets (e.g., `usdy`, `stbt`, `ousg`) to mint `ssusd` 1:1 and redeem back into those assets.
 
 ## Features
@@ -39,6 +39,7 @@ The Stablecoin module manages the native stablecoin `ssUSD` on Stateset. It supp
 ## Parameters
 
 ### Vault params (`Params`)
+- `vault_minting_enabled`: global gate for CDP minting (default `false`)
 - `collateral_params`: per-denom risk config (`liquidation_ratio`, `stability_fee`, `debt_limit`, `active`)
 
 ### Reserve params (`ReserveParams`)
@@ -75,4 +76,3 @@ The Stablecoin module manages the native stablecoin `ssUSD` on Stateset. It supp
 - `reserve_deposit`, `reserve_mint`
 - `redemption_requested`, `redemption_executed`, `redemption_cancelled`
 - `reserve_attestation`, `reserve_params_updated`
-

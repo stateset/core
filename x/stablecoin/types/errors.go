@@ -19,6 +19,7 @@ var (
 	ErrComplianceCheckFailed   = errorsmod.Register(ModuleName, 14, "compliance check failed")
 	ErrModuleAccountNotFound   = errorsmod.Register(ModuleName, 15, "module account not found")
 	ErrInvalidCollateralParams = errorsmod.Register(ModuleName, 16, "invalid collateral parameters")
+	ErrVaultMintingDisabled    = errorsmod.Register(ModuleName, 17, "vault minting is disabled")
 
 	// Reserve-backed stablecoin errors
 	ErrInvalidReserve           = errorsmod.Register(ModuleName, 20, "invalid reserve")

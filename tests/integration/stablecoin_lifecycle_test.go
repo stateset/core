@@ -4,10 +4,12 @@ import (
 	"testing"
 	"time"
 
+	"cosmossdk.io/log"
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store"
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
+	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
@@ -19,8 +21,6 @@ import (
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"cosmossdk.io/log"
-	dbm "github.com/cosmos/cosmos-db"
 
 	compliancekeeper "github.com/stateset/core/x/compliance/keeper"
 	compliancetypes "github.com/stateset/core/x/compliance/types"
@@ -35,9 +35,9 @@ import (
 type StablecoinLifecycleTestSuite struct {
 	suite.Suite
 
-	ctx            sdk.Context
-	cdc            codec.Codec
-	storeKey       storetypes.StoreKey
+	ctx      sdk.Context
+	cdc      codec.Codec
+	storeKey storetypes.StoreKey
 
 	// Keepers
 	accountKeeper    authkeeper.AccountKeeper
@@ -47,9 +47,9 @@ type StablecoinLifecycleTestSuite struct {
 	stablecoinKeeper stablecoinkeeper.Keeper
 
 	// Test accounts
-	authority   sdk.AccAddress
-	vaultOwner  sdk.AccAddress
-	liquidator  sdk.AccAddress
+	authority      sdk.AccAddress
+	vaultOwner     sdk.AccAddress
+	liquidator     sdk.AccAddress
 	oracleProvider sdk.AccAddress
 }
 
@@ -101,8 +101,8 @@ func (s *StablecoinLifecycleTestSuite) SetupTest() {
 
 	// Initialize account keeper
 	maccPerms := map[string][]string{
-		authtypes.FeeCollectorName:          nil,
-		stablecointypes.ModuleAccountName:   {authtypes.Minter, authtypes.Burner},
+		authtypes.FeeCollectorName:        nil,
+		stablecointypes.ModuleAccountName: {authtypes.Minter, authtypes.Burner},
 	}
 	s.accountKeeper = authkeeper.NewAccountKeeper(
 		s.cdc,
@@ -182,24 +182,24 @@ func (s *StablecoinLifecycleTestSuite) setupTestAccounts() {
 func (s *StablecoinLifecycleTestSuite) setupComplianceProfiles() {
 	// Setup compliant vault owner profile
 	vaultOwnerProfile := compliancetypes.Profile{
-		Address:    s.vaultOwner.String(),
-		Status:     compliancetypes.StatusActive,
-		KYCLevel:   compliancetypes.KYCStandard,
-		Sanction:   false,
-		VerifiedAt: s.ctx.BlockTime(),
-		ExpiresAt:  s.ctx.BlockTime().AddDate(1, 0, 0),
+		Address:        s.vaultOwner.String(),
+		Status:         compliancetypes.StatusActive,
+		KYCLevel:       compliancetypes.KYCStandard,
+		Sanction:       false,
+		VerifiedAt:     s.ctx.BlockTime(),
+		ExpiresAt:      s.ctx.BlockTime().AddDate(1, 0, 0),
 		LastLimitReset: s.ctx.BlockTime(),
 	}
 	s.complianceKeeper.SetProfile(s.ctx, vaultOwnerProfile)
 
 	// Setup liquidator profile
 	liquidatorProfile := compliancetypes.Profile{
-		Address:    s.liquidator.String(),
-		Status:     compliancetypes.StatusActive,
-		KYCLevel:   compliancetypes.KYCStandard,
-		Sanction:   false,
-		VerifiedAt: s.ctx.BlockTime(),
-		ExpiresAt:  s.ctx.BlockTime().AddDate(1, 0, 0),
+		Address:        s.liquidator.String(),
+		Status:         compliancetypes.StatusActive,
+		KYCLevel:       compliancetypes.KYCStandard,
+		Sanction:       false,
+		VerifiedAt:     s.ctx.BlockTime(),
+		ExpiresAt:      s.ctx.BlockTime().AddDate(1, 0, 0),
 		LastLimitReset: s.ctx.BlockTime(),
 	}
 	s.complianceKeeper.SetProfile(s.ctx, liquidatorProfile)
@@ -230,12 +230,13 @@ func (s *StablecoinLifecycleTestSuite) setupOraclePrices() {
 func (s *StablecoinLifecycleTestSuite) setupStablecoinParams() {
 	// Setup stablecoin parameters
 	params := stablecointypes.Params{
+		VaultMintingEnabled: true,
 		CollateralParams: []stablecointypes.CollateralParam{
 			{
 				Denom:            "uatom",
 				Active:           true,
 				LiquidationRatio: sdkmath.LegacyMustNewDecFromStr("1.5"), // 150% collateralization
-				DebtLimit:        sdkmath.NewInt(100000000000),            // 100k ssUSD
+				DebtLimit:        sdkmath.NewInt(100000000000),           // 100k ssUSD
 			},
 		},
 	}

@@ -61,6 +61,10 @@ func setupKeeper(t *testing.T) (keeper.Keeper, sdk.Context, *mockBankKeeper, *mo
 
 	authority := newAddress()
 	k := keeper.NewKeeper(cdc, storeKey, authority.String(), bankKeeper, accountKeeper, oracleKeeper, complianceKeeper)
+	// Enable vault minting for keeper-level vault tests.
+	params := stablecointypes.DefaultParams()
+	params.VaultMintingEnabled = true
+	k.SetParams(ctx, params)
 
 	return k, ctx, bankKeeper, oracleKeeper, complianceKeeper
 }
@@ -345,7 +349,7 @@ func TestMsgLiquidateHealthyVaultFails(t *testing.T) {
 	}
 	_, err = msgServer.LiquidateVault(sdk.WrapSDKContext(ctx), liquidate)
 	require.Error(t, err)
-	require.ErrorIs(t, err, stablecointypes.ErrUnderCollateralized)
+	require.ErrorIs(t, err, stablecointypes.ErrVaultHealthy)
 }
 
 func TestMsgLiquidateVaultRepaysDebtFromLiquidator(t *testing.T) {

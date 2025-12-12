@@ -41,6 +41,9 @@ func setupBenchmarkKeeper() (keeper.Keeper, sdk.Context, *benchBankKeeper, *benc
 	accountKeeper.SetAddress(stablecointypes.ModuleAccountName, newBenchAddress())
 
 	k := keeper.NewKeeper(cdc, storeKey, "stateset1authority", bankKeeper, accountKeeper, oracleKeeper, complianceKeeper)
+	params := stablecointypes.DefaultParams()
+	params.VaultMintingEnabled = true
+	k.SetParams(ctx, params)
 
 	return k, ctx, bankKeeper, oracleKeeper
 }

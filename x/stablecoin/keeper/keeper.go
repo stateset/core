@@ -135,6 +135,9 @@ func (k Keeper) CreateVault(ctx sdk.Context, owner sdk.AccAddress, collateral sd
 	}
 
 	params := k.GetParams(ctx)
+	if !params.VaultMintingEnabled {
+		return 0, types.ErrVaultMintingDisabled
+	}
 	cp, ok := params.GetCollateralParam(collateral.Denom)
 	if !ok || !cp.Active {
 		return 0, types.ErrUnsupportedCollateral
@@ -237,6 +240,12 @@ func (k Keeper) MintStablecoin(ctx sdk.Context, owner sdk.AccAddress, id uint64,
 	if amount.Denom != types.StablecoinDenom {
 		return types.ErrInvalidAmount
 	}
+
+	params := k.GetParams(ctx)
+	if !params.VaultMintingEnabled {
+		return types.ErrVaultMintingDisabled
+	}
+
 	vault, found := k.GetVault(ctx, id)
 	if !found {
 		return types.ErrVaultNotFound
@@ -245,7 +254,6 @@ func (k Keeper) MintStablecoin(ctx sdk.Context, owner sdk.AccAddress, id uint64,
 		return types.ErrUnauthorized
 	}
 
-	params := k.GetParams(ctx)
 	cp, ok := params.GetCollateralParam(vault.CollateralDenom)
 	if !ok {
 		return types.ErrUnsupportedCollateral
@@ -328,7 +336,7 @@ func (k Keeper) LiquidateVault(ctx sdk.Context, liquidator sdk.AccAddress, id ui
 	}
 
 	if err := k.assertCollateralization(ctx, vault.Collateral, vault.Debt, cp); err == nil {
-		return nil, errorsmod.Wrap(types.ErrUnderCollateralized, "vault still healthy")
+		return nil, errorsmod.Wrap(types.ErrVaultHealthy, "vault still healthy")
 	}
 
 	// Liquidator must repay the outstanding stablecoin debt before collateral is released.

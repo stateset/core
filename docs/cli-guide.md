@@ -107,6 +107,8 @@ statesetd tx stablecoin repay <vault-id> <amount> --from <owner>
 statesetd tx stablecoin liquidate <vault-id> --from <liquidator>
 ```
 
+Vault-based minting is disabled by default (`vault_minting_enabled=false`) to keep ssUSD strictly reserve‑backed. Governance must enable it before the vault commands will succeed.
+
 Liquidation automatically deducts the vault's entire `ssusd` debt from the calling
 account before collateral is released, so be sure the liquidator holds enough
 stablecoin to cover the position.
