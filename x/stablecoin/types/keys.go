@@ -27,20 +27,20 @@ const (
 	EventTypeReserveParamsUpdated = "reserve_params_updated"
 
 	// Attribute keys
-	AttributeKeyOwner           = "owner"
-	AttributeKeyVaultID         = "vault_id"
-	AttributeKeyAmount          = "amount"
-	AttributeKeyCollateral      = "collateral"
-	AttributeKeyLiquidator      = "liquidator"
-	AttributeKeyDepositor       = "depositor"
-	AttributeKeyDepositID       = "deposit_id"
-	AttributeKeyRedemptionID    = "redemption_id"
-	AttributeKeyReserveAsset    = "reserve_asset"
-	AttributeKeyUsdValue        = "usd_value"
-	AttributeKeySsusdAmount     = "ssusd_amount"
-	AttributeKeyReserveRatio    = "reserve_ratio"
-	AttributeKeyAttester        = "attester"
-	AttributeKeyFeeAmount       = "fee_amount"
+	AttributeKeyOwner        = "owner"
+	AttributeKeyVaultID      = "vault_id"
+	AttributeKeyAmount       = "amount"
+	AttributeKeyCollateral   = "collateral"
+	AttributeKeyLiquidator   = "liquidator"
+	AttributeKeyDepositor    = "depositor"
+	AttributeKeyDepositID    = "deposit_id"
+	AttributeKeyRedemptionID = "redemption_id"
+	AttributeKeyReserveAsset = "reserve_asset"
+	AttributeKeyUsdValue     = "usd_value"
+	AttributeKeySsusdAmount  = "ssusd_amount"
+	AttributeKeyReserveRatio = "reserve_ratio"
+	AttributeKeyAttester     = "attester"
+	AttributeKeyFeeAmount    = "fee_amount"
 )
 
 var (
@@ -48,16 +48,17 @@ var (
 	VaultKeyPrefix = []byte{0x01}
 
 	// Reserve-backed storage prefixes
-	ReserveParamsKey          = []byte{0x10}
-	ReserveKey                = []byte{0x11}
-	ReserveDepositKeyPrefix   = []byte{0x12}
-	RedemptionRequestKeyPrefix = []byte{0x13}
-	DailyMintStatsKeyPrefix   = []byte{0x14}
+	ReserveParamsKey             = []byte{0x10}
+	ReserveKey                   = []byte{0x11}
+	ReserveDepositKeyPrefix      = []byte{0x12}
+	RedemptionRequestKeyPrefix   = []byte{0x13}
+	DailyMintStatsKeyPrefix      = []byte{0x14}
 	OffChainAttestationKeyPrefix = []byte{0x15}
-	NextDepositIDKey          = []byte{0x16}
-	NextRedemptionIDKey       = []byte{0x17}
-	NextAttestationIDKey      = []byte{0x18}
-	ApprovedAttesterKeyPrefix = []byte{0x19}
+	NextDepositIDKey             = []byte{0x16}
+	NextRedemptionIDKey          = []byte{0x17}
+	NextAttestationIDKey         = []byte{0x18}
+	ApprovedAttesterKeyPrefix    = []byte{0x19}
+	LockedReservesKey            = []byte{0x1A}
 )
 
 func VaultStoreKey(id uint64) []byte {

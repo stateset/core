@@ -27,7 +27,7 @@ Stateset Core is a Cosmos SDK chain providing a native USD stablecoin (`ssusd`) 
 Manages issuance and redemption of `ssusd`. Two minting paths exist:
 
 1. **Reserve‑backed issuance (default)**  
-   Users deposit approved tokenized reserve assets (for example tokenized treasuries) via `MsgDepositReserve` to mint `ssusd` 1:1, subject to haircuts, allocation caps, and daily limits.
+   Users deposit approved **tokenized US Treasury Notes** (default denom: `ustn`) via `MsgDepositReserve` to mint `ssusd` against oracle-priced, haircutted reserves, subject to allocation caps and daily limits.
 
 2. **Vault‑based CDPs (optional)**  
    Governance can enable over‑collateralized minting (`vault_minting_enabled=true`). Users open vaults, deposit collateral, mint, repay, and withdraw. Under‑collateralized vaults can be liquidated.
@@ -99,9 +99,10 @@ Collects protocol fees and manages governance‑controlled spending. Fees from s
    - Payee settles/claims or escrow conditions release.
 
 3. **Redeem**
-   - User submits `MsgRequestRedemption(ssusd)` in `x/stablecoin`.
-   - Request may queue if limits or delays apply.
-   - `MsgExecuteRedemption` burns `ssusd` and releases the chosen reserve asset.
+   - User submits `MsgRequestRedemption(ssusd, output_denom)` in `x/stablecoin`.
+   - The module transfers `ssusd` to the module account and **burns it immediately**, computes and stores a fixed `output_amount` using the current oracle price (net of redemption fee), and **locks** that reserve amount so later redemptions cannot overbook reserves.
+   - If `redemption_delay == 0`, the redemption executes in the same transaction; otherwise the request stays `PENDING` until `executable_after`.
+   - Anyone can submit `MsgExecuteRedemption(redemption_id)` after the delay; execution transfers the stored `output_amount` to the requester and unlocks it.
 
 ### CDP Minting (when enabled)
 

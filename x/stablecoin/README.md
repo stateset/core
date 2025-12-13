@@ -1,9 +1,9 @@
 # Stablecoin Module (`x/stablecoin`)
 
-The Stablecoin module manages the native stablecoin `ssUSD` on Stateset. It supports two minting paths:
+The Stablecoin module manages the native USD stablecoin `ssUSD` (`ssusd`) on Stateset. It supports two minting paths:
 
 1. **Vault-based CDPs**: Users lock approved collateral (e.g., `stst`) in personal vaults to mint `ssusd`. Vault minting is **disabled by default** for a strictly reserve‑backed ssUSD; governance must enable `vault_minting_enabled=true` before CDPs can be used.
-2. **Reserve-backed issuance**: Users deposit approved tokenized US Treasury assets (e.g., `usdy`, `stbt`, `ousg`) to mint `ssusd` 1:1 and redeem back into those assets.
+2. **Reserve-backed issuance (Path B, default)**: Users deposit approved **tokenized US Treasury Notes** (T-Notes) to mint `ssusd` and redeem back into those notes. The default and only supported on-chain reserve asset is `ustn` with `underlying_type="t_note"`.
 
 ## Features
 
@@ -14,8 +14,8 @@ The Stablecoin module manages the native stablecoin `ssUSD` on Stateset. It supp
 
 ### Reserve-backed stablecoin
 - 100%+ reserve ratio enforced via `ReserveParams`
-- Minting from tokenized treasuries with haircuts and allocation limits
-- Redemption queue with optional delay, KYC gating, and daily limits
+- Minting from tokenized US Treasury Notes with haircuts and allocation limits
+- Redemption requests with optional delay, KYC gating, daily limits, and reserve locking
 - Off-chain attestations folded into total backing
 
 ## Messages
@@ -30,7 +30,7 @@ The Stablecoin module manages the native stablecoin `ssUSD` on Stateset. It supp
 | `MsgLiquidateVault` | Liquidate an unhealthy vault |
 | `MsgDepositReserve` | Deposit approved tokenized treasuries to mint `ssusd` |
 | `MsgRequestRedemption` | Request redemption of `ssusd` into an approved reserve asset |
-| `MsgExecuteRedemption` | Execute a pending redemption (authority or auto) |
+| `MsgExecuteRedemption` | Execute a pending redemption (anyone after delay) |
 | `MsgCancelRedemption` | Cancel a pending redemption (authority only) |
 | `MsgUpdateReserveParams` | Update reserve policy (governance) |
 | `MsgRecordAttestation` | Record off-chain reserve attestation (approved attester) |
@@ -45,7 +45,7 @@ The Stablecoin module manages the native stablecoin `ssUSD` on Stateset. It supp
 ### Reserve params (`ReserveParams`)
 - Reserve ratio targets and daily mint/redeem limits
 - Mint/redeem fees, minimum amounts, optional redemption delay
-- Approved `tokenized_treasuries` list (haircuts, allocation caps, oracle denom)
+- Approved `tokenized_treasuries` list (haircuts, allocation caps, oracle denom). On-chain reserve assets are restricted to `underlying_type="t_note"`.
 - `require_kyc`, `mint_paused`, `redeem_paused`
 
 ## State
@@ -65,6 +65,14 @@ The Stablecoin module manages the native stablecoin `ssUSD` on Stateset. It supp
 | `0x17` | Next redemption ID |
 | `0x18` | Next attestation ID |
 | `0x19{addr}` | Approved attester flag |
+| `0x1A` | Locked reserves for pending redemptions (JSON-encoded `sdk.Coins`) |
+
+## Reserve-backed Mint/Redeem Semantics (Path B)
+
+- **Mint (`MsgDepositReserve`)**: transfers approved reserve assets (default: `ustn`) into the stablecoin module account, applies haircut + mint fee using the oracle price, and mints `ssusd` to the depositor.
+- **Redeem request (`MsgRequestRedemption`)**: transfers `ssusd` into the module account and **burns immediately**, computes and stores `output_amount` at the current oracle price (after redemption fee), and **locks** the corresponding reserve assets so later redemptions cannot overbook reserves.
+- **Redeem execute (`MsgExecuteRedemption`)**: after `executable_after`, transfers the stored `output_amount` to the requester and unlocks it (then updates the on-chain reserve totals).
+- **Cancel (`MsgCancelRedemption`)**: authority-only; unlocks the stored `output_amount` and mints back the burned `ssusd` to the requester.
 
 ## Events
 
@@ -73,6 +81,6 @@ The Stablecoin module manages the native stablecoin `ssUSD` on Stateset. It supp
 - `stablecoin_minted`, `stablecoin_repaid`, `vault_liquidated`
 
 **Reserve events**
-- `reserve_deposit`, `reserve_mint`
+- `reserve_deposit`
 - `redemption_requested`, `redemption_executed`, `redemption_cancelled`
 - `reserve_attestation`, `reserve_params_updated`

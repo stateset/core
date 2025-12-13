@@ -105,6 +105,21 @@ statesetd tx stablecoin mint <vault-id> <amount> --from <owner>
 statesetd tx stablecoin repay <vault-id> <amount> --from <owner>
 
 statesetd tx stablecoin liquidate <vault-id> --from <liquidator>
+
+# Reserve-backed mint/redeem (Path B, US Treasury Notes).
+statesetd tx stablecoin deposit-reserve <amount> --from <depositor>
+
+statesetd tx stablecoin request-redemption <ssusd-amount> <output-denom> --from <requester>
+
+statesetd tx stablecoin execute-redemption <redemption-id> --from <executor>
+
+statesetd tx stablecoin cancel-redemption <redemption-id> --from <authority>
+
+statesetd tx stablecoin update-reserve-params <params-json-file> --from <authority>
+
+statesetd tx stablecoin record-attestation <attestation-json-file> --from <attester>
+
+statesetd tx stablecoin set-approved-attester <attester> <true|false> --from <authority>
 ```
 
 Vault-based minting is disabled by default (`vault_minting_enabled=false`) to keep ssUSD strictly reserve‑backed. Governance must enable it before the vault commands will succeed.
@@ -116,7 +131,25 @@ stablecoin to cover the position.
 ### Queries
 
 ```bash
+statesetd query stablecoin params
 statesetd query stablecoin vault <vault-id>
+statesetd query stablecoin vaults [owner]
+
+statesetd query stablecoin reserve-params
+statesetd query stablecoin reserve
+statesetd query stablecoin locked-reserves
+statesetd query stablecoin total-reserves
+
+statesetd query stablecoin reserve-deposit <deposit-id>
+statesetd query stablecoin reserve-deposits [depositor]
+
+statesetd query stablecoin redemption <redemption-id>
+statesetd query stablecoin redemptions [status]
+
+statesetd query stablecoin attestation <attestation-id>
+statesetd query stablecoin latest-attestation
+
+statesetd query stablecoin daily-stats <yyyy-mm-dd>
 ```
 
 ---

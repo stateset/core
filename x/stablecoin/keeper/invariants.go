@@ -14,7 +14,7 @@ func RegisterInvariants(ir sdk.InvariantRegistry, k Keeper) {
 	ir.RegisterRoute(types.ModuleName, "reserve-backing", ReserveBackingInvariant(k))
 	ir.RegisterRoute(types.ModuleName, "total-supply-match", TotalSupplyMatchInvariant(k))
 	ir.RegisterRoute(types.ModuleName, "vault-collateralization", VaultCollateralizationInvariant(k))
-	ir.RegisterRoute(types.ModuleName, "deposit-consistency", DepositConsistencyInvariant(k))
+	ir.RegisterRoute(types.ModuleName, "redemption-locks", RedemptionLocksInvariant(k))
 }
 
 // AllInvariants runs all invariants of the stablecoin module
@@ -32,7 +32,7 @@ func AllInvariants(k Keeper) sdk.Invariant {
 		if stop {
 			return res, stop
 		}
-		return DepositConsistencyInvariant(k)(ctx)
+		return RedemptionLocksInvariant(k)(ctx)
 	}
 }
 
@@ -154,36 +154,62 @@ func VaultCollateralizationInvariant(k Keeper) sdk.Invariant {
 	}
 }
 
-// DepositConsistencyInvariant checks that deposit records match reserve state
-func DepositConsistencyInvariant(k Keeper) sdk.Invariant {
+// RedemptionLocksInvariant checks that locked reserves match pending redemptions
+// and do not exceed the module's tracked reserve totals.
+func RedemptionLocksInvariant(k Keeper) sdk.Invariant {
 	return func(ctx sdk.Context) (string, bool) {
 		reserve := k.GetReserve(ctx)
+		locked := k.GetLockedReserves(ctx)
 
-		// Sum all active deposits
-		totalFromDeposits := sdk.NewCoins()
-		totalMintedFromDeposits := sdkmath.ZeroInt()
+		// Compute expected locked reserves from pending redemption requests.
+		expected := sdk.NewCoins()
+		var problems []string
 
-		k.IterateReserveDeposits(ctx, func(deposit types.ReserveDeposit) bool {
-			if deposit.Status == types.DepositStatusActive {
-				totalFromDeposits = totalFromDeposits.Add(deposit.Amount)
-				totalMintedFromDeposits = totalMintedFromDeposits.Add(deposit.SsusdMinted)
+		k.IterateRedemptionRequests(ctx, func(request types.RedemptionRequest) bool {
+			if request.Status != types.RedeemStatusPending {
+				return false
 			}
+			if request.OutputAmount.Denom == "" || !request.OutputAmount.Amount.IsPositive() {
+				problems = append(problems, fmt.Sprintf("pending redemption %d missing output amount", request.Id))
+				return false
+			}
+			if request.OutputAmount.Denom != request.OutputDenom {
+				problems = append(problems, fmt.Sprintf("pending redemption %d output denom mismatch: %s != %s", request.Id, request.OutputAmount.Denom, request.OutputDenom))
+				return false
+			}
+			expected = expected.Add(request.OutputAmount)
 			return false
 		})
 
-		// Check that deposit totals don't exceed reserve totals
-		for _, coin := range totalFromDeposits {
-			reserveAmount := reserve.TotalDeposited.AmountOf(coin.Denom)
-			if coin.Amount.GT(reserveAmount) {
-				return sdk.FormatInvariant(
-					types.ModuleName,
-					"deposit-consistency",
-					fmt.Sprintf(
-						"deposit total %s exceeds reserve total %s for denom %s",
-						coin.Amount, reserveAmount, coin.Denom,
-					),
-				), true
+		expected = expected.Sort()
+		locked = locked.Sort()
+
+		// locked must equal expected (exact match, order-independent).
+		if len(expected) != len(locked) {
+			problems = append(problems, fmt.Sprintf("locked reserves length %d != expected %d", len(locked), len(expected)))
+		} else {
+			for i := range expected {
+				if expected[i].Denom != locked[i].Denom || !expected[i].Amount.Equal(locked[i].Amount) {
+					problems = append(problems, fmt.Sprintf("locked reserves mismatch at %d: locked %s != expected %s", i, locked[i], expected[i]))
+					break
+				}
 			}
+		}
+
+		// locked amounts must be <= total deposited for each denom.
+		for _, coin := range locked {
+			total := reserve.TotalDeposited.AmountOf(coin.Denom)
+			if coin.Amount.GT(total) {
+				problems = append(problems, fmt.Sprintf("locked %s%s exceeds total deposited %s%s", coin.Amount, coin.Denom, total, coin.Denom))
+			}
+		}
+
+		if len(problems) > 0 {
+			return sdk.FormatInvariant(
+				types.ModuleName,
+				"redemption-locks",
+				fmt.Sprintf("locked reserve invariant violation: %v", problems),
+			), true
 		}
 
 		return "", false

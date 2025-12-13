@@ -69,6 +69,15 @@ func (c TokenizedTreasuryConfig) ValidateBasic() error {
 	if c.Issuer == "" {
 		return errorsmod.Wrap(ErrInvalidReserve, "issuer cannot be empty")
 	}
+	if c.UnderlyingType == "" {
+		return errorsmod.Wrap(ErrInvalidReserve, "underlying type cannot be empty")
+	}
+	if !IsApprovedReserveAsset(c.UnderlyingType) {
+		return errorsmod.Wrapf(ErrInvalidReserve, "unsupported underlying type %s", c.UnderlyingType)
+	}
+	if c.OracleDenom == "" {
+		return errorsmod.Wrap(ErrInvalidReserve, "oracle denom cannot be empty")
+	}
 	if c.HaircutBps > 5000 {
 		return errorsmod.Wrap(ErrInvalidReserve, "haircut cannot exceed 50%")
 	}
@@ -99,49 +108,13 @@ func DefaultReserveParams() ReserveParams {
 func DefaultTokenizedTreasuries() []TokenizedTreasuryConfig {
 	return []TokenizedTreasuryConfig{
 		{
-			Denom:            "usdy",
-			Issuer:           "ondo",
-			UnderlyingType:   ReserveAssetTBill,
-			Active:           true,
-			HaircutBps:       50,
-			MaxAllocationBps: 5000,
-			OracleDenom:      "usdy",
-		},
-		{
-			Denom:            "stbt",
-			Issuer:           "matrixdock",
-			UnderlyingType:   ReserveAssetTBill,
-			Active:           true,
-			HaircutBps:       50,
-			MaxAllocationBps: 3000,
-			OracleDenom:      "stbt",
-		},
-		{
-			Denom:            "ousg",
-			Issuer:           "ondo",
-			UnderlyingType:   ReserveAssetTBond,
-			Active:           true,
-			HaircutBps:       100,
-			MaxAllocationBps: 3000,
-			OracleDenom:      "ousg",
-		},
-		{
-			Denom:            "tbill",
+			Denom:            "ustn",
 			Issuer:           "openeden",
-			UnderlyingType:   ReserveAssetTBill,
+			UnderlyingType:   ReserveAssetTNote,
 			Active:           true,
 			HaircutBps:       50,
-			MaxAllocationBps: 4000,
-			OracleDenom:      "tbill",
-		},
-		{
-			Denom:            "usdc",
-			Issuer:           "circle",
-			UnderlyingType:   ReserveAssetCash,
-			Active:           true,
-			HaircutBps:       0,
-			MaxAllocationBps: 2000,
-			OracleDenom:      "usdc",
+			MaxAllocationBps: 10000,
+			OracleDenom:      "ustn",
 		},
 	}
 }
@@ -159,7 +132,22 @@ func (p ReserveParams) ValidateBasic() error {
 	if p.RedeemFeeBps > 1000 {
 		return errorsmod.Wrap(ErrInvalidReserve, "redeem fee cannot exceed 10%")
 	}
+	if p.MinMintAmount.IsNegative() {
+		return errorsmod.Wrap(ErrInvalidReserve, "min mint amount cannot be negative")
+	}
+	if p.MinRedeemAmount.IsNegative() {
+		return errorsmod.Wrap(ErrInvalidReserve, "min redeem amount cannot be negative")
+	}
+	if p.MaxDailyMint.IsNegative() {
+		return errorsmod.Wrap(ErrInvalidReserve, "max daily mint cannot be negative")
+	}
+	if p.MaxDailyRedeem.IsNegative() {
+		return errorsmod.Wrap(ErrInvalidReserve, "max daily redeem cannot be negative")
+	}
 	for _, tt := range p.TokenizedTreasuries {
+		if tt.UnderlyingType != ReserveAssetTNote {
+			return errorsmod.Wrapf(ErrInvalidReserve, "only US Treasury Notes are supported (got %s for denom %s)", tt.UnderlyingType, tt.Denom)
+		}
 		if err := tt.ValidateBasic(); err != nil {
 			return err
 		}

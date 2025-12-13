@@ -1,8 +1,8 @@
 package keeper
 
 import (
-	"errors"
 	"encoding/binary"
+	"errors"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
@@ -409,6 +409,14 @@ func (k Keeper) InitGenesis(ctx sdk.Context, state *types.GenesisState) {
 	for _, redemption := range state.RedemptionRequests {
 		k.setRedemptionRequest(ctx, redemption)
 	}
+	// Locked reserves are derived from pending redemption requests and are not part of genesis.
+	locked := sdk.NewCoins()
+	for _, redemption := range state.RedemptionRequests {
+		if redemption.Status == types.RedeemStatusPending && redemption.OutputAmount.Denom != "" && redemption.OutputAmount.Amount.IsPositive() {
+			locked = locked.Add(redemption.OutputAmount)
+		}
+	}
+	k.setLockedReserves(ctx, locked)
 	for _, stat := range state.DailyStats {
 		k.SetDailyMintStats(ctx, stat)
 	}

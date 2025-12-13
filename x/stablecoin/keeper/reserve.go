@@ -1,8 +1,9 @@
 package keeper
 
 import (
-	"errors"
 	"encoding/binary"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -325,8 +326,18 @@ func (k Keeper) checkAllocationLimit(ctx sdk.Context, amount sdk.Coin, ttConfig 
 		}
 	}
 
-	newAllocationValue := price.MulInt(newAllocation).TruncateInt()
-	allocationRatio := newAllocationValue.Mul(sdkmath.NewInt(10000)).Quo(totalValue.Add(price.MulInt(amount.Amount).TruncateInt()))
+	// Allocation ratios should be computed against haircutted USD values so that
+	// totals remain consistent with Reserve.TotalValue.
+	haircutMultiplier := sdkmath.LegacyNewDec(10000 - int64(ttConfig.HaircutBps)).Quo(sdkmath.LegacyNewDec(10000))
+	newAllocationValue := haircutMultiplier.MulInt(price.MulInt(newAllocation).TruncateInt()).TruncateInt()
+	newDepositValue := haircutMultiplier.MulInt(price.MulInt(amount.Amount).TruncateInt()).TruncateInt()
+
+	newTotalValue := totalValue.Add(newDepositValue)
+	if newTotalValue.IsZero() {
+		return nil
+	}
+
+	allocationRatio := newAllocationValue.Mul(sdkmath.NewInt(10000)).Quo(newTotalValue)
 
 	if allocationRatio.GT(sdkmath.NewInt(int64(ttConfig.MaxAllocationBps))) {
 		return errorsmod.Wrapf(types.ErrAllocationLimitExceeded,
@@ -334,6 +345,98 @@ func (k Keeper) checkAllocationLimit(ctx sdk.Context, amount sdk.Coin, ttConfig 
 			amount.Denom, allocationRatio.Int64(), ttConfig.MaxAllocationBps)
 	}
 
+	return nil
+}
+
+// ============================================================================
+// Locked Reserves (for pending redemptions)
+// ============================================================================
+
+// GetLockedReserves returns reserve assets locked for pending redemptions.
+func (k Keeper) GetLockedReserves(ctx sdk.Context) sdk.Coins {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(types.LockedReservesKey)
+	if len(bz) == 0 {
+		return sdk.NewCoins()
+	}
+
+	var locked sdk.Coins
+	if err := json.Unmarshal(bz, &locked); err != nil {
+		panic(fmt.Sprintf("failed to unmarshal locked reserves: %v", err))
+	}
+	return locked.Sort()
+}
+
+func (k Keeper) setLockedReserves(ctx sdk.Context, locked sdk.Coins) {
+	store := ctx.KVStore(k.storeKey)
+	locked = locked.Sort()
+	if len(locked) == 0 {
+		store.Delete(types.LockedReservesKey)
+		return
+	}
+	bz, err := json.Marshal(locked)
+	if err != nil {
+		panic(fmt.Sprintf("failed to marshal locked reserves: %v", err))
+	}
+	store.Set(types.LockedReservesKey, bz)
+}
+
+func (k Keeper) lockReserves(ctx sdk.Context, coins sdk.Coins) error {
+	if len(coins) == 0 {
+		return nil
+	}
+
+	reserve := k.GetReserve(ctx)
+	locked := k.GetLockedReserves(ctx)
+
+	for _, coin := range coins {
+		if !coin.IsValid() || !coin.Amount.IsPositive() {
+			return errorsmod.Wrapf(types.ErrInvalidReserve, "invalid lock amount %s", coin)
+		}
+
+		total := reserve.TotalDeposited.AmountOf(coin.Denom)
+		alreadyLocked := locked.AmountOf(coin.Denom)
+		available := total.Sub(alreadyLocked)
+		if available.IsNegative() {
+			return errorsmod.Wrapf(types.ErrInvalidReserve, "locked reserves exceed total for %s", coin.Denom)
+		}
+		if coin.Amount.GT(available) {
+			return errorsmod.Wrapf(
+				types.ErrInsufficientReserves,
+				"requested %s %s but only %s available (total %s, locked %s)",
+				coin.Amount, coin.Denom, available, total, alreadyLocked,
+			)
+		}
+	}
+
+	locked = locked.Add(coins...).Sort()
+	k.setLockedReserves(ctx, locked)
+	return nil
+}
+
+func (k Keeper) unlockReserves(ctx sdk.Context, coins sdk.Coins) error {
+	if len(coins) == 0 {
+		return nil
+	}
+
+	locked := k.GetLockedReserves(ctx)
+	for _, coin := range coins {
+		if !coin.IsValid() || coin.Amount.IsNegative() {
+			return errorsmod.Wrapf(types.ErrInvalidReserve, "invalid unlock amount %s", coin)
+		}
+		if coin.Amount.IsZero() {
+			continue
+		}
+		lockedAmt := locked.AmountOf(coin.Denom)
+		if lockedAmt.LT(coin.Amount) {
+			return errorsmod.Wrapf(types.ErrInvalidReserve,
+				"locked reserves underflow for %s: locked %s, unlocking %s",
+				coin.Denom, lockedAmt, coin.Amount)
+		}
+	}
+
+	locked = locked.Sub(coins...).Sort()
+	k.setLockedReserves(ctx, locked)
 	return nil
 }
 
@@ -422,9 +525,13 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 		return 0, types.ErrDailyRedeemLimitExceeded
 	}
 
-	// Check reserve has sufficient output denom
+	// Check reserve has sufficient output denom (net of pending locks).
 	reserve := k.GetReserve(ctx)
-	outputAvailable := reserve.TotalDeposited.AmountOf(outputDenom)
+	locked := k.GetLockedReserves(ctx)
+	outputAvailable := reserve.TotalDeposited.AmountOf(outputDenom).Sub(locked.AmountOf(outputDenom))
+	if outputAvailable.IsNegative() {
+		return 0, errorsmod.Wrapf(types.ErrInvalidReserve, "locked reserves exceed total for %s", outputDenom)
+	}
 
 	// Calculate output amount (apply fee)
 	feeMultiplier := sdkmath.LegacyNewDec(10000 - int64(params.RedeemFeeBps)).Quo(sdkmath.LegacyNewDec(10000))
@@ -448,10 +555,10 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 
 	if outputAmount.GT(outputAvailable) {
 		return 0, errorsmod.Wrapf(types.ErrInsufficientReserves,
-			"requested %s %s but only %s available", outputAmount, outputDenom, outputAvailable)
+			"requested %s %s but only %s available (locked %s)", outputAmount, outputDenom, outputAvailable, locked.AmountOf(outputDenom))
 	}
 
-	// Transfer ssUSD to module (burn later)
+	// Transfer ssUSD to module (burned at request time)
 	ssusdCoins := sdk.NewCoins(sdk.NewCoin(types.StablecoinDenom, ssusdAmount))
 	if err := k.bankKeeper.SendCoinsFromAccountToModule(wrappedCtx, requester, types.ModuleAccountName, ssusdCoins); err != nil {
 		return 0, err
@@ -474,11 +581,17 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 		RequestedAt:     ctx.BlockTime(),
 		ExecutableAfter: executableAfter,
 		Status:          types.RedeemStatusPending,
+		OutputAmount:    sdk.NewCoin(outputDenom, outputAmount),
 	}
 
 	// Store request and bump ID regardless of delay so IDs/statistics remain consistent.
 	k.setRedemptionRequest(ctx, request)
 	k.setNextRedemptionID(ctx, redemptionID+1)
+
+	// Lock reserves so delayed redemptions cannot be starved by later withdrawals.
+	if err := k.lockReserves(ctx, sdk.NewCoins(request.OutputAmount)); err != nil {
+		return 0, err
+	}
 
 	// Update daily stats regardless of delay (requests are counted when made).
 	dailyStats.TotalRedeemed = dailyStats.TotalRedeemed.Add(ssusdAmount)
@@ -515,6 +628,11 @@ func (k Keeper) executeRedemption(ctx sdk.Context, request *types.RedemptionRequ
 	// Transfer output tokens to requester
 	outputCoins := sdk.NewCoins(sdk.NewCoin(request.OutputDenom, outputAmount))
 	if err := k.bankKeeper.SendCoinsFromModuleToAccount(wrappedCtx, types.ModuleAccountName, requester, outputCoins); err != nil {
+		return 0, err
+	}
+
+	// Unlock reserved output now that it has been released.
+	if err := k.unlockReserves(ctx, outputCoins); err != nil {
 		return 0, err
 	}
 
@@ -563,7 +681,6 @@ func (k Keeper) ExecutePendingRedemption(ctx sdk.Context, redemptionID uint64) e
 			request.ExecutableAfter, ctx.BlockTime())
 	}
 
-	// Calculate output amount
 	params := k.GetReserveParams(ctx)
 	ttConfig, found := params.GetTokenizedTreasury(request.OutputDenom)
 	if !found || !ttConfig.Active {
@@ -582,31 +699,14 @@ func (k Keeper) ExecutePendingRedemption(ctx sdk.Context, redemptionID uint64) e
 		}
 	}
 
-	price, err := k.oracleKeeper.GetPriceDecSafe(wrappedCtx, ttConfig.OracleDenom)
-	if err != nil {
-		if ttConfig.UnderlyingType == types.ReserveAssetCash {
-			price = sdkmath.LegacyOneDec()
-		} else {
-			if errors.Is(err, oracletypes.ErrPriceStale) {
-				return errorsmod.Wrapf(types.ErrPriceStale, "price for %s is stale", ttConfig.OracleDenom)
-			}
-			return errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
-		}
+	if request.OutputAmount.Denom != request.OutputDenom || request.OutputAmount.Amount.IsNegative() {
+		return errorsmod.Wrap(types.ErrInvalidReserve, "invalid stored output amount")
+	}
+	if request.OutputAmount.Amount.IsZero() {
+		return errorsmod.Wrap(types.ErrInvalidReserve, "missing stored output amount")
 	}
 
-	feeMultiplier := sdkmath.LegacyNewDec(10000 - int64(params.RedeemFeeBps)).Quo(sdkmath.LegacyNewDec(10000))
-	ssusdAfterFee := feeMultiplier.MulInt(request.SsusdAmount).TruncateInt()
-	outputAmount := sdkmath.LegacyNewDecFromInt(ssusdAfterFee).Quo(price).TruncateInt()
-
-	// Ensure reserves still have sufficient output denom at execution time.
-	reserve := k.GetReserve(ctx)
-	outputAvailable := reserve.TotalDeposited.AmountOf(request.OutputDenom)
-	if outputAmount.GT(outputAvailable) {
-		return errorsmod.Wrapf(types.ErrInsufficientReserves,
-			"requested %s %s but only %s available", outputAmount, request.OutputDenom, outputAvailable)
-	}
-
-	_, err = k.executeRedemption(ctx, &request, outputAmount)
+	_, err := k.executeRedemption(ctx, &request, request.OutputAmount.Amount)
 	return err
 }
 
@@ -624,6 +724,13 @@ func (k Keeper) CancelRedemption(ctx sdk.Context, authority string, redemptionID
 	// Verify authority
 	if authority != k.GetAuthority() {
 		return errorsmod.Wrapf(types.ErrUnauthorized, "invalid authority: expected %s, got %s", k.GetAuthority(), authority)
+	}
+
+	// Release locked reserves back to the available pool.
+	if request.OutputAmount.Denom != "" && request.OutputAmount.Amount.IsPositive() {
+		if err := k.unlockReserves(ctx, sdk.NewCoins(request.OutputAmount)); err != nil {
+			return err
+		}
 	}
 
 	// Refund ssUSD to requester
@@ -806,9 +913,8 @@ func (k Keeper) GetTotalReserves(ctx sdk.Context) types.TotalReserves {
 
 	totalValue := reserve.TotalValue.Add(offChainValue)
 
-	// Use TotalMinted as proxy for total supply tracking
-	// In production, this should query the bank module's total supply
-	totalSupply := reserve.TotalMinted
+		// TotalMinted is sourced from the bank module supply via GetReserve.
+		totalSupply := reserve.TotalMinted
 
 	lastOnChainUpdate := reserve.LastUpdatedTime
 	if lastOnChainUpdate.IsZero() {

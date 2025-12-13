@@ -15,31 +15,31 @@ func TestReserveRedemption_ImmediateUpdatesStatsAndIDs(t *testing.T) {
 	k, ctx, bank, oracle, _ := setupKeeper(t)
 
 	depositor := newAddress()
-	amount := sdk.NewInt64Coin("usdy", 200_000_000) // 200 USDY, above default minimums
+	amount := sdk.NewInt64Coin("ustn", 200_000_000) // 200 USTN, above default minimums
 	bank.SetBalance(depositor, sdk.NewCoins(amount))
-	oracle.SetPrice("usdy", sdkmath.LegacyMustNewDecFromStr("1.0"))
+	oracle.SetPrice("ustn", sdkmath.LegacyMustNewDecFromStr("1.0"))
 
 	_, minted, err := k.DepositReserve(ctx, depositor, amount)
 	require.NoError(t, err)
 	require.True(t, minted.Equal(sdkmath.NewInt(198_801_000)))
 
-	redemptionID, err := k.RequestRedemption(ctx, depositor, minted, "usdy")
+	redemptionID, err := k.RequestRedemption(ctx, depositor, minted, "ustn")
 	require.NoError(t, err)
 	require.Equal(t, uint64(1), redemptionID)
 
 	req, found := k.GetRedemptionRequest(ctx, redemptionID)
 	require.True(t, found)
 	require.Equal(t, types.RedeemStatusExecuted, req.Status)
-	require.Equal(t, "usdy", req.OutputAmount.Denom)
+	require.Equal(t, "ustn", req.OutputAmount.Denom)
 	require.True(t, req.OutputAmount.Amount.Equal(sdkmath.NewInt(198_602_199)))
 
 	stats := k.GetDailyMintStats(ctx)
 	require.True(t, stats.TotalRedeemed.Equal(minted))
 
-	// Relax allocation constraints so a second USDY deposit can be tested in isolation.
+	// Relax allocation constraints so a second USTN deposit can be tested in isolation.
 	params := k.GetReserveParams(ctx)
 	for i, cfg := range params.TokenizedTreasuries {
-		if cfg.Denom == "usdy" {
+		if cfg.Denom == "ustn" {
 			cfg.MaxAllocationBps = 10000
 			params.TokenizedTreasuries[i] = cfg
 		}
@@ -52,7 +52,7 @@ func TestReserveRedemption_ImmediateUpdatesStatsAndIDs(t *testing.T) {
 	_, minted2, err := k.DepositReserve(ctx, depositor2, amount)
 	require.NoError(t, err)
 
-	redemptionID2, err := k.RequestRedemption(ctx, depositor2, minted2, "usdy")
+	redemptionID2, err := k.RequestRedemption(ctx, depositor2, minted2, "ustn")
 	require.NoError(t, err)
 	require.Equal(t, uint64(2), redemptionID2)
 }
@@ -61,9 +61,9 @@ func TestCancelRedemption_RequiresAuthority(t *testing.T) {
 	k, ctx, bank, oracle, _ := setupKeeper(t)
 
 	depositor := newAddress()
-	amount := sdk.NewInt64Coin("usdy", 200_000_000) // 200 USDY, above default minimums
+	amount := sdk.NewInt64Coin("ustn", 200_000_000) // 200 USTN, above default minimums
 	bank.SetBalance(depositor, sdk.NewCoins(amount))
-	oracle.SetPrice("usdy", sdkmath.LegacyMustNewDecFromStr("1.0"))
+	oracle.SetPrice("ustn", sdkmath.LegacyMustNewDecFromStr("1.0"))
 
 	_, minted, err := k.DepositReserve(ctx, depositor, amount)
 	require.NoError(t, err)
@@ -73,7 +73,7 @@ func TestCancelRedemption_RequiresAuthority(t *testing.T) {
 	params.RedemptionDelay = time.Hour
 	require.NoError(t, k.SetReserveParams(ctx, params))
 
-	redemptionID, err := k.RequestRedemption(ctx, depositor, minted, "usdy")
+	redemptionID, err := k.RequestRedemption(ctx, depositor, minted, "ustn")
 	require.NoError(t, err)
 
 	req, found := k.GetRedemptionRequest(ctx, redemptionID)
@@ -95,4 +95,46 @@ func TestCancelRedemption_RequiresAuthority(t *testing.T) {
 
 	// Depositor should have their ssUSD refunded.
 	require.True(t, bank.Balance(depositor).AmountOf(types.StablecoinDenom).Equal(minted))
+}
+
+func TestRedemptionLocks_PreventImmediateDrain(t *testing.T) {
+	k, ctx, bank, oracle, _ := setupKeeper(t)
+
+	depositor := newAddress()
+	amount := sdk.NewInt64Coin("ustn", 200_000_000) // 200 USTN, above default minimums
+	bank.SetBalance(depositor, sdk.NewCoins(amount))
+	oracle.SetPrice("ustn", sdkmath.LegacyMustNewDecFromStr("1.0"))
+
+	_, _, err := k.DepositReserve(ctx, depositor, amount)
+	require.NoError(t, err)
+
+	// First redemption is delayed (pending) and should lock reserves.
+	params := k.GetReserveParams(ctx)
+	params.RedemptionDelay = time.Hour
+	require.NoError(t, k.SetReserveParams(ctx, params))
+
+	redemptionID, err := k.RequestRedemption(ctx, depositor, sdkmath.NewInt(150_000_000), "ustn")
+	require.NoError(t, err)
+
+	req, found := k.GetRedemptionRequest(ctx, redemptionID)
+	require.True(t, found)
+	require.Equal(t, types.RedeemStatusPending, req.Status)
+
+	locked := k.GetLockedReserves(ctx)
+	require.True(t, locked.AmountOf("ustn").Equal(req.OutputAmount.Amount))
+
+	// Now allow immediate redemptions and mint extra ssUSD out of band to simulate
+	// additional outstanding supply that would otherwise drain reserved collateral.
+	params.RedemptionDelay = 0
+	require.NoError(t, k.SetReserveParams(ctx, params))
+
+	attacker := newAddress()
+	extraSsusd := sdk.NewCoin(types.StablecoinDenom, sdkmath.NewInt(200_000_000))
+	wrappedCtx := sdk.WrapSDKContext(ctx)
+	require.NoError(t, bank.MintCoins(wrappedCtx, types.ModuleAccountName, sdk.NewCoins(extraSsusd)))
+	require.NoError(t, bank.SendCoinsFromModuleToAccount(wrappedCtx, types.ModuleAccountName, attacker, sdk.NewCoins(extraSsusd)))
+
+	// This redemption would have succeeded without considering locked reserves.
+	_, err = k.RequestRedemption(ctx, attacker, sdkmath.NewInt(100_000_000), "ustn")
+	require.ErrorIs(t, err, types.ErrInsufficientReserves)
 }

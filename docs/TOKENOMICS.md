@@ -62,29 +62,19 @@ If bondedRatio > 67%:
 
 ## ssUSD Stablecoin Economics
 
-ssUSD is a **100% reserve-backed stablecoin** backed exclusively by US Treasuries, cash, and tokenized treasury assets. Unlike algorithmic or crypto-collateralized stablecoins, ssUSD maintains a strict 1:1 backing ratio with real-world reserve assets.
+ssUSD is a **100%+ reserve-backed stablecoin** backed by **US Treasury Notes (T-Notes)**. On-chain mint/redeem (Path B) is backed by a tokenized T-Note reserve asset (default denom: `ustn`). Unlike algorithmic or crypto-collateralized stablecoins, ssUSD maintains strict backing with real-world reserves and enforces safety buffers via haircuts, fees, allocation caps, and daily limits.
 
 ### Reserve Backing Model
 
 | Reserve Type | Description | Max Allocation |
 |--------------|-------------|----------------|
-| **US Treasury Bills** | T-Bills (< 1 year maturity) | 50% |
-| **US Treasury Notes** | T-Notes (1-10 year maturity) | 30% |
-| **US Treasury Bonds** | T-Bonds (> 10 year maturity) | 20% |
-| **Cash & Equivalents** | USD at qualified custodians | 20% |
-| **Tokenized Treasuries** | On-chain treasury tokens | 100% |
-| **Repo Agreements** | Overnight repo agreements | 30% |
-| **Money Market Funds** | Government MMFs only | 20% |
+| **US Treasury Notes (Tokenized)** | Tokenized T-Notes on-chain (`ustn`) | 100% |
 
 ### Approved Tokenized Treasury Tokens
 
 | Token | Issuer | Underlying | Haircut | Max Allocation |
 |-------|--------|------------|---------|----------------|
-| **USDY** | Ondo Finance | T-Bills | 0.5% | 50% |
-| **STBT** | Matrixdock | T-Bills | 0.5% | 30% |
-| **OUSG** | Ondo Finance | US Gov Bonds | 1.0% | 30% |
-| **TBILL** | OpenEden | T-Bills | 0.5% | 40% |
-| **USDC** | Circle | Cash | 0% | 20% |
+| **USTN** | OpenEden | US Treasury Notes (T-Notes) | 0.5% | 100% |
 
 ### Reserve Parameters
 
@@ -105,15 +95,15 @@ ssUSD is a **100% reserve-backed stablecoin** backed exclusively by US Treasurie
 
 ```
 Mint ssUSD with Tokenized Treasuries:
-1. User deposits approved tokenized treasury tokens (USDY, STBT, etc.)
-2. Oracle provides real-time price for the deposited token
-3. Haircut applied for safety (0.5-1% based on asset type)
+1. User deposits approved tokenized Treasury Notes (`ustn`)
+2. Oracle provides real-time price for `ustn`
+3. Haircut applied for safety (0.5% default for `ustn`)
 4. Mint fee (0.1%) deducted
 5. ssUSD minted to user 1:1 with adjusted USD value
 6. Deposited tokens held by stablecoin module as reserves
 
 Example:
-- Deposit: 10,000 USDY (valued at $10,000)
+- Deposit: 10,000 USTN (valued at $10,000)
 - Haircut (0.5%): -$50
 - Net Value: $9,950
 - Mint Fee (0.1%): -$9.95
@@ -124,17 +114,17 @@ Example:
 
 ```
 Redeem ssUSD for Reserves:
-1. User submits ssUSD with desired output token (e.g., USDY)
-2. System checks reserve availability
-3. ssUSD burned immediately
-4. Redemption fee (0.1%) deducted
-5. Output tokens transferred to user
+1. User submits ssUSD with desired output token (default: `ustn`)
+2. System checks reserve availability (net of amounts locked by pending redemptions)
+3. ssUSD is burned immediately at request time and the output amount is computed using the current oracle price (net of redemption fee)
+4. The computed output amount is locked until execution so later redemptions cannot overbook reserves
+5. If `redemption_delay > 0`, anyone can execute after the delay; execution transfers the locked output tokens to the user
 
 Example:
 - Submit: 10,000 ssUSD
 - Redeem Fee (0.1%): -$10
 - Net Redemption: $9,990
-- Output: 9,990 USDY (at current price)
+- Output: 9,990 USTN (at request-time oracle price)
 ```
 
 ### Proof of Reserves
@@ -147,6 +137,8 @@ ssUSD implements transparent proof-of-reserves through:
 4. **Public Dashboard**: Real-time reserve composition visibility
 
 ### Off-Chain Reserve Attestation
+
+The protocol supports recording off-chain attestations for transparency. For the current Treasury-Notes-only model, attesters should report non-zero values in the T-Notes fields and keep other categories at zero unless governance expands supported reserve types.
 
 | Field | Description |
 |-------|-------------|
@@ -375,7 +367,7 @@ All economic parameters can be modified through governance:
 
 | Message | Description |
 |---------|-------------|
-| `MsgDepositReserve` | Deposit tokenized treasuries to mint ssUSD |
+| `MsgDepositReserve` | Deposit tokenized US Treasury Notes (`ustn`) to mint ssUSD |
 | `MsgRequestRedemption` | Request redemption of ssUSD for reserves |
 | `MsgExecuteRedemption` | Execute a pending redemption |
 | `MsgCancelRedemption` | Cancel a pending redemption (authority only) |

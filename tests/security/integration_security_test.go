@@ -41,7 +41,7 @@ func (suite *IntegrationSecurityTestSuite) SetupTest() {
 	suite.setCompliant(suite.bob)
 
 	suite.FundAcc(suite.alice, sdk.NewCoins(sdk.NewInt64Coin(suite.denom, 100_000)))
-	suite.FundAcc(suite.alice, sdk.NewCoins(sdk.NewInt64Coin("usdc", 100_000)))
+	suite.FundAcc(suite.alice, sdk.NewCoins(sdk.NewInt64Coin("ustn", 100_000)))
 }
 
 func (suite *IntegrationSecurityTestSuite) compliantProfile(addr sdk.AccAddress) compliancetypes.Profile {
@@ -112,8 +112,7 @@ func (suite *IntegrationSecurityTestSuite) TestComplianceBlocksAcrossModules() {
 	stablecoinMsgServer := stablecoinkeeper.NewMsgServerImpl(suite.App.StablecoinKeeper)
 	_, err = stablecoinMsgServer.DepositReserve(sdk.WrapSDKContext(suite.Ctx), &stablecointypes.MsgDepositReserve{
 		Depositor: suite.bob.String(),
-		Amount:    sdk.NewInt64Coin("usdc", 1),
+		Amount:    sdk.NewInt64Coin("ustn", 1),
 	})
 	suite.Require().ErrorIs(err, stablecointypes.ErrKYCRequired)
 }
-

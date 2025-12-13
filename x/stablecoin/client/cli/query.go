@@ -1,12 +1,14 @@
 package cli
 
 import (
-	"encoding/binary"
+	"context"
+	"encoding/json"
 	"fmt"
 	"strconv"
 
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/flags"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/spf13/cobra"
 
 	"github.com/stateset/core/x/stablecoin/types"
@@ -24,16 +26,46 @@ func NewQueryCmd() *cobra.Command {
 	}
 
 	cmd.AddCommand(
+		NewGetParamsCmd(),
 		NewGetVaultCmd(),
+		NewGetVaultsCmd(),
 		NewGetReserveParamsCmd(),
 		NewGetReserveCmd(),
+		NewGetLockedReservesCmd(),
+		NewGetTotalReservesCmd(),
 		NewGetReserveDepositCmd(),
+		NewGetReserveDepositsCmd(),
 		NewGetRedemptionRequestCmd(),
+		NewGetRedemptionRequestsCmd(),
 		NewGetAttestationCmd(),
 		NewGetLatestAttestationCmd(),
 		NewGetDailyStatsCmd(),
 	)
 
+	return cmd
+}
+
+func NewGetParamsCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "params",
+		Short: "Query vault (CDP) parameters",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.Params(context.Background(), &types.QueryParamsRequest{})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
 	return cmd
 }
 
@@ -54,19 +86,41 @@ func NewGetVaultCmd() *cobra.Command {
 				return err
 			}
 
-			key := types.VaultStoreKey(id)
-			res, _, err := clientCtx.QueryStore(key, types.StoreKey)
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.Vault(context.Background(), &types.QueryVaultRequest{VaultId: id})
 			if err != nil {
 				return err
 			}
-			if len(res) == 0 {
-				return fmt.Errorf("vault %d not found", id)
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func NewGetVaultsCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "vaults [owner]",
+		Short: "Query vaults (optionally filtered by owner)",
+		Args:  cobra.RangeArgs(0, 1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
 			}
 
-			var vault types.Vault
-			types.ModuleCdc.MustUnmarshalJSON(res, &vault)
+			owner := ""
+			if len(args) == 1 {
+				owner = args[0]
+			}
 
-			return clientCtx.PrintObjectLegacy(vault)
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.Vaults(context.Background(), &types.QueryVaultsRequest{Owner: owner})
+			if err != nil {
+				return err
+			}
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -85,17 +139,12 @@ func NewGetReserveParamsCmd() *cobra.Command {
 				return err
 			}
 
-			res, _, err := clientCtx.QueryStore(types.ReserveParamsKey, types.StoreKey)
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.ReserveParams(context.Background(), &types.QueryReserveParamsRequest{})
 			if err != nil {
 				return err
 			}
-			if len(res) == 0 {
-				return fmt.Errorf("reserve params not found")
-			}
-
-			var params types.ReserveParams
-			types.ModuleCdc.MustUnmarshalJSON(res, &params)
-			return clientCtx.PrintObjectLegacy(params)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -114,17 +163,68 @@ func NewGetReserveCmd() *cobra.Command {
 				return err
 			}
 
-			res, _, err := clientCtx.QueryStore(types.ReserveKey, types.StoreKey)
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.Reserve(context.Background(), &types.QueryReserveRequest{})
 			if err != nil {
 				return err
 			}
-			if len(res) == 0 {
-				return fmt.Errorf("reserve not found")
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func NewGetLockedReservesCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "locked-reserves",
+		Short: "Query reserves locked for pending redemptions",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
 			}
 
-			var reserve types.Reserve
-			types.ModuleCdc.MustUnmarshalJSON(res, &reserve)
-			return clientCtx.PrintObjectLegacy(reserve)
+			res, _, err := clientCtx.QueryStore(types.LockedReservesKey, types.StoreKey)
+			if err != nil {
+				return err
+			}
+
+			locked := sdk.NewCoins()
+			if len(res) > 0 {
+				if err := json.Unmarshal(res, &locked); err != nil {
+					return err
+				}
+			}
+
+			return clientCtx.PrintObjectLegacy(locked)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func NewGetTotalReservesCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "total-reserves",
+		Short: "Query combined on-chain and off-chain reserves",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.TotalReserves(context.Background(), &types.QueryTotalReservesRequest{})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -148,18 +248,42 @@ func NewGetReserveDepositCmd() *cobra.Command {
 				return err
 			}
 
-			key := types.ReserveDepositKey(id)
-			res, _, err := clientCtx.QueryStore(key, types.StoreKey)
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.ReserveDeposit(context.Background(), &types.QueryReserveDepositRequest{DepositId: id})
 			if err != nil {
 				return err
 			}
-			if len(res) == 0 {
-				return fmt.Errorf("reserve deposit %d not found", id)
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func NewGetReserveDepositsCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "reserve-deposits [depositor]",
+		Short: "Query reserve deposit records (optionally filtered by depositor)",
+		Args:  cobra.RangeArgs(0, 1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
 			}
 
-			var deposit types.ReserveDeposit
-			types.ModuleCdc.MustUnmarshalJSON(res, &deposit)
-			return clientCtx.PrintObjectLegacy(deposit)
+			depositor := ""
+			if len(args) == 1 {
+				depositor = args[0]
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.ReserveDeposits(context.Background(), &types.QueryReserveDepositsRequest{Depositor: depositor})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -183,18 +307,42 @@ func NewGetRedemptionRequestCmd() *cobra.Command {
 				return err
 			}
 
-			key := types.RedemptionRequestKey(id)
-			res, _, err := clientCtx.QueryStore(key, types.StoreKey)
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.RedemptionRequest(context.Background(), &types.QueryRedemptionRequestRequest{RedemptionId: id})
 			if err != nil {
 				return err
 			}
-			if len(res) == 0 {
-				return fmt.Errorf("redemption request %d not found", id)
+			return clientCtx.PrintProto(res)
+		},
+	}
+
+	flags.AddQueryFlagsToCmd(cmd)
+	return cmd
+}
+
+func NewGetRedemptionRequestsCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "redemptions [status]",
+		Short: "Query redemption requests (optionally filtered by status)",
+		Args:  cobra.RangeArgs(0, 1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			clientCtx, err := client.GetClientQueryContext(cmd)
+			if err != nil {
+				return err
 			}
 
-			var redemption types.RedemptionRequest
-			types.ModuleCdc.MustUnmarshalJSON(res, &redemption)
-			return clientCtx.PrintObjectLegacy(redemption)
+			status := ""
+			if len(args) == 1 {
+				status = args[0]
+			}
+
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.RedemptionRequests(context.Background(), &types.QueryRedemptionRequestsRequest{Status: status})
+			if err != nil {
+				return err
+			}
+
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -218,18 +366,12 @@ func NewGetAttestationCmd() *cobra.Command {
 				return err
 			}
 
-			key := types.OffChainAttestationKey(id)
-			res, _, err := clientCtx.QueryStore(key, types.StoreKey)
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.Attestation(context.Background(), &types.QueryAttestationRequest{AttestationId: id})
 			if err != nil {
 				return err
 			}
-			if len(res) == 0 {
-				return fmt.Errorf("attestation %d not found", id)
-			}
-
-			var att types.OffChainReserveAttestation
-			types.ModuleCdc.MustUnmarshalJSON(res, &att)
-			return clientCtx.PrintObjectLegacy(att)
+			return clientCtx.PrintProto(res)
 		},
 	}
 
@@ -248,32 +390,12 @@ func NewGetLatestAttestationCmd() *cobra.Command {
 				return err
 			}
 
-			nextBz, _, err := clientCtx.QueryStore(types.NextAttestationIDKey, types.StoreKey)
+			queryClient := types.NewQueryClient(clientCtx)
+			res, err := queryClient.LatestAttestation(context.Background(), &types.QueryLatestAttestationRequest{})
 			if err != nil {
 				return err
 			}
-			if len(nextBz) == 0 {
-				return fmt.Errorf("no attestations found")
-			}
-
-			next := binary.BigEndian.Uint64(nextBz)
-			if next <= 1 {
-				return fmt.Errorf("no attestations found")
-			}
-			id := next - 1
-
-			key := types.OffChainAttestationKey(id)
-			res, _, err := clientCtx.QueryStore(key, types.StoreKey)
-			if err != nil {
-				return err
-			}
-			if len(res) == 0 {
-				return fmt.Errorf("attestation %d not found", id)
-			}
-
-			var att types.OffChainReserveAttestation
-			types.ModuleCdc.MustUnmarshalJSON(res, &att)
-			return clientCtx.PrintObjectLegacy(att)
+			return clientCtx.PrintProto(res)
 		},
 	}
 

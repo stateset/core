@@ -20,8 +20,8 @@ type StablecoinSecurityTestSuite struct {
 
 	authority string
 
-	owner     sdk.AccAddress
-	attacker  sdk.AccAddress
+	owner      sdk.AccAddress
+	attacker   sdk.AccAddress
 	liquidator sdk.AccAddress
 }
 
@@ -49,6 +49,8 @@ func (suite *StablecoinSecurityTestSuite) SetupTest() {
 
 	// Set a fresh oracle price for the default collateral denom.
 	suite.setOraclePrice("stst", sdkmath.LegacyOneDec(), suite.Ctx.BlockTime())
+	// Reserve-backed ssUSD uses USTN (tokenized US Treasury Notes) by default.
+	suite.setOraclePrice("ustn", sdkmath.LegacyOneDec(), suite.Ctx.BlockTime())
 
 	suite.FundAcc(suite.owner, sdk.NewCoins(sdk.NewInt64Coin("stst", 1_000_000)))
 	suite.FundAcc(suite.liquidator, sdk.NewCoins(sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 1_000_000)))
@@ -238,19 +240,19 @@ func (suite *StablecoinSecurityTestSuite) TestAttestation_ApprovedAttesterOnly()
 func (suite *StablecoinSecurityTestSuite) TestRedemptionDelay_Enforced() {
 	msgServer := stablecoinkeeper.NewMsgServerImpl(suite.App.StablecoinKeeper)
 
-	// Fund reserve depositor with cash-equivalent reserves.
-	suite.FundAcc(suite.owner, sdk.NewCoins(sdk.NewInt64Coin("usdc", 10_000)))
+	// Fund reserve depositor with tokenized Treasury Note reserves.
+	suite.FundAcc(suite.owner, sdk.NewCoins(sdk.NewInt64Coin("ustn", 10_000)))
 
 	_, err := msgServer.DepositReserve(sdk.WrapSDKContext(suite.Ctx), &stablecointypes.MsgDepositReserve{
 		Depositor: suite.owner.String(),
-		Amount:    sdk.NewInt64Coin("usdc", 10_000),
+		Amount:    sdk.NewInt64Coin("ustn", 10_000),
 	})
 	suite.Require().NoError(err)
 
 	reqResp, err := msgServer.RequestRedemption(sdk.WrapSDKContext(suite.Ctx), &stablecointypes.MsgRequestRedemption{
 		Requester:   suite.owner.String(),
 		SsusdAmount: "1000",
-		OutputDenom: "usdc",
+		OutputDenom: "ustn",
 	})
 	suite.Require().NoError(err)
 
