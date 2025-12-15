@@ -29,6 +29,8 @@ import (
 
 	compliancekeeper "github.com/stateset/core/x/compliance/keeper"
 	compliancetypes "github.com/stateset/core/x/compliance/types"
+	orderskeeper "github.com/stateset/core/x/orders/keeper"
+	orderstypes "github.com/stateset/core/x/orders/types"
 	paymentskeeper "github.com/stateset/core/x/payments/keeper"
 	paymentstypes "github.com/stateset/core/x/payments/types"
 	settlementkeeper "github.com/stateset/core/x/settlement/keeper"
@@ -48,6 +50,7 @@ type ECommerceFlowTestSuite struct {
 	accountKeeper    authkeeper.AccountKeeper
 	bankKeeper       bankkeeper.Keeper
 	complianceKeeper compliancekeeper.Keeper
+	ordersKeeper     orderskeeper.Keeper
 	paymentsKeeper   paymentskeeper.Keeper
 	settlementKeeper settlementkeeper.Keeper
 
@@ -80,6 +83,7 @@ func (s *ECommerceFlowTestSuite) SetupTest() {
 		authtypes.StoreKey,
 		banktypes.StoreKey,
 		compliancetypes.StoreKey,
+		orderstypes.StoreKey,
 		paymentstypes.StoreKey,
 		settlementtypes.StoreKey,
 	)
@@ -160,9 +164,28 @@ func (s *ECommerceFlowTestSuite) SetupTest() {
 		s.authority.String(),
 	)
 
+	// Initialize orders keeper
+	s.ordersKeeper = orderskeeper.NewKeeper(
+		s.cdc,
+		storeKeys[orderstypes.StoreKey],
+		s.authority.String(),
+		s.bankKeeper,
+		s.complianceKeeper,
+		s.settlementKeeper,
+		s.accountKeeper,
+	)
+
 	// Setup test data
 	s.setupTestAccounts()
 	s.setupComplianceProfiles()
+
+	// Configure orders module params
+	ordersParams := orderstypes.DefaultParams()
+	ordersParams.StablecoinDenom = "ssusd"
+	ordersParams.MinOrderAmount = sdk.NewCoin("ssusd", sdkmath.NewInt(100))
+	ordersParams.MaxOrderAmount = sdk.NewCoin("ssusd", sdkmath.NewInt(1000000000000))
+	err = s.ordersKeeper.SetParams(s.ctx, ordersParams)
+	require.NoError(s.T(), err)
 }
 
 func (s *ECommerceFlowTestSuite) setupTestAccounts() {
@@ -171,8 +194,12 @@ func (s *ECommerceFlowTestSuite) setupTestAccounts() {
 	paymentsModuleAcc = s.accountKeeper.NewAccount(s.ctx, paymentsModuleAcc).(*authtypes.ModuleAccount)
 	settlementModuleAcc := authtypes.NewEmptyModuleAccount(settlementtypes.ModuleAccountName, authtypes.Minter, authtypes.Burner)
 	settlementModuleAcc = s.accountKeeper.NewAccount(s.ctx, settlementModuleAcc).(*authtypes.ModuleAccount)
+	ordersModuleAcc := authtypes.NewEmptyModuleAccount(orderstypes.ModuleAccountName, authtypes.Minter, authtypes.Burner)
+	ordersModuleAcc = s.accountKeeper.NewAccount(s.ctx, ordersModuleAcc).(*authtypes.ModuleAccount)
+
 	s.accountKeeper.SetModuleAccount(s.ctx, paymentsModuleAcc)
 	s.accountKeeper.SetModuleAccount(s.ctx, settlementModuleAcc)
+	s.accountKeeper.SetModuleAccount(s.ctx, ordersModuleAcc)
 
 	// Create user accounts
 	customerAcc := s.accountKeeper.NewAccountWithAddress(s.ctx, s.customer)
@@ -531,3 +558,98 @@ func (s *ECommerceFlowTestSuite) TestStateChangesAreConsistent() {
 	s.Require().Equal(amount.Amount, settlement.NetAmount.Amount.Add(settlement.Fee.Amount),
 		"Amount should equal net + fee")
 }
+
+// TestFullOrderLifecycle tests the complete order management flow linked with settlement
+func (s *ECommerceFlowTestSuite) TestFullOrderLifecycle() {
+	// Scenario: Full lifecycle from Order Creation -> Confirmation -> Payment -> Shipping -> Delivery -> Completion
+
+	// Verify params are set correctly
+	params := s.ordersKeeper.GetParams(s.ctx)
+	s.Require().Equal("ssusd", params.StablecoinDenom)
+
+	// 1. Create Order
+	items := []orderstypes.OrderItem{
+		{
+			Id:          "ITEM-1",
+			ProductName: "Stablecoin Handbook",
+			Quantity:    1,
+			UnitPrice:   sdk.NewCoin("ssusd", sdkmath.NewInt(50000000)), // 50 ssUSD
+		},
+	}
+	shipping := orderstypes.ShippingInfo{
+		Address: orderstypes.Address{
+			Name:       "John Doe",
+			Line1:      "123 Blockchain Blvd",
+			City:       "Crypto City",
+			Country:    "Internet",
+			PostalCode: "10101",
+		},
+		Method: "Standard",
+	}
+
+	orderID, err := s.ordersKeeper.CreateOrder(
+		s.ctx,
+		s.customer.String(),
+		s.merchant.String(),
+		items,
+		shipping,
+		"Order metadata",
+	)
+	s.Require().NoError(err, "Order creation should succeed")
+	s.Require().NotEmpty(orderID)
+
+	// Verify status PENDING
+	order, found := s.ordersKeeper.GetOrder(s.ctx, orderID)
+	s.Require().True(found)
+	s.Require().Equal(orderstypes.OrderStatusPending, order.Status)
+
+	// 2. Merchant Confirms Order
+	err = s.ordersKeeper.ConfirmOrder(s.ctx, s.merchant.String(), orderID)
+	s.Require().NoError(err, "Order confirmation should succeed")
+
+	// Verify status CONFIRMED
+	order, _ = s.ordersKeeper.GetOrder(s.ctx, orderID)
+	s.Require().Equal(orderstypes.OrderStatusConfirmed, order.Status)
+
+	// 3. Customer Pays for Order (using Escrow)
+	amountToPay := sdk.NewCoin("ssusd", sdkmath.NewInt(50000000))
+	err = s.ordersKeeper.PayOrder(s.ctx, s.customer.String(), orderID, amountToPay, true)
+	s.Require().NoError(err, "Order payment should succeed")
+
+	// Verify status PAID and funds escrowed
+	order, _ = s.ordersKeeper.GetOrder(s.ctx, orderID)
+	s.Require().Equal(orderstypes.OrderStatusPaid, order.Status)
+	s.Require().NotEmpty(order.SettlementId)
+
+	// 4. Merchant Ships Order
+	err = s.ordersKeeper.ShipOrder(s.ctx, s.merchant.String(), orderID, "FedEx", "TRACK-999")
+	s.Require().NoError(err, "Order shipping should succeed")
+
+	// Verify status SHIPPED
+	order, _ = s.ordersKeeper.GetOrder(s.ctx, orderID)
+	s.Require().Equal(orderstypes.OrderStatusShipped, order.Status)
+
+	// 5. Customer marks Delivered
+	err = s.ordersKeeper.DeliverOrder(s.ctx, s.customer.String(), orderID)
+	s.Require().NoError(err, "Order delivery should succeed")
+
+	// Verify status DELIVERED
+	order, _ = s.ordersKeeper.GetOrder(s.ctx, orderID)
+	s.Require().Equal(orderstypes.OrderStatusDelivered, order.Status)
+
+	// 6. Complete Order (Release Escrow)
+	// Capture merchant balance before release
+	merchantBalBefore := s.bankKeeper.GetBalance(s.ctx, s.merchant, "ssusd")
+
+	err = s.ordersKeeper.CompleteOrder(s.ctx, s.customer.String(), orderID)
+	s.Require().NoError(err, "Order completion should succeed")
+
+	// Verify status COMPLETED
+	order, _ = s.ordersKeeper.GetOrder(s.ctx, orderID)
+	s.Require().Equal(orderstypes.OrderStatusCompleted, order.Status)
+
+	// Verify merchant got paid
+	merchantBalAfter := s.bankKeeper.GetBalance(s.ctx, s.merchant, "ssusd")
+	s.Require().True(merchantBalAfter.Amount.GT(merchantBalBefore.Amount), "Merchant should receive funds")
+}
+
