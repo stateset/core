@@ -11,6 +11,7 @@ import (
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	oracletypes "github.com/stateset/core/x/oracle/types"
 	"github.com/stateset/core/x/stablecoin/types"
@@ -64,13 +65,8 @@ func (k Keeper) UpdateReserveValue(ctx sdk.Context) error {
 		// Get price from oracle
 		price, err := k.oracleKeeper.GetPriceDecSafe(wrappedCtx, ttConfig.OracleDenom)
 		if err != nil {
-			// Use fallback price of 1 USD only for cash-equivalent reserves.
-			if ttConfig.UnderlyingType == types.ReserveAssetCash {
-				price = sdkmath.LegacyOneDec()
-			} else {
-				// Skip assets without a reliable price to avoid overstating reserves.
-				continue
-			}
+			// Skip assets without a reliable price to avoid overstating reserves.
+			continue
 		}
 
 		// Calculate value with haircut
@@ -175,15 +171,10 @@ func (k Keeper) DepositReserve(ctx sdk.Context, depositor sdk.AccAddress, amount
 	// Get price from oracle
 	price, err := k.oracleKeeper.GetPriceDecSafe(wrappedCtx, ttConfig.OracleDenom)
 	if err != nil {
-		// Only allow a 1 USD fallback for cash-equivalent reserves.
-		if ttConfig.UnderlyingType == types.ReserveAssetCash {
-			price = sdkmath.LegacyOneDec()
-		} else {
-			if errors.Is(err, oracletypes.ErrPriceStale) {
-				return 0, sdkmath.ZeroInt(), errorsmod.Wrapf(types.ErrPriceStale, "price for %s is stale", ttConfig.OracleDenom)
-			}
-			return 0, sdkmath.ZeroInt(), errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
+		if errors.Is(err, oracletypes.ErrPriceStale) {
+			return 0, sdkmath.ZeroInt(), errorsmod.Wrapf(types.ErrPriceStale, "price for %s is stale", ttConfig.OracleDenom)
 		}
+		return 0, sdkmath.ZeroInt(), errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
 	}
 
 	// Safety check: Price must be positive
@@ -234,6 +225,20 @@ func (k Keeper) DepositReserve(ctx sdk.Context, depositor sdk.AccAddress, amount
 		return 0, sdkmath.ZeroInt(), err
 	}
 
+	// Calculate and route fee
+	// Fee = Amount * FeeRate
+	feeRate := sdkmath.LegacyNewDec(int64(params.MintFeeBps)).Quo(sdkmath.LegacyNewDec(10000))
+	feeAmountRaw := sdkmath.LegacyNewDecFromInt(amount.Amount).Mul(feeRate).TruncateInt()
+	feeCoin := sdk.NewCoin(amount.Denom, feeAmountRaw)
+	netAmount := amount.Sub(feeCoin)
+
+	if !feeCoin.IsZero() {
+		// Send fee to fee collector
+		if err := k.bankKeeper.SendCoinsFromModuleToModule(wrappedCtx, types.ModuleAccountName, authtypes.FeeCollectorName, sdk.NewCoins(feeCoin)); err != nil {
+			return 0, sdkmath.ZeroInt(), err
+		}
+	}
+
 	// Mint ssUSD to depositor
 	mintCoins := sdk.NewCoins(sdk.NewCoin(types.StablecoinDenom, ssusdToMint))
 	if err := k.bankKeeper.MintCoins(wrappedCtx, types.ModuleAccountName, mintCoins); err != nil {
@@ -243,9 +248,14 @@ func (k Keeper) DepositReserve(ctx sdk.Context, depositor sdk.AccAddress, amount
 		return 0, sdkmath.ZeroInt(), err
 	}
 
+	// Hooks
+	if k.hooks != nil {
+		k.hooks.AfterMintStablecoin(wrappedCtx, depositor, mintCoins[0])
+	}
+
 	// Update reserve state
 	reserve := k.GetReserve(ctx)
-	reserve.TotalDeposited = reserve.TotalDeposited.Add(amount)
+	reserve.TotalDeposited = reserve.TotalDeposited.Add(netAmount)
 	reserve.TotalValue = reserve.TotalValue.Add(usdValue)
 	reserve.TotalMinted = reserve.TotalMinted.Add(ssusdToMint)
 	k.SetReserve(ctx, reserve)
@@ -255,7 +265,7 @@ func (k Keeper) DepositReserve(ctx sdk.Context, depositor sdk.AccAddress, amount
 	deposit := types.ReserveDeposit{
 		Id:          depositID,
 		Depositor:   depositor.String(),
-		Amount:      amount,
+		Amount:      netAmount,
 		UsdValue:    usdValue,
 		SsusdMinted: ssusdToMint,
 		DepositedAt: ctx.BlockTime(),
@@ -303,14 +313,10 @@ func (k Keeper) checkAllocationLimit(ctx sdk.Context, amount sdk.Coin, ttConfig 
 	wrappedCtx := sdk.WrapSDKContext(ctx)
 	price, err := k.oracleKeeper.GetPriceDecSafe(wrappedCtx, ttConfig.OracleDenom)
 	if err != nil {
-		if ttConfig.UnderlyingType == types.ReserveAssetCash {
-			price = sdkmath.LegacyOneDec()
-		} else {
-			if errors.Is(err, oracletypes.ErrPriceStale) {
-				return errorsmod.Wrapf(types.ErrPriceStale, "price for %s is stale", ttConfig.OracleDenom)
-			}
-			return errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
+		if errors.Is(err, oracletypes.ErrPriceStale) {
+			return errorsmod.Wrapf(types.ErrPriceStale, "price for %s is stale", ttConfig.OracleDenom)
 		}
+		return errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
 	}
 
 	// Allocation ratios should be computed against haircutted USD values so that
@@ -527,14 +533,10 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 	// Get output price
 	price, err := k.oracleKeeper.GetPriceDecSafe(wrappedCtx, ttConfig.OracleDenom)
 	if err != nil {
-		if ttConfig.UnderlyingType == types.ReserveAssetCash {
-			price = sdkmath.LegacyOneDec()
-		} else {
-			if errors.Is(err, oracletypes.ErrPriceStale) {
-				return 0, errorsmod.Wrapf(types.ErrPriceStale, "price for %s is stale", ttConfig.OracleDenom)
-			}
-			return 0, errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
+		if errors.Is(err, oracletypes.ErrPriceStale) {
+			return 0, errorsmod.Wrapf(types.ErrPriceStale, "price for %s is stale", ttConfig.OracleDenom)
 		}
+		return 0, errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
 	}
 
 	// Safety check: Anti-manipulation for stable assets
@@ -553,9 +555,27 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 	// Calculate output tokens needed
 	outputAmount := sdkmath.LegacyNewDecFromInt(ssusdAfterFee).Quo(price).TruncateInt()
 
-	if outputAmount.GT(outputAvailable) {
+	// Calculate and route fee (immediately)
+	feeRate := sdkmath.LegacyNewDec(int64(params.RedeemFeeBps)).Quo(sdkmath.LegacyNewDec(10000))
+	feeVal := sdkmath.LegacyNewDecFromInt(ssusdAmount).Mul(feeRate)
+	feeTokenAmount := feeVal.Quo(price).TruncateInt()
+
+	totalRequired := outputAmount.Add(feeTokenAmount)
+
+	if totalRequired.GT(outputAvailable) {
 		return 0, errorsmod.Wrapf(types.ErrInsufficientReserves,
-			"requested %s %s but only %s available (locked %s)", outputAmount, outputDenom, outputAvailable, locked.AmountOf(outputDenom))
+			"requested %s %s (incl fee) but only %s available (locked %s)", totalRequired, outputDenom, outputAvailable, locked.AmountOf(outputDenom))
+	}
+
+	// Send fee to collector
+	if !feeTokenAmount.IsZero() {
+		feeCoin := sdk.NewCoin(outputDenom, feeTokenAmount)
+		if err := k.bankKeeper.SendCoinsFromModuleToModule(wrappedCtx, types.ModuleAccountName, authtypes.FeeCollectorName, sdk.NewCoins(feeCoin)); err != nil {
+			return 0, err
+		}
+		// Update reserve total deposited immediately for fee
+		reserve.TotalDeposited = reserve.TotalDeposited.Sub(feeCoin)
+		k.SetReserve(ctx, reserve)
 	}
 
 	// Transfer ssUSD to module (burned at request time)
@@ -567,6 +587,11 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 	// Burn ssUSD immediately
 	if err := k.bankKeeper.BurnCoins(wrappedCtx, types.ModuleAccountName, ssusdCoins); err != nil {
 		return 0, err
+	}
+
+	// Hooks
+	if k.hooks != nil {
+		k.hooks.AfterRedeemStablecoin(wrappedCtx, requester, ssusdCoins[0])
 	}
 
 	// Create redemption request

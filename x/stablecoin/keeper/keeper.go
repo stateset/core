@@ -31,6 +31,7 @@ type Keeper struct {
 	accountKeeper    types.AccountKeeper
 	oracleKeeper     types.OracleKeeper
 	complianceKeeper types.ComplianceKeeper
+	hooks            types.StablecoinHooks
 }
 
 // NewKeeper instantiates a new keeper.
@@ -52,6 +53,15 @@ func NewKeeper(
 		oracleKeeper:     oracle,
 		complianceKeeper: compliance,
 	}
+}
+
+// SetHooks sets the stablecoin hooks
+func (k *Keeper) SetHooks(sh types.StablecoinHooks) *Keeper {
+	if k.hooks != nil {
+		panic("cannot set stablecoin hooks twice")
+	}
+	k.hooks = sh
+	return k
 }
 
 // GetAuthority returns the module authority address

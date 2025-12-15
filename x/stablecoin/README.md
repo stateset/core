@@ -17,6 +17,8 @@ The Stablecoin module manages the native USD stablecoin `ssUSD` (`ssusd`) on Sta
 - Minting from tokenized US Treasury Notes with haircuts and allocation limits
 - Redemption requests with optional delay, KYC gating, daily limits, and reserve locking
 - Off-chain attestations folded into total backing
+- **Fee Routing**: Mint and Redeem fees are automatically routed to the protocol fee collector.
+- **Safety**: Oracle price feeds are strictly enforced; no fallbacks for cash-equivalent assets.
 
 ## Messages
 
