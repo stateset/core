@@ -70,6 +70,7 @@ const (
 	EventTypeRedemptionCancelled = "redemption_cancelled"
 	EventTypeReserveParamsUpdated = "reserve_params_updated"
 	EventTypeReserveAttestation  = "reserve_attestation"
+	EventTypeSolvencyEmergency   = "solvency_emergency"
 )
 
 // Attribute Keys
@@ -89,4 +90,5 @@ const (
 	AttributeKeyRedemptionID = "redemption_id"
 	AttributeKeyReserveRatio = "reserve_ratio"
 	AttributeKeyAttester     = "attester"
+	AttributeKeyAction       = "action"
 )

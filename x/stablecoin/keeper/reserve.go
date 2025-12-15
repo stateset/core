@@ -191,6 +191,19 @@ func (k Keeper) DepositReserve(ctx sdk.Context, depositor sdk.AccAddress, amount
 		return 0, sdkmath.ZeroInt(), errorsmod.Wrapf(types.ErrPriceNotFound, "invalid price %s for %s", price, ttConfig.OracleDenom)
 	}
 
+	// Safety check: Anti-manipulation for stable assets
+	// If the asset is cash or treasury, we expect it to be relatively stable.
+	// We block operations if the price deviates too wildly (e.g. > $1.05 or < $0.95)
+	// unless specifically configured otherwise.
+	if ttConfig.UnderlyingType == types.ReserveAssetCash || ttConfig.UnderlyingType == types.ReserveAssetTreasury {
+		upperBound := sdkmath.LegacyNewDecWithPrec(105, 2) // 1.05
+		lowerBound := sdkmath.LegacyNewDecWithPrec(95, 2)  // 0.95
+		if price.GT(upperBound) || price.LT(lowerBound) {
+			return 0, sdkmath.ZeroInt(), errorsmod.Wrapf(types.ErrPriceNotFound,
+				"price %s for stable asset %s is outside safety bounds (0.95-1.05)", price, ttConfig.OracleDenom)
+		}
+	}
+
 	// Calculate USD value (with haircut)
 	rawValue := price.MulInt(amount.Amount).TruncateInt()
 	haircutMultiplier := sdkmath.LegacyNewDec(10000 - int64(ttConfig.HaircutBps)).Quo(sdkmath.LegacyNewDec(10000))
@@ -521,6 +534,19 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 				return 0, errorsmod.Wrapf(types.ErrPriceStale, "price for %s is stale", ttConfig.OracleDenom)
 			}
 			return 0, errorsmod.Wrapf(types.ErrPriceNotFound, "price not available for %s", ttConfig.OracleDenom)
+		}
+	}
+
+	// Safety check: Anti-manipulation for stable assets
+	// If the asset is cash or treasury, we expect it to be relatively stable.
+	// We block operations if the price deviates too wildly (e.g. > $1.05 or < $0.95)
+	// unless specifically configured otherwise.
+	if ttConfig.UnderlyingType == types.ReserveAssetCash || ttConfig.UnderlyingType == types.ReserveAssetTreasury {
+		upperBound := sdkmath.LegacyNewDecWithPrec(105, 2) // 1.05
+		lowerBound := sdkmath.LegacyNewDecWithPrec(95, 2)  // 0.95
+		if price.GT(upperBound) || price.LT(lowerBound) {
+			return 0, errorsmod.Wrapf(types.ErrPriceNotFound,
+				"price %s for stable asset %s is outside safety bounds (0.95-1.05)", price, ttConfig.OracleDenom)
 		}
 	}
 
