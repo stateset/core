@@ -36,7 +36,20 @@ func (m *TreasuryMockBankKeeper) GetBalance(ctx context.Context, addr sdk.AccAdd
 }
 
 func (m *TreasuryMockBankKeeper) GetAllBalances(ctx context.Context, addr sdk.AccAddress) sdk.Coins {
-	return m.balances[addr.String()]
+	// Check regular balances first
+	if bal, ok := m.balances[addr.String()]; ok {
+		return bal
+	}
+	// For module accounts (like treasury_module_____), check module balances
+	for _, coins := range m.moduleBalances {
+		if len(coins) > 0 {
+			// If we have any module balance and this is the treasury module address, return it
+			if addr.String() == sdk.AccAddress("treasury_module_____").String() {
+				return m.moduleBalances[treasurytypes.ModuleName]
+			}
+		}
+	}
+	return sdk.NewCoins()
 }
 
 func (m *TreasuryMockBankKeeper) SendCoinsFromModuleToAccount(ctx context.Context, senderModule string, recipientAddr sdk.AccAddress, amt sdk.Coins) error {
@@ -70,6 +83,11 @@ func (m *TreasuryMockBankKeeper) MintCoins(ctx context.Context, moduleName strin
 // Helper to set balance directly for testing
 func (m *TreasuryMockBankKeeper) SetBalance(addr sdk.AccAddress, coins sdk.Coins) {
 	m.balances[addr.String()] = coins
+}
+
+// Helper to set module balance directly for testing
+func (m *TreasuryMockBankKeeper) SetModuleBalance(module string, coins sdk.Coins) {
+	m.moduleBalances[module] = coins
 }
 
 // Mock account keeper for treasury tests

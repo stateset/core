@@ -538,15 +538,9 @@ func New(
 		paymentstypes.ModuleAccountName,
 	)
 
-	// Initialize two distinct parameter subspaces for stablecoin
-	vaultParamStore := app.ParamsKeeper.Subspace(stablecointypes.VaultParamspace)
-	reserveParamStore := app.ParamsKeeper.Subspace(stablecointypes.ReserveParamspace)
-
 	app.StablecoinKeeper = stablecoinkeeper.NewKeeper(
 		appCodec,
 		keys[stablecointypes.StoreKey],
-		vaultParamStore,
-		reserveParamStore,
 		oracleAuthority,
 		app.BankKeeper,
 		app.AccountKeeper,
@@ -682,7 +676,7 @@ func New(
 		treasury.NewAppModule(app.TreasuryKeeper),
 		orders.NewAppModule(app.OrdersKeeper),
 		payments.NewAppModule(app.PaymentsKeeper),
-		stablecoin.NewAppModule(appCodec, app.StablecoinKeeper),
+		stablecoin.NewAppModule(app.StablecoinKeeper),
 		settlement.NewAppModule(app.SettlementKeeper),
 		circuit.NewAppModule(app.CircuitKeeper),
 		metrics.NewAppModule(app.MetricsKeeper),

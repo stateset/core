@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
@@ -21,14 +20,11 @@ func TestSpendProposalFlow(t *testing.T) {
 	params.MaxTimelockDuration = 24 * time.Hour
 	require.NoError(t, k.SetParams(ctx, params))
 
-	// 2. Fund Treasury
-	// The module account name is in types.ModuleAccountName ("treasury")
-	// The mock account keeper maps this to "treasury_module_____"
-	moduleAddr := sdk.AccAddress("treasury_module_____")
+	// 2. Fund Treasury module account
 	fundAmount := sdk.NewCoins(sdk.NewInt64Coin("ssusd", 1_000_000))
-	
-	// Inject funds directly into mock
-	bankKeeper.SetBalance(moduleAddr, fundAmount)
+
+	// Inject funds directly into module balance
+	bankKeeper.SetModuleBalance(types.ModuleName, fundAmount)
 
 	// 3. Create Spend Proposal
 	proposer := newTreasuryTestAddress().String()
@@ -67,34 +63,16 @@ func TestSpendProposalFlow(t *testing.T) {
 	require.Equal(t, int64(1_000_000), bal.Amount.Int64())
 }
 
-func TestBudgetEnforcement(t *testing.T) {
-	k, ctx, _, _ := setupTreasuryKeeperTest(t)
-
-	// 1. Set Budget for "marketing"
-	budget := types.Budget{
-		Category:       "marketing",
-		TotalLimit:     sdk.NewCoins(sdk.NewInt64Coin("ssusd", 10_000)),
-		TotalSpent:     sdk.NewCoins(),
-		PeriodDuration: 24 * time.Hour,
-		PeriodLimit:    sdk.NewCoins(sdk.NewInt64Coin("ssusd", 1_000)),
-		PeriodStart:    ctx.BlockTime(),
-	}
-	require.NoError(t, k.SetBudget(ctx, budget))
-
-	// 2. Propose spend within budget (500)
-	// We cheat funds into treasury so balance check passes
-	moduleAddr := sdk.AccAddress("treasury_module_____")
-	bankKeeper := NewTreasuryMockBankKeeper() // We can't access existing bankKeeper easily unless we changed setup return (we did!)
-	// Wait, we need the one from setup.
-	// Redo setup call for this test
-}
-
-// Redefining test with proper variable capture
 func TestBudgetEnforcement_Full(t *testing.T) {
 	k, ctx, _, bankKeeper := setupTreasuryKeeperTest(t)
-	
-	moduleAddr := sdk.AccAddress("treasury_module_____")
-	bankKeeper.SetBalance(moduleAddr, sdk.NewCoins(sdk.NewInt64Coin("ssusd", 1_000_000)))
+
+	bankKeeper.SetModuleBalance(types.ModuleName, sdk.NewCoins(sdk.NewInt64Coin("ssusd", 1_000_000)))
+
+	// Set params with shorter timelock for testing
+	params := types.DefaultTreasuryParams()
+	params.MinTimelockDuration = 1 * time.Hour
+	params.MaxTimelockDuration = 24 * time.Hour
+	require.NoError(t, k.SetParams(ctx, params))
 
 	// 1. Set Budget
 	budget := types.Budget{
@@ -104,6 +82,7 @@ func TestBudgetEnforcement_Full(t *testing.T) {
 		PeriodDuration: 24 * time.Hour,
 		PeriodLimit:    sdk.NewCoins(sdk.NewInt64Coin("ssusd", 1_000)),
 		PeriodStart:    ctx.BlockTime(),
+		Enabled:        true,
 	}
 	k.SetBudget(ctx, budget)
 

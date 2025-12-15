@@ -277,13 +277,13 @@ func (m msgServer) CancelRedemption(goCtx context.Context, msg *types.MsgCancelR
 func (m msgServer) UpdateReserveParams(goCtx context.Context, msg *types.MsgUpdateReserveParams) (*types.MsgUpdateReserveParamsResponse, error) {
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
-	if err := msg.ValidateBasic(); err != nil {
-		return nil, err
-	}
-
-	// Verify authority
+	// Verify authority FIRST before validating params
 	if msg.Authority != m.keeper.GetAuthority() {
 		return nil, errorsmod.Wrapf(types.ErrUnauthorized, "invalid authority: expected %s, got %s", m.keeper.GetAuthority(), msg.Authority)
+	}
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
 	}
 
 	if err := m.keeper.SetReserveParams(ctx, msg.Params); err != nil {

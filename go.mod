@@ -1,6 +1,8 @@
 module github.com/stateset/core
 
-go 1.20
+go 1.23.2
+
+toolchain go1.23.4
 
 require (
 	cosmossdk.io/core v0.11.3
@@ -13,6 +15,7 @@ require (
 	cosmossdk.io/x/upgrade v0.1.4
 	github.com/cometbft/cometbft v0.38.17
 	github.com/cosmos/cosmos-db v1.1.1
+	github.com/cosmos/cosmos-proto v1.0.0-beta.5
 	github.com/cosmos/cosmos-sdk v0.53.4
 	github.com/cosmos/gogoproto v1.7.0
 	github.com/cosmos/ibc-go/modules/capability v1.0.1
@@ -25,6 +28,7 @@ require (
 	github.com/spf13/cast v1.9.2
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
+	google.golang.org/genproto/googleapis/api v0.0.0-20250528174236-200df99c418a
 	google.golang.org/grpc v1.72.2
 	google.golang.org/protobuf v1.36.6
 )
@@ -72,7 +76,6 @@ require (
 	github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06 // indirect
 	github.com/cometbft/cometbft-db v0.14.1 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
-	github.com/cosmos/cosmos-proto v1.0.0-beta.5 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
 	github.com/cosmos/gogogateway v1.2.0 // indirect
 	github.com/cosmos/iavl v1.2.2 // indirect
@@ -209,7 +212,6 @@ require (
 	golang.org/x/time v0.8.0 // indirect
 	google.golang.org/api v0.215.0 // indirect
 	google.golang.org/genproto v0.0.0-20241118233622-e639e219e697 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20250528174236-200df99c418a // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250528174236-200df99c418a // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

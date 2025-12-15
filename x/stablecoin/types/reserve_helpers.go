@@ -87,7 +87,9 @@ func (c TokenizedTreasuryConfig) ValidateBasic() error {
 	return nil
 }
 
-func DefaultReserveParams() ReserveParams {
+// NewDefaultReserveParams creates reserve params with stricter defaults for production.
+// Use DefaultReserveParams() in params.go for standard defaults.
+func NewDefaultReserveParams() ReserveParams {
 	return ReserveParams{
 		MinReserveRatioBps:    10000,
 		TargetReserveRatioBps: 10200,

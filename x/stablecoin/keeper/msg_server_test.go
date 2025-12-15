@@ -64,6 +64,14 @@ func setupKeeper(t *testing.T) (keeper.Keeper, sdk.Context, *mockBankKeeper, *mo
 	// Enable vault minting for keeper-level vault tests.
 	params := stablecointypes.DefaultParams()
 	params.VaultMintingEnabled = true
+	// Add test collateral "stst" to supported collaterals
+	params.CollateralParams = append(params.CollateralParams, stablecointypes.CollateralParam{
+		Denom:            "stst",
+		LiquidationRatio: sdkmath.LegacyMustNewDecFromStr("1.5"),
+		StabilityFee:     sdkmath.LegacyMustNewDecFromStr("0.01"),
+		DebtLimit:        sdkmath.NewInt(100_000_000_000_000),
+		Active:           true,
+	})
 	k.SetParams(ctx, params)
 
 	return k, ctx, bankKeeper, oracleKeeper, complianceKeeper

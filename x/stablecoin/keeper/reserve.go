@@ -17,20 +17,6 @@ import (
 )
 
 // ============================================================================
-// Reserve Parameters
-// ============================================================================
-
-// GetReserveParams retrieves reserve parameters
-func (k Keeper) GetReserveParams(ctx sdk.Context) types.ReserveParams {
-	return k.Keeper.GetReserveParams(ctx)
-}
-
-// SetReserveParams updates reserve parameters
-func (k Keeper) SetReserveParams(ctx sdk.Context, params types.ReserveParams) error {
-	return k.Keeper.SetReserveParams(ctx, params)
-}
-
-// ============================================================================
 // Reserve State
 // ============================================================================
 
@@ -219,9 +205,9 @@ func (k Keeper) DepositReserve(ctx sdk.Context, depositor sdk.AccAddress, amount
 		return 0, sdkmath.ZeroInt(), errorsmod.Wrapf(types.ErrBelowMinimumMint, "mint amount %s below minimum %s", ssusdToMint, params.MinMintAmount)
 	}
 
-	// Check daily limit
+	// Check daily limit (0 means no limit)
 	dailyStats := k.GetDailyMintStats(ctx)
-	if dailyStats.TotalMinted.Add(ssusdToMint).GT(params.MaxDailyMint) {
+	if params.MaxDailyMint.IsPositive() && dailyStats.TotalMinted.Add(ssusdToMint).GT(params.MaxDailyMint) {
 		return 0, sdkmath.ZeroInt(), types.ErrDailyMintLimitExceeded
 	}
 
@@ -507,9 +493,9 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 		return 0, errorsmod.Wrapf(types.ErrBelowMinimumRedeem, "redeem amount %s below minimum %s", ssusdAmount, params.MinRedeemAmount)
 	}
 
-	// Check daily limit
+	// Check daily limit (0 means no limit)
 	dailyStats := k.GetDailyMintStats(ctx)
-	if dailyStats.TotalRedeemed.Add(ssusdAmount).GT(params.MaxDailyRedeem) {
+	if params.MaxDailyRedeem.IsPositive() && dailyStats.TotalRedeemed.Add(ssusdAmount).GT(params.MaxDailyRedeem) {
 		return 0, types.ErrDailyRedeemLimitExceeded
 	}
 

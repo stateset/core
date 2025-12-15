@@ -5,7 +5,11 @@ import (
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
+
+// ParamSubspace defines the expected parameter subspace interface.
+type ParamSubspace = paramtypes.Subspace
 
 // BankKeeper defines the expected bank keeper subset.
 type BankKeeper interface {

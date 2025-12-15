@@ -5,7 +5,6 @@ import (
 	"time"
 
 	sdkmath "cosmossdk.io/math"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 )
 
@@ -31,11 +30,16 @@ func ReserveParamKeyTable() paramtypes.KeyTable {
 	return paramtypes.NewKeyTable().RegisterParamSet(&ReserveParams{})
 }
 
+// ParamKeyTable is an alias for ReserveParamKeyTable for backwards compatibility
+func ParamKeyTable() paramtypes.KeyTable {
+	return ReserveParamKeyTable()
+}
+
 // DefaultReserveParams returns a default set of parameters for the reserve-backed stablecoin.
 func DefaultReserveParams() ReserveParams {
 	return ReserveParams{
-		MinReserveRatioBps:    9000, // 90%
-		TargetReserveRatioBps: 10000, // 100%
+		MinReserveRatioBps:    10000, // 100% (must be at least 100% per validation)
+		TargetReserveRatioBps: 10000, // 100% (cannot exceed 100% per validation)
 		MintFeeBps:            0,    // 0%
 		RedeemFeeBps:          0,    // 0%
 		MinMintAmount:         sdkmath.NewInt(1_000_000), // 1 ssUSD
@@ -191,6 +195,98 @@ func (cp CollateralParam) Validate() error {
 	}
 	if cp.DebtLimit.IsNegative() {
 		return fmt.Errorf("debt limit cannot be negative")
+	}
+	return nil
+}
+
+// ParamSetPairs implements the paramtypes.ParamSet interface for Params.
+func (p *Params) ParamSetPairs() paramtypes.ParamSetPairs {
+	return paramtypes.ParamSetPairs{
+		paramtypes.NewParamSetPair(KeyCollateralParams, &p.CollateralParams, validateCollateralParams),
+		paramtypes.NewParamSetPair(KeyVaultMintingEnabled, &p.VaultMintingEnabled, validateBool),
+	}
+}
+
+// ParamSetPairs implements the paramtypes.ParamSet interface for ReserveParams.
+func (p *ReserveParams) ParamSetPairs() paramtypes.ParamSetPairs {
+	return paramtypes.ParamSetPairs{
+		paramtypes.NewParamSetPair(KeyMinReserveRatioBps, &p.MinReserveRatioBps, validateUint32),
+		paramtypes.NewParamSetPair(KeyTargetReserveRatioBps, &p.TargetReserveRatioBps, validateUint32),
+		paramtypes.NewParamSetPair(KeyMintFeeBps, &p.MintFeeBps, validateUint32),
+		paramtypes.NewParamSetPair(KeyRedeemFeeBps, &p.RedeemFeeBps, validateUint32),
+		paramtypes.NewParamSetPair(KeyMinMintAmount, &p.MinMintAmount, validateInt),
+		paramtypes.NewParamSetPair(KeyMinRedeemAmount, &p.MinRedeemAmount, validateInt),
+		paramtypes.NewParamSetPair(KeyRedemptionDelay, &p.RedemptionDelay, validateDuration),
+		paramtypes.NewParamSetPair(KeyMaxDailyMint, &p.MaxDailyMint, validateInt),
+		paramtypes.NewParamSetPair(KeyMaxDailyRedeem, &p.MaxDailyRedeem, validateInt),
+		paramtypes.NewParamSetPair(KeyTokenizedTreasuries, &p.TokenizedTreasuries, validateTokenizedTreasuries),
+		paramtypes.NewParamSetPair(KeyRequireKyc, &p.RequireKyc, validateBool),
+		paramtypes.NewParamSetPair(KeyMintPaused, &p.MintPaused, validateBool),
+		paramtypes.NewParamSetPair(KeyRedeemPaused, &p.RedeemPaused, validateBool),
+	}
+}
+
+// Validation functions for param set pairs
+func validateCollateralParams(i interface{}) error {
+	v, ok := i.([]CollateralParam)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	for _, cp := range v {
+		if err := cp.Validate(); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateBool(i interface{}) error {
+	_, ok := i.(bool)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	return nil
+}
+
+func validateUint32(i interface{}) error {
+	_, ok := i.(uint32)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	return nil
+}
+
+func validateInt(i interface{}) error {
+	v, ok := i.(sdkmath.Int)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if v.IsNegative() {
+		return fmt.Errorf("value cannot be negative")
+	}
+	return nil
+}
+
+func validateDuration(i interface{}) error {
+	v, ok := i.(time.Duration)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	if v < 0 {
+		return fmt.Errorf("duration cannot be negative")
+	}
+	return nil
+}
+
+func validateTokenizedTreasuries(i interface{}) error {
+	v, ok := i.([]TokenizedTreasuryConfig)
+	if !ok {
+		return fmt.Errorf("invalid parameter type: %T", i)
+	}
+	for _, tt := range v {
+		if err := tt.Validate(); err != nil {
+			return err
+		}
 	}
 	return nil
 }

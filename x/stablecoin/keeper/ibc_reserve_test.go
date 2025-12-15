@@ -2,13 +2,11 @@ package keeper_test
 
 import (
 	"testing"
-	"time"
 
 	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stretchr/testify/require"
 
-	"github.com/stateset/core/x/stablecoin/keeper"
 	"github.com/stateset/core/x/stablecoin/types"
 )
 

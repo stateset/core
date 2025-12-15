@@ -24,6 +24,9 @@ const (
 
 	// ReserveParamspace is the paramstore key for reserve parameters
 	ReserveParamspace = "ReserveParams"
+
+	// StablecoinDenom is the denomination of the stablecoin (ssUSD)
+	StablecoinDenom = "ussUSD"
 )
 
 var (

@@ -3,7 +3,15 @@ package types
 import (
 	"github.com/cosmos/cosmos-sdk/codec"
 	cdctypes "github.com/cosmos/cosmos-sdk/codec/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/msgservice"
+	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
+)
+
+// Ensure interfaces are used
+var (
+	_ sdk.Msg              = (*MsgCreateVault)(nil)
+	_ paramtypes.ParamSet = (*Params)(nil)
 )
 
 var ModuleCdc = codec.NewLegacyAmino()

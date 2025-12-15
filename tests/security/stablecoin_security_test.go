@@ -45,12 +45,21 @@ func (suite *StablecoinSecurityTestSuite) SetupTest() {
 	// Enable vault minting for vault security tests.
 	params := stablecointypes.DefaultParams()
 	params.VaultMintingEnabled = true
+	// Add test collateral "stst" to supported collaterals
+	params.CollateralParams = append(params.CollateralParams, stablecointypes.CollateralParam{
+		Denom:            "stst",
+		LiquidationRatio: sdkmath.LegacyMustNewDecFromStr("1.5"),
+		StabilityFee:     sdkmath.LegacyMustNewDecFromStr("0.01"),
+		DebtLimit:        sdkmath.NewInt(100_000_000_000_000),
+		Active:           true,
+	})
 	suite.App.StablecoinKeeper.SetParams(suite.Ctx, params)
 
 	// Set a fresh oracle price for the default collateral denom.
 	suite.setOraclePrice("stst", sdkmath.LegacyOneDec(), suite.Ctx.BlockTime())
 	// Reserve-backed ssUSD uses USTN (tokenized US Treasury Notes) by default.
-	suite.setOraclePrice("ustn", sdkmath.LegacyOneDec(), suite.Ctx.BlockTime())
+	// DefaultReserveParams uses "USTN" (uppercase) as OracleDenom
+	suite.setOraclePrice("USTN", sdkmath.LegacyOneDec(), suite.Ctx.BlockTime())
 
 	suite.FundAcc(suite.owner, sdk.NewCoins(sdk.NewInt64Coin("stst", 1_000_000)))
 	suite.FundAcc(suite.liquidator, sdk.NewCoins(sdk.NewInt64Coin(stablecointypes.StablecoinDenom, 1_000_000)))
@@ -177,18 +186,29 @@ func (suite *StablecoinSecurityTestSuite) TestReserveParams_AuthorityOnly() {
 	msgServer := stablecoinkeeper.NewMsgServerImpl(suite.App.StablecoinKeeper)
 	goCtx := sdk.WrapSDKContext(suite.Ctx)
 
-	newParams := stablecointypes.DefaultReserveParams()
-	newParams.RequireKyc = false
+	// Get current valid params and make a small change
+	currentParams := suite.App.StablecoinKeeper.GetReserveParams(suite.Ctx)
+	// Keep only t_note type treasuries (remove t_bill which fails validation)
+	validTreasuries := []stablecointypes.TokenizedTreasuryConfig{}
+	for _, cfg := range currentParams.TokenizedTreasuries {
+		if cfg.UnderlyingType == stablecointypes.ReserveAssetTNote {
+			validTreasuries = append(validTreasuries, cfg)
+		}
+	}
+	currentParams.TokenizedTreasuries = validTreasuries
+	currentParams.RequireKyc = false
 
+	// Test that non-authority is rejected
 	_, err := msgServer.UpdateReserveParams(goCtx, &stablecointypes.MsgUpdateReserveParams{
 		Authority: suite.owner.String(),
-		Params:    newParams,
+		Params:    currentParams,
 	})
 	suite.Require().ErrorIs(err, stablecointypes.ErrUnauthorized)
 
+	// Test that authority succeeds
 	_, err = msgServer.UpdateReserveParams(goCtx, &stablecointypes.MsgUpdateReserveParams{
 		Authority: suite.authority,
-		Params:    newParams,
+		Params:    currentParams,
 	})
 	suite.Require().NoError(err)
 }

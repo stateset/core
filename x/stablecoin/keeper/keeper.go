@@ -3,6 +3,7 @@ package keeper
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
@@ -16,53 +17,40 @@ import (
 )
 
 var (
-	nextVaultIDKey = []byte{0x03} // Keep nextVaultIDKey as it's not a param
+	nextVaultIDKey   = []byte{0x03} // Keep nextVaultIDKey as it's not a param
+	paramsKey        = []byte("params")
+	reserveParamsKey = []byte("reserve_params")
 )
 
 // Keeper manages stablecoin state.
 type Keeper struct {
-	storeKey          storetypes.StoreKey
-	cdc               codec.BinaryCodec
-	vaultParamStore   types.ParamSubspace // paramstore for vault-related params
-	reserveParamStore types.ParamSubspace // paramstore for reserve-related params
-	authority         string
-	bankKeeper        types.BankKeeper
-	accountKeeper     types.AccountKeeper
-	oracleKeeper      types.OracleKeeper
-	complianceKeeper  types.ComplianceKeeper
+	storeKey         storetypes.StoreKey
+	cdc              codec.BinaryCodec
+	authority        string
+	bankKeeper       types.BankKeeper
+	accountKeeper    types.AccountKeeper
+	oracleKeeper     types.OracleKeeper
+	complianceKeeper types.ComplianceKeeper
 }
 
 // NewKeeper instantiates a new keeper.
 func NewKeeper(
 	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
-	vaultParamStore types.ParamSubspace,
-	reserveParamStore types.ParamSubspace,
 	authority string,
 	bank types.BankKeeper,
 	account types.AccountKeeper,
 	oracle types.OracleKeeper,
 	compliance types.ComplianceKeeper,
 ) Keeper {
-	// set KeyTable for vault params if it has not already been set
-	if !vaultParamStore.HasKeyTable() {
-		vaultParamStore = vaultParamStore.WithKeyTable(types.VaultParamKeyTable())
-	}
-	// set KeyTable for reserve params if it has not already been set
-	if !reserveParamStore.HasKeyTable() {
-		reserveParamStore = reserveParamStore.WithKeyTable(types.ParamKeyTable())
-	}
-
 	return Keeper{
-		cdc:               cdc,
-		storeKey:          storeKey,
-		vaultParamStore:   vaultParamStore,
-		reserveParamStore: reserveParamStore,
-		authority:         authority,
-		bankKeeper:        bank,
-		accountKeeper:     account,
-		oracleKeeper:      oracle,
-		complianceKeeper:  compliance,
+		cdc:              cdc,
+		storeKey:         storeKey,
+		authority:        authority,
+		bankKeeper:       bank,
+		accountKeeper:    account,
+		oracleKeeper:     oracle,
+		complianceKeeper: compliance,
 	}
 }
 
@@ -80,20 +68,34 @@ func (k Keeper) ensureModuleAccount(ctx sdk.Context) error {
 }
 
 // GetParams retrieves module params (vault params).
-func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
-	k.vaultParamStore.GetParamSet(ctx, &params)
-	return
+func (k Keeper) GetParams(ctx sdk.Context) types.Params {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(paramsKey)
+	if len(bz) == 0 {
+		return types.DefaultParams()
+	}
+	var params types.Params
+	k.cdc.MustUnmarshal(bz, &params)
+	return params
 }
 
 // SetParams updates module params (vault params).
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
-	k.vaultParamStore.SetParamSet(ctx, &params)
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&params)
+	store.Set(paramsKey, bz)
 }
 
 // GetReserveParams retrieves reserve parameters.
-func (k Keeper) GetReserveParams(ctx sdk.Context) (params types.ReserveParams) {
-	k.reserveParamStore.GetParamSet(ctx, &params)
-	return
+func (k Keeper) GetReserveParams(ctx sdk.Context) types.ReserveParams {
+	store := ctx.KVStore(k.storeKey)
+	bz := store.Get(reserveParamsKey)
+	if len(bz) == 0 {
+		return types.DefaultReserveParams()
+	}
+	var params types.ReserveParams
+	k.cdc.MustUnmarshal(bz, &params)
+	return params
 }
 
 // SetReserveParams updates reserve parameters.
@@ -101,7 +103,9 @@ func (k Keeper) SetReserveParams(ctx sdk.Context, params types.ReserveParams) er
 	if err := params.Validate(); err != nil {
 		return err
 	}
-	k.reserveParamStore.SetParamSet(ctx, &params)
+	store := ctx.KVStore(k.storeKey)
+	bz := k.cdc.MustMarshal(&params)
+	store.Set(reserveParamsKey, bz)
 
 	ctx.EventManager().EmitEvent(
 		sdk.NewEvent(

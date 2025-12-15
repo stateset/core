@@ -15,7 +15,12 @@ import (
 func TestStalenessLogic(t *testing.T) {
 	k, ctx := setupKeeper(t)
 
-	// 1. Setup Config with 60 second staleness threshold
+	// 1. Setup params with 60 second staleness threshold
+	params := k.GetParams(ctx)
+	params.DefaultStalenessThreshold = 60
+	k.SetParams(ctx, params)
+
+	// 1b. Setup Config with 60 second staleness threshold
 	config := types.DefaultOracleConfig("uusdc")
 	config.Enabled = true
 	config.StalenessThresholdSeconds = 60
@@ -98,6 +103,7 @@ func TestAutomaticSlashing(t *testing.T) {
 	config := types.DefaultOracleConfig("uusdc")
 	config.Enabled = true
 	config.MaxDeviationBps = 100 // 1% deviation
+	config.MinUpdateIntervalSeconds = 0 // Disable rate limiting for test
 	require.NoError(t, k.SetOracleConfig(ctx, config))
 
 	// Set baseline price
@@ -108,6 +114,9 @@ func TestAutomaticSlashing(t *testing.T) {
 	})
 
 	for i := 0; i < 15; i++ {
+		// Advance time to avoid update frequency check
+		ctx = ctx.WithBlockTime(ctx.BlockTime().Add(time.Second))
+
 		// Submit price with huge deviation to trigger failure
 		// Price 200 vs 100 = 100% deviation
 		err := k.SetPriceWithValidation(ctx, providerAddr, "uusdc", sdkmath.LegacyNewDec(200))
