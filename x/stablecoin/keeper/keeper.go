@@ -16,37 +16,53 @@ import (
 )
 
 var (
-	paramsKey      = []byte{0x02}
-	nextVaultIDKey = []byte{0x03}
+	nextVaultIDKey = []byte{0x03} // Keep nextVaultIDKey as it's not a param
 )
 
 // Keeper manages stablecoin state.
 type Keeper struct {
-	storeKey         storetypes.StoreKey
-	authority        string
-	bankKeeper       types.BankKeeper
-	accountKeeper    types.AccountKeeper
-	oracleKeeper     types.OracleKeeper
-	complianceKeeper types.ComplianceKeeper
+	storeKey          storetypes.StoreKey
+	cdc               codec.BinaryCodec
+	vaultParamStore   types.ParamSubspace // paramstore for vault-related params
+	reserveParamStore types.ParamSubspace // paramstore for reserve-related params
+	authority         string
+	bankKeeper        types.BankKeeper
+	accountKeeper     types.AccountKeeper
+	oracleKeeper      types.OracleKeeper
+	complianceKeeper  types.ComplianceKeeper
 }
 
 // NewKeeper instantiates a new keeper.
 func NewKeeper(
-	_ codec.BinaryCodec,
+	cdc codec.BinaryCodec,
 	storeKey storetypes.StoreKey,
+	vaultParamStore types.ParamSubspace,
+	reserveParamStore types.ParamSubspace,
 	authority string,
 	bank types.BankKeeper,
 	account types.AccountKeeper,
 	oracle types.OracleKeeper,
 	compliance types.ComplianceKeeper,
 ) Keeper {
+	// set KeyTable for vault params if it has not already been set
+	if !vaultParamStore.HasKeyTable() {
+		vaultParamStore = vaultParamStore.WithKeyTable(types.VaultParamKeyTable())
+	}
+	// set KeyTable for reserve params if it has not already been set
+	if !reserveParamStore.HasKeyTable() {
+		reserveParamStore = reserveParamStore.WithKeyTable(types.ParamKeyTable())
+	}
+
 	return Keeper{
-		storeKey:         storeKey,
-		authority:        authority,
-		bankKeeper:       bank,
-		accountKeeper:    account,
-		oracleKeeper:     oracle,
-		complianceKeeper: compliance,
+		cdc:               cdc,
+		storeKey:          storeKey,
+		vaultParamStore:   vaultParamStore,
+		reserveParamStore: reserveParamStore,
+		authority:         authority,
+		bankKeeper:        bank,
+		accountKeeper:     account,
+		oracleKeeper:      oracle,
+		complianceKeeper:  compliance,
 	}
 }
 
@@ -63,21 +79,37 @@ func (k Keeper) ensureModuleAccount(ctx sdk.Context) error {
 	return nil
 }
 
-// GetParams retrieves module params.
-func (k Keeper) GetParams(ctx sdk.Context) types.Params {
-	store := ctx.KVStore(k.storeKey)
-	if !store.Has(paramsKey) {
-		return types.DefaultParams()
-	}
-	var params types.Params
-	types.ModuleCdc.MustUnmarshalJSON(store.Get(paramsKey), &params)
-	return params
+// GetParams retrieves module params (vault params).
+func (k Keeper) GetParams(ctx sdk.Context) (params types.Params) {
+	k.vaultParamStore.GetParamSet(ctx, &params)
+	return
 }
 
-// SetParams updates module params.
+// SetParams updates module params (vault params).
 func (k Keeper) SetParams(ctx sdk.Context, params types.Params) {
-	store := ctx.KVStore(k.storeKey)
-	store.Set(paramsKey, types.ModuleCdc.MustMarshalJSON(&params))
+	k.vaultParamStore.SetParamSet(ctx, &params)
+}
+
+// GetReserveParams retrieves reserve parameters.
+func (k Keeper) GetReserveParams(ctx sdk.Context) (params types.ReserveParams) {
+	k.reserveParamStore.GetParamSet(ctx, &params)
+	return
+}
+
+// SetReserveParams updates reserve parameters.
+func (k Keeper) SetReserveParams(ctx sdk.Context, params types.ReserveParams) error {
+	if err := params.Validate(); err != nil {
+		return err
+	}
+	k.reserveParamStore.SetParamSet(ctx, &params)
+
+	ctx.EventManager().EmitEvent(
+		sdk.NewEvent(
+			types.EventTypeReserveParamsUpdated,
+			sdk.NewAttribute(types.AttributeKeyReserveRatio, fmt.Sprintf("%d", params.MinReserveRatioBps)),
+		),
+	)
+	return nil
 }
 
 func (k Keeper) getNextVaultID(ctx sdk.Context) uint64 {

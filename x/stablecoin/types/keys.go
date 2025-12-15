@@ -1,94 +1,89 @@
 package types
 
-import "encoding/binary"
-
 const (
-	ModuleName        = "stablecoin"
-	StoreKey          = ModuleName
-	RouterKey         = ModuleName
-	ModuleAccountName = ModuleName
-	StablecoinDenom   = "ssusd"
+	// ModuleName defines the module name
+	ModuleName = "stablecoin"
 
-	// Legacy vault events (for backwards compatibility)
+	// StoreKey defines the primary module store key
+	StoreKey = ModuleName
+
+	// RouterKey is the message route for slashing
+	RouterKey = ModuleName
+
+	// QuerierRoute defines the module's query routing key
+	QuerierRoute = ModuleName
+
+	// MemStoreKey defines the in-memory store key
+	MemStoreKey = "mem_stablecoin"
+
+	// ModuleAccountName is the name of the module account
+	ModuleAccountName = ModuleName
+
+	// VaultParamspace is the paramstore key for vault parameters
+	VaultParamspace = "VaultParams"
+
+	// ReserveParamspace is the paramstore key for reserve parameters
+	ReserveParamspace = "ReserveParams"
+)
+
+var (
+	// Keys for store prefixes
+	ReserveParamsKey           = []byte{0x01}
+	ReserveKey                 = []byte{0x02}
+	NextDepositIDKey           = []byte{0x03}
+	ReserveDepositKeyPrefix    = []byte{0x04}
+	NextRedemptionIDKey        = []byte{0x05}
+	RedemptionRequestKeyPrefix = []byte{0x06}
+	DailyMintStatsKeyPrefix    = []byte{0x07}
+	NextAttestationIDKey       = []byte{0x08}
+	OffChainAttestationKeyPrefix = []byte{0x09}
+	ApprovedAttesterKeyPrefix  = []byte{0x0A}
+	LockedReservesKey          = []byte{0x0B}
+
+	// Vault keys
+	VaultKeyPrefix             = []byte{0x10}
+	VaultCountKey              = []byte{0x11}
+)
+
+func DailyMintStatsKey(date string) []byte {
+	return append(DailyMintStatsKeyPrefix, []byte(date)...)
+}
+
+func ApprovedAttesterKey(addr string) []byte {
+	return append(ApprovedAttesterKeyPrefix, []byte(addr)...)
+}
+
+// Event Types
+const (
 	EventTypeVaultCreated        = "vault_created"
 	EventTypeCollateralDeposited = "collateral_deposited"
 	EventTypeCollateralWithdrawn = "collateral_withdrawn"
 	EventTypeStablecoinMinted    = "stablecoin_minted"
 	EventTypeStablecoinRepaid    = "stablecoin_repaid"
 	EventTypeVaultLiquidated     = "vault_liquidated"
-
-	// Reserve-backed stablecoin events
-	EventTypeReserveDeposit       = "reserve_deposit"
-	EventTypeReserveMint          = "reserve_mint"
-	EventTypeRedemptionRequested  = "redemption_requested"
-	EventTypeRedemptionExecuted   = "redemption_executed"
-	EventTypeRedemptionCancelled  = "redemption_cancelled"
-	EventTypeReserveAttestation   = "reserve_attestation"
+	EventTypeReserveDeposit      = "reserve_deposit"
+	EventTypeRedemptionRequested = "redemption_requested"
+	EventTypeRedemptionExecuted  = "redemption_executed"
+	EventTypeRedemptionCancelled = "redemption_cancelled"
 	EventTypeReserveParamsUpdated = "reserve_params_updated"
+	EventTypeReserveAttestation  = "reserve_attestation"
+)
 
-	// Attribute keys
+// Attribute Keys
+const (
 	AttributeKeyOwner        = "owner"
 	AttributeKeyVaultID      = "vault_id"
-	AttributeKeyAmount       = "amount"
 	AttributeKeyCollateral   = "collateral"
+	AttributeKeyAmount       = "amount"
 	AttributeKeyLiquidator   = "liquidator"
 	AttributeKeyDepositor    = "depositor"
 	AttributeKeyDepositID    = "deposit_id"
-	AttributeKeyRedemptionID = "redemption_id"
 	AttributeKeyReserveAsset = "reserve_asset"
 	AttributeKeyUsdValue     = "usd_value"
+	AttributeKeyPrice        = "price"
 	AttributeKeySsusdAmount  = "ssusd_amount"
+	AttributeKeyFeeAmount    = "fee_amount"
+	AttributeKeyRedemptionID = "redemption_id"
 	AttributeKeyReserveRatio = "reserve_ratio"
 	AttributeKeyAttester     = "attester"
-	AttributeKeyFeeAmount    = "fee_amount"
 )
-
-var (
-	// Legacy vault storage
-	VaultKeyPrefix = []byte{0x01}
-
-	// Reserve-backed storage prefixes
-	ReserveParamsKey             = []byte{0x10}
-	ReserveKey                   = []byte{0x11}
-	ReserveDepositKeyPrefix      = []byte{0x12}
-	RedemptionRequestKeyPrefix   = []byte{0x13}
-	DailyMintStatsKeyPrefix      = []byte{0x14}
-	OffChainAttestationKeyPrefix = []byte{0x15}
-	NextDepositIDKey             = []byte{0x16}
-	NextRedemptionIDKey          = []byte{0x17}
-	NextAttestationIDKey         = []byte{0x18}
-	ApprovedAttesterKeyPrefix    = []byte{0x19}
-	LockedReservesKey            = []byte{0x1A}
-)
-
-func VaultStoreKey(id uint64) []byte {
-	bz := make([]byte, 8)
-	binary.BigEndian.PutUint64(bz, id)
-	return append(append([]byte{}, VaultKeyPrefix...), bz...)
-}
-
-func ReserveDepositKey(id uint64) []byte {
-	bz := make([]byte, 8)
-	binary.BigEndian.PutUint64(bz, id)
-	return append(append([]byte{}, ReserveDepositKeyPrefix...), bz...)
-}
-
-func RedemptionRequestKey(id uint64) []byte {
-	bz := make([]byte, 8)
-	binary.BigEndian.PutUint64(bz, id)
-	return append(append([]byte{}, RedemptionRequestKeyPrefix...), bz...)
-}
-
-func OffChainAttestationKey(id uint64) []byte {
-	bz := make([]byte, 8)
-	binary.BigEndian.PutUint64(bz, id)
-	return append(append([]byte{}, OffChainAttestationKeyPrefix...), bz...)
-}
-
-func DailyMintStatsKey(date string) []byte {
-	return append(append([]byte{}, DailyMintStatsKeyPrefix...), []byte(date)...)
-}
-
-func ApprovedAttesterKey(addr string) []byte {
-	return append(append([]byte{}, ApprovedAttesterKeyPrefix...), []byte(addr)...)
-}

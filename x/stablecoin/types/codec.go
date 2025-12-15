@@ -25,6 +25,29 @@ func RegisterLegacyAminoCodec(cdc *codec.LegacyAmino) {
 }
 
 func RegisterInterfaces(registry cdctypes.InterfaceRegistry) {
+	registry.RegisterImplementations(
+		(*sdk.Msg)(nil),
+		&MsgCreateVault{},
+		&MsgDepositCollateral{},
+		&MsgWithdrawCollateral{},
+		&MsgMintStablecoin{},
+		&MsgRepayStablecoin{},
+		&MsgLiquidateVault{},
+		&MsgDepositReserve{},
+		&MsgRequestRedemption{},
+		&MsgExecuteRedemption{},
+		&MsgCancelRedemption{},
+		&MsgUpdateReserveParams{},
+		&MsgRecordAttestation{},
+		&MsgSetApprovedAttester{},
+	)
+
+	registry.RegisterImplementations(
+		(*paramtypes.ParamSet)(nil),
+		&Params{},
+		&ReserveParams{},
+	)
+
 	msgservice.RegisterMsgServiceDesc(registry, &_Msg_serviceDesc)
 }
 

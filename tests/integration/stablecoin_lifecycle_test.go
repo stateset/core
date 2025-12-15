@@ -5,6 +5,7 @@ package integration
 
 import (
 	"testing"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"time"
 
 	"cosmossdk.io/log"
@@ -14,9 +15,10 @@ import (
 	storetypes "cosmossdk.io/store/types"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
+	
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -61,6 +63,12 @@ func TestStablecoinLifecycleTestSuite(t *testing.T) {
 }
 
 func (s *StablecoinLifecycleTestSuite) SetupTest() {
+	// Set SDK config
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount("stateset", "statesetpub")
+	config.SetBech32PrefixForValidator("statesetvaloper", "statesetvaloperpub")
+	config.SetBech32PrefixForConsensusNode("statesetvalcons", "statesetvalconspub")
+
 	// Initialize codec
 	interfaceRegistry := codectypes.NewInterfaceRegistry()
 	authtypes.RegisterInterfaces(interfaceRegistry)
@@ -77,22 +85,20 @@ func (s *StablecoinLifecycleTestSuite) SetupTest() {
 	)
 	s.storeKey = storeKeys[stablecointypes.StoreKey]
 
-	// Create transient store keys
-	tKeys := storetypes.NewTransientStoreKeys(banktypes.TransientKey)
-
 	// Create multistore
 	db := dbm.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
+	cms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, key := range storeKeys {
-		stateStore.MountStoreWithDB(key, storetypes.StoreTypeIAVL, db)
+		cms.MountStoreWithDB(key, storetypes.StoreTypeIAVL, db)
 	}
-	for _, tKey := range tKeys {
-		stateStore.MountStoreWithDB(tKey, storetypes.StoreTypeTransient, db)
-	}
-	require.NoError(s.T(), stateStore.LoadLatestVersion())
+	transientKey := storetypes.NewTransientStoreKey("transient_test")
+	cms.MountStoreWithDB(transientKey, storetypes.StoreTypeTransient, db)
+	
+	err := cms.LoadLatestVersion()
+	require.NoError(s.T(), err)
 
 	// Create context
-	s.ctx = testutil.DefaultContextWithDB(s.T(), storeKeys[authtypes.StoreKey], tKeys[banktypes.TransientKey]).Ctx.
+	s.ctx = sdk.NewContext(cms, tmproto.Header{}, false, log.NewNopLogger()).
 		WithBlockHeight(1).
 		WithBlockTime(time.Now())
 
@@ -112,6 +118,7 @@ func (s *StablecoinLifecycleTestSuite) SetupTest() {
 		runtime.NewKVStoreService(storeKeys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
+		address.NewBech32Codec("stateset"),
 		"stateset",
 		s.authority.String(),
 	)
@@ -161,12 +168,13 @@ func (s *StablecoinLifecycleTestSuite) SetupTest() {
 func (s *StablecoinLifecycleTestSuite) setupTestAccounts() {
 	// Create module account
 	stablecoinModuleAcc := authtypes.NewEmptyModuleAccount(stablecointypes.ModuleAccountName, authtypes.Minter, authtypes.Burner)
+	stablecoinModuleAcc = s.accountKeeper.NewAccount(s.ctx, stablecoinModuleAcc).(*authtypes.ModuleAccount)
 	s.accountKeeper.SetModuleAccount(s.ctx, stablecoinModuleAcc)
 
 	// Create user accounts
-	vaultOwnerAcc := authtypes.NewBaseAccountWithAddress(s.vaultOwner)
-	liquidatorAcc := authtypes.NewBaseAccountWithAddress(s.liquidator)
-	oracleAcc := authtypes.NewBaseAccountWithAddress(s.oracleProvider)
+	vaultOwnerAcc := s.accountKeeper.NewAccountWithAddress(s.ctx, s.vaultOwner)
+	liquidatorAcc := s.accountKeeper.NewAccountWithAddress(s.ctx, s.liquidator)
+	oracleAcc := s.accountKeeper.NewAccountWithAddress(s.ctx, s.oracleProvider)
 	s.accountKeeper.SetAccount(s.ctx, vaultOwnerAcc)
 	s.accountKeeper.SetAccount(s.ctx, liquidatorAcc)
 	s.accountKeeper.SetAccount(s.ctx, oracleAcc)
@@ -218,6 +226,21 @@ func (s *StablecoinLifecycleTestSuite) setupOraclePrices() {
 		UpdatedAt:   s.ctx.BlockTime(),
 	}
 	s.oracleKeeper.SetPrice(s.ctx, atomPrice)
+
+	// Set price for USDTBILL: $1.00
+	usdtbillPrice := oracletypes.Price{
+		Denom:       "USDTBILL",
+		Amount:      sdkmath.LegacyOneDec(),
+		LastUpdater: s.oracleProvider.String(),
+		LastHeight:  s.ctx.BlockHeight(),
+		UpdatedAt:   s.ctx.BlockTime(),
+	}
+	s.oracleKeeper.SetPrice(s.ctx, usdtbillPrice)
+
+	// Enable config for USDTBILL
+	usdtbillConfig := oracletypes.DefaultOracleConfig("USDTBILL")
+	usdtbillConfig.Enabled = true
+	require.NoError(s.T(), s.oracleKeeper.SetOracleConfig(s.ctx, usdtbillConfig))
 
 	// Register oracle provider
 	provider := oracletypes.OracleProvider{

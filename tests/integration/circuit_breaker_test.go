@@ -5,6 +5,7 @@ package integration
 
 import (
 	"testing"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"time"
 
 	sdkmath "cosmossdk.io/math"
@@ -12,9 +13,10 @@ import (
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
+	
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -66,6 +68,12 @@ func TestCircuitBreakerTestSuite(t *testing.T) {
 }
 
 func (s *CircuitBreakerTestSuite) SetupTest() {
+	// Set SDK config
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount("stateset", "statesetpub")
+	config.SetBech32PrefixForValidator("statesetvaloper", "statesetvaloperpub")
+	config.SetBech32PrefixForConsensusNode("statesetvalcons", "statesetvalconspub")
+
 	// Initialize codec
 	interfaceRegistry := codectypes.NewInterfaceRegistry()
 	authtypes.RegisterInterfaces(interfaceRegistry)
@@ -83,22 +91,20 @@ func (s *CircuitBreakerTestSuite) SetupTest() {
 		stablecointypes.StoreKey,
 	)
 
-	// Create transient store keys
-	tKeys := storetypes.NewTransientStoreKeys(banktypes.TransientKey)
-
 	// Create multistore
 	db := dbm.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
+	cms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, key := range storeKeys {
-		stateStore.MountStoreWithDB(key, storetypes.StoreTypeIAVL, db)
+		cms.MountStoreWithDB(key, storetypes.StoreTypeIAVL, db)
 	}
-	for _, tKey := range tKeys {
-		stateStore.MountStoreWithDB(tKey, storetypes.StoreTypeTransient, db)
-	}
-	require.NoError(s.T(), stateStore.LoadLatestVersion())
+	transientKey := storetypes.NewTransientStoreKey("transient_test")
+	cms.MountStoreWithDB(transientKey, storetypes.StoreTypeTransient, db)
+	
+	err := cms.LoadLatestVersion()
+	require.NoError(s.T(), err)
 
 	// Create context
-	s.ctx = testutil.DefaultContextWithDB(s.T(), storeKeys[authtypes.StoreKey], tKeys[banktypes.TransientKey]).Ctx.
+	s.ctx = sdk.NewContext(cms, tmproto.Header{}, false, log.NewNopLogger()).
 		WithBlockHeight(1).
 		WithBlockTime(time.Now())
 
@@ -119,6 +125,7 @@ func (s *CircuitBreakerTestSuite) SetupTest() {
 		runtime.NewKVStoreService(storeKeys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
+		address.NewBech32Codec("stateset"),
 		"stateset",
 		s.authority.String(),
 	)
@@ -183,13 +190,15 @@ func (s *CircuitBreakerTestSuite) SetupTest() {
 func (s *CircuitBreakerTestSuite) setupTestAccounts() {
 	// Create module accounts
 	settlementModuleAcc := authtypes.NewEmptyModuleAccount(settlementtypes.ModuleAccountName, authtypes.Minter, authtypes.Burner)
+	settlementModuleAcc = s.accountKeeper.NewAccount(s.ctx, settlementModuleAcc).(*authtypes.ModuleAccount)
 	stablecoinModuleAcc := authtypes.NewEmptyModuleAccount(stablecointypes.ModuleAccountName, authtypes.Minter, authtypes.Burner)
+	stablecoinModuleAcc = s.accountKeeper.NewAccount(s.ctx, stablecoinModuleAcc).(*authtypes.ModuleAccount)
 	s.accountKeeper.SetModuleAccount(s.ctx, settlementModuleAcc)
 	s.accountKeeper.SetModuleAccount(s.ctx, stablecoinModuleAcc)
 
 	// Create user accounts
 	for _, addr := range []sdk.AccAddress{s.user1, s.user2, s.oracleProvider} {
-		acc := authtypes.NewBaseAccountWithAddress(addr)
+		acc := s.accountKeeper.NewAccountWithAddress(s.ctx, addr)
 		s.accountKeeper.SetAccount(s.ctx, acc)
 
 		// Mint coins
@@ -216,8 +225,7 @@ func (s *CircuitBreakerTestSuite) setupTestAccounts() {
 
 func (s *CircuitBreakerTestSuite) setupCircuitParams() {
 	params := circuittypes.Params{
-		Enabled:                  true,
-		MaxPauseDuration:         86400, // 24 hours
+				MaxPauseDuration:         86400, // 24 hours
 		DefaultFailureThreshold:  5,
 		DefaultRecoveryPeriod:    3600, // 1 hour
 		Authorities:              []string{s.authority.String()},
@@ -310,7 +318,7 @@ func (s *CircuitBreakerTestSuite) TestAutoCircuitTripOnFailures() {
 	threshold := params.DefaultFailureThreshold
 
 	// Record failures
-	for i := uint32(0); i < threshold; i++ {
+	for i := uint64(0); i < threshold; i++ {
 		s.circuitKeeper.RecordFailure(s.ctx, moduleName)
 
 		// Circuit should not be open until threshold reached

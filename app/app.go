@@ -538,9 +538,15 @@ func New(
 		paymentstypes.ModuleAccountName,
 	)
 
+	// Initialize two distinct parameter subspaces for stablecoin
+	vaultParamStore := app.ParamsKeeper.Subspace(stablecointypes.VaultParamspace)
+	reserveParamStore := app.ParamsKeeper.Subspace(stablecointypes.ReserveParamspace)
+
 	app.StablecoinKeeper = stablecoinkeeper.NewKeeper(
 		appCodec,
 		keys[stablecointypes.StoreKey],
+		vaultParamStore,
+		reserveParamStore,
 		oracleAuthority,
 		app.BankKeeper,
 		app.AccountKeeper,
@@ -676,7 +682,7 @@ func New(
 		treasury.NewAppModule(app.TreasuryKeeper),
 		orders.NewAppModule(app.OrdersKeeper),
 		payments.NewAppModule(app.PaymentsKeeper),
-		stablecoin.NewAppModule(app.StablecoinKeeper),
+		stablecoin.NewAppModule(appCodec, app.StablecoinKeeper),
 		settlement.NewAppModule(app.SettlementKeeper),
 		circuit.NewAppModule(app.CircuitKeeper),
 		metrics.NewAppModule(app.MetricsKeeper),
@@ -946,6 +952,8 @@ func initParamsKeeper(appCodec codec.BinaryCodec, legacyAmino *codec.LegacyAmino
 	paramsKeeper.Subspace(crisistypes.ModuleName)
 	paramsKeeper.Subspace(ibctransfertypes.ModuleName)
 	paramsKeeper.Subspace(ibcexported.ModuleName)
+	paramsKeeper.Subspace(stablecointypes.VaultParamspace) // Register stablecoin vault params
+	paramsKeeper.Subspace(stablecointypes.ReserveParamspace) // Register stablecoin reserve params
 	// this line is used by starport scaffolding # stargate/app/paramSubspace
 	// paramsKeeper.Subspace(wasm.ModuleName) // Temporarily commented out
 

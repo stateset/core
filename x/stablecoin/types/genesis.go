@@ -41,10 +41,10 @@ func DefaultGenesis() *GenesisState {
 }
 
 func (gs GenesisState) Validate() error {
-	if err := gs.Params.ValidateBasic(); err != nil {
+	if err := gs.Params.Validate(); err != nil {
 		return err
 	}
-	if err := gs.ReserveParams.ValidateBasic(); err != nil {
+	if err := gs.ReserveParams.Validate(); err != nil {
 		return err
 	}
 	for _, vault := range gs.Vaults {

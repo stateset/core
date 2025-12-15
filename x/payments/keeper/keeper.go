@@ -115,6 +115,11 @@ func (k Keeper) CreatePayment(ctx sdk.Context, intent types.PaymentIntent) (uint
 	intent.CreatedTime = ctx.BlockTime()
 
 	k.storePayment(ctx, intent)
+
+	// Calculate and store optimal route
+	route := k.OptimizeRoute(ctx, payerAddr, payeeAddr, intent.Amount)
+	k.SetPaymentRoute(ctx, nextID, route)
+
 	k.setNextID(ctx, nextID+1)
 	return intent.Id, nil
 }

@@ -5,6 +5,7 @@ package integration
 
 import (
 	"testing"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"time"
 
 	sdkmath "cosmossdk.io/math"
@@ -12,9 +13,10 @@ import (
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
+	
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -64,6 +66,12 @@ func TestCrossModuleComplianceTestSuite(t *testing.T) {
 }
 
 func (s *CrossModuleComplianceTestSuite) SetupTest() {
+	// Set SDK config
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount("stateset", "statesetpub")
+	config.SetBech32PrefixForValidator("statesetvaloper", "statesetvaloperpub")
+	config.SetBech32PrefixForConsensusNode("statesetvalcons", "statesetvalconspub")
+
 	// Initialize codec
 	interfaceRegistry := codectypes.NewInterfaceRegistry()
 	authtypes.RegisterInterfaces(interfaceRegistry)
@@ -79,22 +87,20 @@ func (s *CrossModuleComplianceTestSuite) SetupTest() {
 		settlementtypes.StoreKey,
 	)
 
-	// Create transient store keys
-	tKeys := storetypes.NewTransientStoreKeys(banktypes.TransientKey)
-
 	// Create multistore
 	db := dbm.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
+	cms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, key := range storeKeys {
-		stateStore.MountStoreWithDB(key, storetypes.StoreTypeIAVL, db)
+		cms.MountStoreWithDB(key, storetypes.StoreTypeIAVL, db)
 	}
-	for _, tKey := range tKeys {
-		stateStore.MountStoreWithDB(tKey, storetypes.StoreTypeTransient, db)
-	}
-	require.NoError(s.T(), stateStore.LoadLatestVersion())
+	transientKey := storetypes.NewTransientStoreKey("transient_test")
+	cms.MountStoreWithDB(transientKey, storetypes.StoreTypeTransient, db)
+	
+	err := cms.LoadLatestVersion()
+	require.NoError(s.T(), err)
 
 	// Create context
-	s.ctx = testutil.DefaultContextWithDB(s.T(), storeKeys[authtypes.StoreKey], tKeys[banktypes.TransientKey]).Ctx.
+	s.ctx = sdk.NewContext(cms, tmproto.Header{}, false, log.NewNopLogger()).
 		WithBlockHeight(1).
 		WithBlockTime(time.Now())
 
@@ -119,6 +125,7 @@ func (s *CrossModuleComplianceTestSuite) SetupTest() {
 		runtime.NewKVStoreService(storeKeys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
+		address.NewBech32Codec("stateset"),
 		"stateset",
 		s.authority.String(),
 	)
@@ -167,7 +174,9 @@ func (s *CrossModuleComplianceTestSuite) SetupTest() {
 func (s *CrossModuleComplianceTestSuite) setupTestAccounts() {
 	// Create module accounts
 	paymentsModuleAcc := authtypes.NewEmptyModuleAccount(paymentstypes.ModuleAccountName, authtypes.Minter, authtypes.Burner)
+	paymentsModuleAcc = s.accountKeeper.NewAccount(s.ctx, paymentsModuleAcc).(*authtypes.ModuleAccount)
 	settlementModuleAcc := authtypes.NewEmptyModuleAccount(settlementtypes.ModuleAccountName, authtypes.Minter, authtypes.Burner)
+	settlementModuleAcc = s.accountKeeper.NewAccount(s.ctx, settlementModuleAcc).(*authtypes.ModuleAccount)
 	s.accountKeeper.SetModuleAccount(s.ctx, paymentsModuleAcc)
 	s.accountKeeper.SetModuleAccount(s.ctx, settlementModuleAcc)
 
@@ -178,7 +187,7 @@ func (s *CrossModuleComplianceTestSuite) setupTestAccounts() {
 	}
 
 	for _, addr := range allUsers {
-		acc := authtypes.NewBaseAccountWithAddress(addr)
+		acc := s.accountKeeper.NewAccountWithAddress(s.ctx, addr)
 		s.accountKeeper.SetAccount(s.ctx, acc)
 
 		// Mint coins
@@ -548,7 +557,7 @@ func (s *CrossModuleComplianceTestSuite) TestBatchComplianceChecks() {
 	user3 := sdk.AccAddress([]byte("user3_______________"))
 
 	for _, addr := range []sdk.AccAddress{user2, user3} {
-		acc := authtypes.NewBaseAccountWithAddress(addr)
+		acc := s.accountKeeper.NewAccountWithAddress(s.ctx, addr)
 		s.accountKeeper.SetAccount(s.ctx, acc)
 
 		coins := sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(5000000000)))

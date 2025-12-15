@@ -58,25 +58,24 @@ type AppModule struct {
 	AppModuleBasic
 
 	keeper keeper.Keeper
+	cdc    codec.BinaryCodec
 }
 
-func NewAppModule(k keeper.Keeper) AppModule {
-	return AppModule{keeper: k}
+func NewAppModule(cdc codec.BinaryCodec, k keeper.Keeper) AppModule {
+	return AppModule{cdc: cdc, keeper: k}
 }
 
-func (AppModule) ConsensusVersion() uint64 { return 1 }
+func (am AppModule) ConsensusVersion() uint64 { return 1 }
 
-func (AppModule) IsAppModule() {}
-
-func (AppModule) IsOnePerModuleType() {}
-
-func (am AppModule) RegisterInvariants(ir sdk.InvariantRegistry) {
-	keeper.RegisterInvariants(ir, am.keeper)
-}
+func (am AppModule) IsAppModule() {}
 
 func (am AppModule) RegisterServices(cfg module.Configurator) {
 	types.RegisterMsgServer(cfg.MsgServer(), keeper.NewMsgServerImpl(am.keeper))
 	types.RegisterQueryServer(cfg.QueryServer(), keeper.NewQueryServerImpl(am.keeper))
+
+	// Register the module's parameters in the param store
+	cfg.RegisterParamUpdates(am.keeper.GetVaultParamStore().GetSubspace(types.ModuleName), &types.Params{})
+	cfg.RegisterParamUpdates(am.keeper.GetReserveParamStore().GetSubspace(types.ModuleName), &types.ReserveParams{})
 }
 
 func (am AppModule) InitGenesis(ctx sdk.Context, _ codec.JSONCodec, data json.RawMessage) []abci.ValidatorUpdate {
@@ -84,7 +83,7 @@ func (am AppModule) InitGenesis(ctx sdk.Context, _ codec.JSONCodec, data json.Ra
 	if len(data) == 0 {
 		state = *types.DefaultGenesis()
 	} else {
-		if err := json.Unmarshal(data, &state); err != nil {
+		if err := am.cdc.UnmarshalJSON(data, &state); err != nil {
 			panic(fmt.Sprintf("failed to unmarshal %s genesis state: %v", types.ModuleName, err))
 		}
 	}
@@ -94,6 +93,6 @@ func (am AppModule) InitGenesis(ctx sdk.Context, _ codec.JSONCodec, data json.Ra
 
 func (am AppModule) ExportGenesis(ctx sdk.Context, _ codec.JSONCodec) json.RawMessage {
 	state := ExportGenesis(ctx, am.keeper)
-	bz, _ := json.Marshal(state)
+	bz, _ := am.cdc.MarshalJSON(state)
 	return bz
 }

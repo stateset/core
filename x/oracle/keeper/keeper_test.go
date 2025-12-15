@@ -145,14 +145,30 @@ func TestSetPriceWithValidation_RequiredConfirmations(t *testing.T) {
 func TestProviderManagement(t *testing.T) {
 	k, ctx := setupKeeper(t)
 
-	// Add a provider
+	// Set price for USDTBILL: $1.00
+	usdtbillPrice := types.Price{
+		Denom:       "USDTBILL",
+		Amount:      sdkmath.LegacyOneDec(),
+		LastUpdater: "provider1",
+		LastHeight:  ctx.BlockHeight(),
+		UpdatedAt:   ctx.BlockTime(),
+	}
+	k.SetPrice(ctx, usdtbillPrice)
+
+	// Enable config for USDTBILL
+	usdtbillConfig := types.DefaultOracleConfig("USDTBILL")
+	usdtbillConfig.Enabled = true
+	require.NoError(t, k.SetOracleConfig(ctx, usdtbillConfig))
+
+	// Register oracle provider
 	provider := types.OracleProvider{
 		Address:  "provider1",
 		IsActive: true,
 		Slashed:  false,
+		TotalSubmissions:      1,
+		SuccessfulSubmissions: 1,
 	}
-	err := k.SetProvider(ctx, provider)
-	require.NoError(t, err)
+	require.NoError(t, k.SetProvider(ctx, provider))
 
 	// Get the provider
 	retrieved, found := k.GetProvider(ctx, "provider1")

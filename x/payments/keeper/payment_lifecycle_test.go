@@ -647,3 +647,34 @@ func TestPaymentLifecycle_DifferentDenominations(t *testing.T) {
 		require.Equal(t, denom, payment.Amount.Denom)
 	}
 }
+
+// TestPaymentLifecycle_PaymentRouting tests that payment routes are calculated and stored
+func TestPaymentLifecycle_PaymentRouting(t *testing.T) {
+	k, ctx, bankKeeper, _ := setupPaymentKeeper(t)
+
+	payer := newPaymentAddress()
+	payee := newPaymentAddress()
+	amount := sdk.NewCoin("ssusd", sdkmath.NewInt(1000000))
+
+	bankKeeper.SetBalance(payer, sdk.NewCoins(sdk.NewCoin("ssusd", sdkmath.NewInt(2000000))))
+
+	intent := types.PaymentIntent{
+		Payer:    payer.String(),
+		Payee:    payee.String(),
+		Amount:   amount,
+		Metadata: "routed payment",
+	}
+
+	id, err := k.CreatePayment(ctx, intent)
+	require.NoError(t, err)
+
+	// Verify route was stored
+	route, found := k.GetPaymentRoute(ctx, id)
+	require.True(t, found, "Payment route should be stored")
+	
+	// Check default optimized route values (from our mock logic)
+	require.Empty(t, route.Hops, "Default route should be direct (empty hops)")
+	require.True(t, route.TotalFee.IsZero(), "Default route should have zero routing fee")
+	require.True(t, route.Probability.Equal(sdkmath.LegacyOneDec()), "Default route should have 100% probability")
+}
+

@@ -22,30 +22,12 @@ import (
 
 // GetReserveParams retrieves reserve parameters
 func (k Keeper) GetReserveParams(ctx sdk.Context) types.ReserveParams {
-	store := ctx.KVStore(k.storeKey)
-	if !store.Has(types.ReserveParamsKey) {
-		return types.DefaultReserveParams()
-	}
-	var params types.ReserveParams
-	types.ModuleCdc.MustUnmarshalJSON(store.Get(types.ReserveParamsKey), &params)
-	return params
+	return k.Keeper.GetReserveParams(ctx)
 }
 
 // SetReserveParams updates reserve parameters
 func (k Keeper) SetReserveParams(ctx sdk.Context, params types.ReserveParams) error {
-	if err := params.ValidateBasic(); err != nil {
-		return err
-	}
-	store := ctx.KVStore(k.storeKey)
-	store.Set(types.ReserveParamsKey, types.ModuleCdc.MustMarshalJSON(&params))
-
-	ctx.EventManager().EmitEvent(
-		sdk.NewEvent(
-			types.EventTypeReserveParamsUpdated,
-			sdk.NewAttribute(types.AttributeKeyReserveRatio, fmt.Sprintf("%d", params.MinReserveRatioBps)),
-		),
-	)
-	return nil
+	return k.Keeper.SetReserveParams(ctx, params)
 }
 
 // ============================================================================
@@ -218,6 +200,11 @@ func (k Keeper) DepositReserve(ctx sdk.Context, depositor sdk.AccAddress, amount
 		}
 	}
 
+	// Safety check: Price must be positive
+	if price.IsNil() || !price.IsPositive() {
+		return 0, sdkmath.ZeroInt(), errorsmod.Wrapf(types.ErrPriceNotFound, "invalid price %s for %s", price, ttConfig.OracleDenom)
+	}
+
 	// Calculate USD value (with haircut)
 	rawValue := price.MulInt(amount.Amount).TruncateInt()
 	haircutMultiplier := sdkmath.LegacyNewDec(10000 - int64(ttConfig.HaircutBps)).Quo(sdkmath.LegacyNewDec(10000))
@@ -290,6 +277,7 @@ func (k Keeper) DepositReserve(ctx sdk.Context, depositor sdk.AccAddress, amount
 			sdk.NewAttribute(types.AttributeKeyDepositor, depositor.String()),
 			sdk.NewAttribute(types.AttributeKeyDepositID, fmt.Sprintf("%d", depositID)),
 			sdk.NewAttribute(types.AttributeKeyReserveAsset, amount.String()),
+			sdk.NewAttribute(types.AttributeKeyPrice, price.String()),
 			sdk.NewAttribute(types.AttributeKeyUsdValue, usdValue.String()),
 			sdk.NewAttribute(types.AttributeKeySsusdAmount, ssusdToMint.String()),
 			sdk.NewAttribute(types.AttributeKeyFeeAmount, feeAmount.String()),

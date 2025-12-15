@@ -5,6 +5,7 @@ package integration
 
 import (
 	"testing"
+	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	"time"
 
 	sdkmath "cosmossdk.io/math"
@@ -12,9 +13,10 @@ import (
 	"cosmossdk.io/store/metrics"
 	storetypes "cosmossdk.io/store/types"
 	"github.com/cosmos/cosmos-sdk/codec"
+	"github.com/cosmos/cosmos-sdk/codec/address"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/runtime"
-	"github.com/cosmos/cosmos-sdk/testutil"
+	
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
@@ -62,6 +64,12 @@ func TestAIAgentTransactionTestSuite(t *testing.T) {
 }
 
 func (s *AIAgentTransactionTestSuite) SetupTest() {
+	// Set SDK config
+	config := sdk.GetConfig()
+	config.SetBech32PrefixForAccount("stateset", "statesetpub")
+	config.SetBech32PrefixForValidator("statesetvaloper", "statesetvaloperpub")
+	config.SetBech32PrefixForConsensusNode("statesetvalcons", "statesetvalconspub")
+
 	// Initialize codec
 	interfaceRegistry := codectypes.NewInterfaceRegistry()
 	authtypes.RegisterInterfaces(interfaceRegistry)
@@ -78,22 +86,20 @@ func (s *AIAgentTransactionTestSuite) SetupTest() {
 	)
 	s.storeKey = storeKeys[settlementtypes.StoreKey]
 
-	// Create transient store keys
-	tKeys := storetypes.NewTransientStoreKeys(banktypes.TransientKey)
-
 	// Create multistore
 	db := dbm.NewMemDB()
-	stateStore := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
+	cms := store.NewCommitMultiStore(db, log.NewNopLogger(), metrics.NewNoOpMetrics())
 	for _, key := range storeKeys {
-		stateStore.MountStoreWithDB(key, storetypes.StoreTypeIAVL, db)
+		cms.MountStoreWithDB(key, storetypes.StoreTypeIAVL, db)
 	}
-	for _, tKey := range tKeys {
-		stateStore.MountStoreWithDB(tKey, storetypes.StoreTypeTransient, db)
-	}
-	require.NoError(s.T(), stateStore.LoadLatestVersion())
+	transientKey := storetypes.NewTransientStoreKey("transient_test")
+	cms.MountStoreWithDB(transientKey, storetypes.StoreTypeTransient, db)
+	
+	err := cms.LoadLatestVersion()
+	require.NoError(s.T(), err)
 
 	// Create context
-	s.ctx = testutil.DefaultContextWithDB(s.T(), storeKeys[authtypes.StoreKey], tKeys[banktypes.TransientKey]).Ctx.
+	s.ctx = sdk.NewContext(cms, tmproto.Header{}, false, log.NewNopLogger()).
 		WithBlockHeight(1).
 		WithBlockTime(time.Now())
 
@@ -115,6 +121,7 @@ func (s *AIAgentTransactionTestSuite) SetupTest() {
 		runtime.NewKVStoreService(storeKeys[authtypes.StoreKey]),
 		authtypes.ProtoBaseAccount,
 		maccPerms,
+		address.NewBech32Codec("stateset"),
 		"stateset",
 		s.authority.String(),
 	)
@@ -163,15 +170,17 @@ func (s *AIAgentTransactionTestSuite) SetupTest() {
 func (s *AIAgentTransactionTestSuite) setupTestAccounts() {
 	// Create module accounts
 	paymentsModuleAcc := authtypes.NewEmptyModuleAccount(paymentstypes.ModuleAccountName, authtypes.Minter, authtypes.Burner)
+	paymentsModuleAcc = s.accountKeeper.NewAccount(s.ctx, paymentsModuleAcc).(*authtypes.ModuleAccount)
 	settlementModuleAcc := authtypes.NewEmptyModuleAccount(settlementtypes.ModuleAccountName, authtypes.Minter, authtypes.Burner)
+	settlementModuleAcc = s.accountKeeper.NewAccount(s.ctx, settlementModuleAcc).(*authtypes.ModuleAccount)
 	s.accountKeeper.SetModuleAccount(s.ctx, paymentsModuleAcc)
 	s.accountKeeper.SetModuleAccount(s.ctx, settlementModuleAcc)
 
 	// Create user accounts
-	aiAgentAcc := authtypes.NewBaseAccountWithAddress(s.aiAgent)
-	userAcc := authtypes.NewBaseAccountWithAddress(s.user)
-	providerAcc := authtypes.NewBaseAccountWithAddress(s.serviceProvider)
-	arbiterAcc := authtypes.NewBaseAccountWithAddress(s.arbiter)
+	aiAgentAcc := s.accountKeeper.NewAccountWithAddress(s.ctx, s.aiAgent)
+	userAcc := s.accountKeeper.NewAccountWithAddress(s.ctx, s.user)
+	providerAcc := s.accountKeeper.NewAccountWithAddress(s.ctx, s.serviceProvider)
+	arbiterAcc := s.accountKeeper.NewAccountWithAddress(s.ctx, s.arbiter)
 	s.accountKeeper.SetAccount(s.ctx, aiAgentAcc)
 	s.accountKeeper.SetAccount(s.ctx, userAcc)
 	s.accountKeeper.SetAccount(s.ctx, providerAcc)
@@ -482,7 +491,7 @@ func (s *AIAgentTransactionTestSuite) TestAIAgentNonCompliantUser() {
 
 	// Create blocked user
 	blockedUser := sdk.AccAddress([]byte("blockeduser_________"))
-	blockedAcc := authtypes.NewBaseAccountWithAddress(blockedUser)
+	blockedAcc := s.accountKeeper.NewAccountWithAddress(s.ctx, blockedUser)
 	s.accountKeeper.SetAccount(s.ctx, blockedAcc)
 
 	// Set non-compliant profile

@@ -1,8 +1,6 @@
 module github.com/stateset/core
 
-go 1.23.2
-
-toolchain go1.23.4
+go 1.20
 
 require (
 	cosmossdk.io/core v0.11.3

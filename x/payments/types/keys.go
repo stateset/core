@@ -16,7 +16,8 @@ const (
 )
 
 var (
-	PaymentKeyPrefix = []byte{0x01}
+	PaymentKeyPrefix      = []byte{0x01}
+	PaymentRouteKeyPrefix = []byte{0x03}
 )
 
 func PaymentStoreKey(id uint64) []byte {
