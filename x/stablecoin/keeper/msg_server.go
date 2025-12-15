@@ -397,3 +397,289 @@ func parseDate(dateStr string) (time.Time, error) {
 	}
 	return time.Time{}, errorsmod.Wrap(types.ErrInvalidReserve, "invalid date format")
 }
+
+// ============================================================================
+// Peg Stability Module (PSM) Messages
+// ============================================================================
+
+func (m msgServer) PSMSwapIn(goCtx context.Context, msg *types.MsgPSMSwapIn) (*types.MsgPSMSwapInResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, errorsmod.Wrap(types.ErrInvalidReserve, err.Error())
+	}
+
+	ssusdMinted, feeCharged, err := m.keeper.PSMSwapIn(ctx, sender, msg.Amount)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgPSMSwapInResponse{
+		SsusdMinted: ssusdMinted.String(),
+		FeeCharged:  feeCharged.String(),
+	}, nil
+}
+
+func (m msgServer) PSMSwapOut(goCtx context.Context, msg *types.MsgPSMSwapOut) (*types.MsgPSMSwapOutResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, errorsmod.Wrap(types.ErrInvalidReserve, err.Error())
+	}
+
+	ssusdAmount, ok := sdkmath.NewIntFromString(msg.SsusdAmount)
+	if !ok {
+		return nil, errorsmod.Wrap(types.ErrInvalidAmount, "invalid ssusd amount")
+	}
+
+	outputAmount, feeCharged, err := m.keeper.PSMSwapOut(ctx, sender, ssusdAmount, msg.OutputDenom)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgPSMSwapOutResponse{
+		OutputAmount: outputAmount.String(),
+		FeeCharged:   feeCharged.String(),
+	}, nil
+}
+
+func (m msgServer) UpdatePSMConfig(goCtx context.Context, msg *types.MsgUpdatePSMConfig) (*types.MsgUpdatePSMConfigResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	if err := m.keeper.UpdatePSMConfigs(ctx, msg.Authority, msg.Configs); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgUpdatePSMConfigResponse{}, nil
+}
+
+// ============================================================================
+// Savings Rate (ssSR) Messages
+// ============================================================================
+
+func (m msgServer) DepositSavings(goCtx context.Context, msg *types.MsgDepositSavings) (*types.MsgDepositSavingsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	depositor, err := sdk.AccAddressFromBech32(msg.Depositor)
+	if err != nil {
+		return nil, errorsmod.Wrap(types.ErrInvalidReserve, err.Error())
+	}
+
+	amount, ok := sdkmath.NewIntFromString(msg.Amount)
+	if !ok {
+		return nil, errorsmod.Wrap(types.ErrInvalidAmount, "invalid amount")
+	}
+
+	totalDeposit, err := m.keeper.DepositSavings(ctx, depositor, amount)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgDepositSavingsResponse{
+		TotalDeposit: totalDeposit.String(),
+	}, nil
+}
+
+func (m msgServer) WithdrawSavings(goCtx context.Context, msg *types.MsgWithdrawSavings) (*types.MsgWithdrawSavingsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	depositor, err := sdk.AccAddressFromBech32(msg.Depositor)
+	if err != nil {
+		return nil, errorsmod.Wrap(types.ErrInvalidReserve, err.Error())
+	}
+
+	amount, ok := sdkmath.NewIntFromString(msg.Amount)
+	if !ok {
+		return nil, errorsmod.Wrap(types.ErrInvalidAmount, "invalid amount")
+	}
+
+	amountWithdrawn, interestEarned, err := m.keeper.WithdrawSavings(ctx, depositor, amount)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgWithdrawSavingsResponse{
+		AmountWithdrawn: amountWithdrawn.String(),
+		InterestEarned:  interestEarned.String(),
+	}, nil
+}
+
+func (m msgServer) ClaimSavingsInterest(goCtx context.Context, msg *types.MsgClaimSavingsInterest) (*types.MsgClaimSavingsInterestResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	depositor, err := sdk.AccAddressFromBech32(msg.Depositor)
+	if err != nil {
+		return nil, errorsmod.Wrap(types.ErrInvalidReserve, err.Error())
+	}
+
+	interestClaimed, err := m.keeper.ClaimSavingsInterest(ctx, depositor)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgClaimSavingsInterestResponse{
+		InterestClaimed: interestClaimed.String(),
+	}, nil
+}
+
+func (m msgServer) UpdateSavingsParams(goCtx context.Context, msg *types.MsgUpdateSavingsParams) (*types.MsgUpdateSavingsParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	if err := m.keeper.UpdateSavingsParams(ctx, msg.Authority, msg.Params); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgUpdateSavingsParamsResponse{}, nil
+}
+
+// ============================================================================
+// Dutch Auction Messages
+// ============================================================================
+
+func (m msgServer) BidAuction(goCtx context.Context, msg *types.MsgBidAuction) (*types.MsgBidAuctionResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	bidder, err := sdk.AccAddressFromBech32(msg.Bidder)
+	if err != nil {
+		return nil, errorsmod.Wrap(types.ErrInvalidReserve, err.Error())
+	}
+
+	maxCollateral, ok := sdkmath.NewIntFromString(msg.MaxCollateralAmount)
+	if !ok {
+		return nil, errorsmod.Wrap(types.ErrInvalidAmount, "invalid max collateral amount")
+	}
+
+	maxSSUSD, ok := sdkmath.NewIntFromString(msg.MaxSsusdToSpend)
+	if !ok {
+		return nil, errorsmod.Wrap(types.ErrInvalidAmount, "invalid max ssusd amount")
+	}
+
+	collateralPurchased, ssusdSpent, pricePerUnit, err := m.keeper.BidAuction(ctx, bidder, msg.AuctionId, maxCollateral, maxSSUSD)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgBidAuctionResponse{
+		CollateralPurchased: collateralPurchased.String(),
+		SsusdSpent:          ssusdSpent.String(),
+		PricePerUnit:        pricePerUnit.String(),
+	}, nil
+}
+
+func (m msgServer) UpdateAuctionParams(goCtx context.Context, msg *types.MsgUpdateAuctionParams) (*types.MsgUpdateAuctionParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	if err := m.keeper.UpdateAuctionParams(ctx, msg.Authority, msg.Params); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgUpdateAuctionParamsResponse{}, nil
+}
+
+// ============================================================================
+// Flash Minting Messages
+// ============================================================================
+
+func (m msgServer) FlashMint(goCtx context.Context, msg *types.MsgFlashMint) (*types.MsgFlashMintResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, errorsmod.Wrap(types.ErrInvalidReserve, err.Error())
+	}
+
+	amount, ok := sdkmath.NewIntFromString(msg.Amount)
+	if !ok {
+		return nil, errorsmod.Wrap(types.ErrInvalidAmount, "invalid amount")
+	}
+
+	amountMinted, feePaid, err := m.keeper.FlashMint(ctx, sender, amount)
+	if err != nil {
+		return nil, err
+	}
+
+	return &types.MsgFlashMintResponse{
+		AmountMinted: amountMinted.String(),
+		FeePaid:      feePaid.String(),
+	}, nil
+}
+
+func (m msgServer) FlashMintCallback(goCtx context.Context, msg *types.MsgFlashMintCallback) (*types.MsgFlashMintCallbackResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	sender, err := sdk.AccAddressFromBech32(msg.Sender)
+	if err != nil {
+		return nil, errorsmod.Wrap(types.ErrInvalidReserve, err.Error())
+	}
+
+	amountToReturn, ok := sdkmath.NewIntFromString(msg.AmountToReturn)
+	if !ok {
+		return nil, errorsmod.Wrap(types.ErrInvalidAmount, "invalid amount to return")
+	}
+
+	if err := m.keeper.FlashMintCallback(ctx, sender, amountToReturn); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgFlashMintCallbackResponse{}, nil
+}
+
+func (m msgServer) UpdateFlashMintParams(goCtx context.Context, msg *types.MsgUpdateFlashMintParams) (*types.MsgUpdateFlashMintParamsResponse, error) {
+	ctx := sdk.UnwrapSDKContext(goCtx)
+
+	if err := msg.ValidateBasic(); err != nil {
+		return nil, err
+	}
+
+	if err := m.keeper.UpdateFlashMintParams(ctx, msg.Authority, msg.Params); err != nil {
+		return nil, err
+	}
+
+	return &types.MsgUpdateFlashMintParamsResponse{}, nil
+}

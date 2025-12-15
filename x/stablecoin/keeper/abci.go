@@ -1,6 +1,7 @@
 package keeper
 
 import (
+	sdkmath "cosmossdk.io/math"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/stateset/core/x/stablecoin/types"
 )
@@ -12,7 +13,16 @@ func (k Keeper) EndBlocker(ctx sdk.Context) error {
 		k.Logger(ctx).Error("failed to update reserve value", "error", err)
 	}
 
-	// 2. Solvency Check
+	// 2. Process Expired Dutch Auctions
+	k.ProcessExpiredAuctions(ctx)
+
+	// 3. Check and cleanup pending flash mint sessions
+	// This ensures atomicity - any unclosed flash mints from previous blocks are reverted
+	if err := k.CheckPendingFlashMints(ctx); err != nil {
+		k.Logger(ctx).Error("failed to check pending flash mints", "error", err)
+	}
+
+	// 4. Solvency Check
 	reserve := k.GetReserve(ctx)
 	params := k.GetReserveParams(ctx)
 
@@ -27,7 +37,7 @@ func (k Keeper) EndBlocker(ctx sdk.Context) error {
 	// If reserves drop below 90%, we enter "Panic Mode"
 	const CriticalThreshold = int64(9000)
 
-	if reserveRatio < CriticalThreshold {
+	if int64(reserveRatio) < CriticalThreshold {
 		// Only trigger if not already paused, to avoid spamming events/writes
 		if !params.MintPaused || !params.RedeemPaused {
 			k.Logger(ctx).Error("CRITICAL: Reserve ratio below safety threshold. Pausing module.", "ratio", reserveRatio)
@@ -42,7 +52,7 @@ func (k Keeper) EndBlocker(ctx sdk.Context) error {
 			ctx.EventManager().EmitEvent(
 				sdk.NewEvent(
 					types.EventTypeSolvencyEmergency,
-					sdk.NewAttribute(types.AttributeKeyReserveRatio, sdk.NewInt(reserveRatio).String()),
+					sdk.NewAttribute(types.AttributeKeyReserveRatio, sdkmath.NewInt(int64(reserveRatio)).String()),
 					sdk.NewAttribute(types.AttributeKeyAction, "system_paused"),
 				),
 			)

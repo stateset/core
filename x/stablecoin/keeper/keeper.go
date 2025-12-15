@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 
+	"cosmossdk.io/log"
 	errorsmod "cosmossdk.io/errors"
 	sdkmath "cosmossdk.io/math"
 	"cosmossdk.io/store/prefix"
@@ -67,6 +68,11 @@ func (k *Keeper) SetHooks(sh types.StablecoinHooks) *Keeper {
 // GetAuthority returns the module authority address
 func (k Keeper) GetAuthority() string {
 	return k.authority
+}
+
+// Logger returns a module-specific logger
+func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+	return ctx.Logger().With("module", "x/"+types.ModuleName)
 }
 
 func (k Keeper) ensureModuleAccount(ctx sdk.Context) error {

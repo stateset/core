@@ -1,6 +1,7 @@
 package stablecoin
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -100,10 +101,12 @@ func (am AppModule) ExportGenesis(ctx sdk.Context, _ codec.JSONCodec) json.RawMe
 }
 
 // BeginBlock executes the module's BeginBlock logic.
-func (am AppModule) BeginBlock(_ sdk.Context, _ abci.RequestBeginBlock) {}
+func (am AppModule) BeginBlock(ctx context.Context) error {
+	return nil
+}
 
 // EndBlock executes the module's EndBlock logic.
-func (am AppModule) EndBlock(ctx sdk.Context, _ abci.RequestEndBlock) []abci.ValidatorUpdate {
-	am.keeper.EndBlocker(ctx)
-	return []abci.ValidatorUpdate{}
+func (am AppModule) EndBlock(ctx context.Context) error {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+	return am.keeper.EndBlocker(sdkCtx)
 }

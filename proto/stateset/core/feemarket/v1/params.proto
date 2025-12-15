@@ -67,4 +67,15 @@ message Params {
   uint32 max_fee_history = 9 [
     (gogoproto.moretags) = "yaml:\"max_fee_history\""
   ];
+
+  // native_denom is the denomination of the native staking token for fee conversion.
+  string native_denom = 10 [
+    (gogoproto.moretags) = "yaml:\"native_denom\""
+  ];
+
+  // allowed_fee_denoms is a list of denominations that can be used to pay fees (in addition to native).
+  // This enables gas abstraction for stablecoins like ssUSD.
+  repeated string allowed_fee_denoms = 11 [
+    (gogoproto.moretags) = "yaml:\"allowed_fee_denoms\""
+  ];
 }

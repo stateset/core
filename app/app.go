@@ -767,6 +767,7 @@ func New(
 			IBCKeeper:       app.IBCKeeper,
 			CircuitKeeper:   &app.CircuitKeeper,
 			FeeMarketKeeper: &app.FeeMarketKeeper,
+			OracleKeeper:    &app.OracleKeeper,
 		},
 	)
 	if err != nil {

@@ -12,6 +12,7 @@ import (
 	circuitkeeper "github.com/stateset/core/x/circuit/keeper"
 	feemarketante "github.com/stateset/core/x/feemarket/ante"
 	feemarketkeeper "github.com/stateset/core/x/feemarket/keeper"
+	oraclekeeper "github.com/stateset/core/x/oracle/keeper"
 )
 
 // HandlerOptions extends the SDK's AnteHandler options by requiring the IBC keeper.
@@ -21,6 +22,7 @@ type HandlerOptions struct {
 	IBCKeeper       *ibckeeper.Keeper
 	CircuitKeeper   *circuitkeeper.Keeper
 	FeeMarketKeeper *feemarketkeeper.Keeper
+	OracleKeeper    *oraclekeeper.Keeper
 	// WasmConfig        wasmTypes.WasmConfig // Temporarily commented out due to dependency conflicts
 }
 
@@ -78,7 +80,10 @@ func NewAnteHandler(options HandlerOptions) (sdk.AnteHandler, error) {
 	// Use fee market for dynamic fee checking if keeper is available
 	txFeeChecker := options.TxFeeChecker
 	if options.FeeMarketKeeper != nil {
-		txFeeChecker = feemarketante.FeeMarketCheckTxFeeWithMinGasPrices(*options.FeeMarketKeeper)
+		if options.OracleKeeper == nil {
+			return nil, sdkerrors.ErrLogic.Wrap("oracle keeper is required for fee market ante builder")
+		}
+		txFeeChecker = feemarketante.FeeMarketCheckTxFeeWithMinGasPrices(*options.FeeMarketKeeper, *options.OracleKeeper)
 	}
 
 	anteDecorators := []sdk.AnteDecorator{

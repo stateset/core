@@ -186,7 +186,7 @@ func (k Keeper) DepositReserve(ctx sdk.Context, depositor sdk.AccAddress, amount
 	// If the asset is cash or treasury, we expect it to be relatively stable.
 	// We block operations if the price deviates too wildly (e.g. > $1.05 or < $0.95)
 	// unless specifically configured otherwise.
-	if ttConfig.UnderlyingType == types.ReserveAssetCash || ttConfig.UnderlyingType == types.ReserveAssetTreasury {
+	if ttConfig.UnderlyingType == types.ReserveAssetCash || ttConfig.UnderlyingType == types.ReserveAssetTokenizedTreasury {
 		upperBound := sdkmath.LegacyNewDecWithPrec(105, 2) // 1.05
 		lowerBound := sdkmath.LegacyNewDecWithPrec(95, 2)  // 0.95
 		if price.GT(upperBound) || price.LT(lowerBound) {
@@ -250,7 +250,7 @@ func (k Keeper) DepositReserve(ctx sdk.Context, depositor sdk.AccAddress, amount
 
 	// Hooks
 	if k.hooks != nil {
-		k.hooks.AfterMintStablecoin(wrappedCtx, depositor, mintCoins[0])
+		k.hooks.AfterMintStablecoin(ctx, depositor, mintCoins[0])
 	}
 
 	// Update reserve state
@@ -543,7 +543,7 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 	// If the asset is cash or treasury, we expect it to be relatively stable.
 	// We block operations if the price deviates too wildly (e.g. > $1.05 or < $0.95)
 	// unless specifically configured otherwise.
-	if ttConfig.UnderlyingType == types.ReserveAssetCash || ttConfig.UnderlyingType == types.ReserveAssetTreasury {
+	if ttConfig.UnderlyingType == types.ReserveAssetCash || ttConfig.UnderlyingType == types.ReserveAssetTokenizedTreasury {
 		upperBound := sdkmath.LegacyNewDecWithPrec(105, 2) // 1.05
 		lowerBound := sdkmath.LegacyNewDecWithPrec(95, 2)  // 0.95
 		if price.GT(upperBound) || price.LT(lowerBound) {
@@ -591,7 +591,7 @@ func (k Keeper) RequestRedemption(ctx sdk.Context, requester sdk.AccAddress, ssu
 
 	// Hooks
 	if k.hooks != nil {
-		k.hooks.AfterRedeemStablecoin(wrappedCtx, requester, ssusdCoins[0])
+		k.hooks.AfterRedeemStablecoin(ctx, requester, ssusdCoins[0])
 	}
 
 	// Create redemption request

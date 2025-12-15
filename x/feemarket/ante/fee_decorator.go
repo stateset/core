@@ -1,6 +1,7 @@
 package ante
 
 import (
+	"context"
 	"fmt"
 
 	errorsmod "cosmossdk.io/errors"
@@ -19,6 +20,7 @@ type FeeMarketDecorator struct {
 	feemarketKeeper keeper.Keeper
 	accountKeeper   AccountKeeper
 	bankKeeper      BankKeeper
+	oracleKeeper    OracleKeeper
 }
 
 // AccountKeeper defines the expected account keeper interface.
@@ -32,12 +34,18 @@ type BankKeeper interface {
 	GetBalance(ctx sdk.Context, addr sdk.AccAddress, denom string) sdk.Coin
 }
 
+// OracleKeeper defines the expected oracle keeper interface.
+type OracleKeeper interface {
+	GetPriceDec(ctx context.Context, denom string) (sdkmath.LegacyDec, error)
+}
+
 // NewFeeMarketDecorator creates a new fee market ante handler decorator.
-func NewFeeMarketDecorator(fmk keeper.Keeper, ak AccountKeeper, bk BankKeeper) FeeMarketDecorator {
+func NewFeeMarketDecorator(fmk keeper.Keeper, ak AccountKeeper, bk BankKeeper, ok OracleKeeper) FeeMarketDecorator {
 	return FeeMarketDecorator{
 		feemarketKeeper: fmk,
 		accountKeeper:   ak,
 		bankKeeper:      bk,
+		oracleKeeper:    ok,
 	}
 }
 
@@ -61,14 +69,14 @@ func (fmd FeeMarketDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate bo
 		return next(ctx, tx, simulate)
 	}
 
-	// Get current base fee
+	// Get current base fee (in native denom)
 	baseFee := fmd.feemarketKeeper.GetBaseFee(ctx)
 
 	// Get transaction fee and gas limit
 	feeCoins := feeTx.GetFee()
 	gas := feeTx.GetGas()
 
-	// Calculate minimum required fee based on base fee
+	// Calculate minimum required fee based on base fee (in native denom)
 	minRequiredFee := baseFee.MulInt64(int64(gas))
 
 	// Validate fee against minimum
@@ -96,19 +104,57 @@ func (fmd FeeMarketDecorator) validateFee(ctx sdk.Context, feeCoins sdk.Coins, m
 	if feeCoins.IsZero() {
 		return errorsmod.Wrapf(
 			types.ErrInsufficientFee,
-			"transaction fee cannot be zero; minimum required: %s",
+			"transaction fee cannot be zero; minimum required: %s (native)",
 			minRequiredFee.String(),
 		)
 	}
 
 	// Get the fee denom (assuming first coin is the fee denom)
-	// In a multi-denom scenario, you'd need more sophisticated logic
 	feeCoin := feeCoins[0]
-
-	// Convert fee amount to LegacyDec for comparison
 	feeAmount := sdkmath.LegacyNewDecFromInt(feeCoin.Amount)
 
-	// Check if fee meets minimum requirement
+	// Native Gas Abstraction: Handle ssUSD or other whitelisted stablecoins
+	// Supported fee denoms: ussUSD (ssUSD micro units)
+	isAllowedDenom := feeCoin.Denom == "ussUSD" || feeCoin.Denom == "ssusd"
+
+	if isAllowedDenom {
+		// Get price of the fee token (ssUSD should be ~$1.00)
+		feeTokenPrice, err := fmd.oracleKeeper.GetPriceDec(ctx, feeCoin.Denom)
+		if err != nil {
+			return errorsmod.Wrapf(types.ErrInsufficientFee, "failed to get %s price for fee validation: %s", feeCoin.Denom, err)
+		}
+
+		// Get price of Native Token
+		// Try "stake" first, then fallback to "uatom"
+		nativeDenom := "stake"
+		nativePrice, err := fmd.oracleKeeper.GetPriceDec(ctx, nativeDenom)
+		if err != nil {
+			// Fallback to uatom if native price not found
+			nativePrice, err = fmd.oracleKeeper.GetPriceDec(ctx, "uatom")
+			if err != nil {
+				return errorsmod.Wrapf(types.ErrInsufficientFee, "failed to get native token price for fee validation: %s", err)
+			}
+		}
+
+		// Calculate required fee token amount
+		// RequiredNative * NativePrice = RequiredUSD
+		// RequiredUSD / FeeTokenPrice = RequiredFeeToken
+		requiredUSD := minRequiredFee.Mul(nativePrice)
+		requiredFeeToken := requiredUSD.Quo(feeTokenPrice)
+
+		if feeAmount.LT(requiredFeeToken) {
+			return errorsmod.Wrapf(
+				types.ErrInsufficientFee,
+				"insufficient fee; got: %s %s, required: %s %s",
+				feeAmount.String(), feeCoin.Denom,
+				requiredFeeToken.String(), feeCoin.Denom,
+			)
+		}
+		return nil
+	}
+
+	// Standard Native Fee Validation
+	// Check if fee meets minimum requirement directly
 	if feeAmount.LT(minRequiredFee) {
 		return errorsmod.Wrapf(
 			types.ErrInsufficientFee,
@@ -123,10 +169,10 @@ func (fmd FeeMarketDecorator) validateFee(ctx sdk.Context, feeCoins sdk.Coins, m
 
 // DynamicFeeChecker returns a fee checker function that uses the fee market base fee.
 // This can be used with the standard Cosmos SDK fee decorator.
-func DynamicFeeChecker(fmk keeper.Keeper) authante.TxFeeChecker {
+func DynamicFeeChecker(fmk keeper.Keeper, oracleK OracleKeeper) authante.TxFeeChecker {
 	return func(ctx sdk.Context, tx sdk.Tx) (sdk.Coins, int64, error) {
-		feeTx, ok := tx.(sdk.FeeTx)
-		if !ok {
+		feeTx, isFeeTx := tx.(sdk.FeeTx)
+		if !isFeeTx {
 			return nil, 0, errorsmod.Wrap(sdkerrors.ErrTxDecode, "tx must implement FeeTx interface")
 		}
 
@@ -163,6 +209,27 @@ func DynamicFeeChecker(fmk keeper.Keeper) authante.TxFeeChecker {
 		feeCoin := feeCoins[0]
 		feeAmount := sdkmath.LegacyNewDecFromInt(feeCoin.Amount)
 
+		// Logic duplication for DynamicFeeChecker (simplified)
+		if feeCoin.Denom == "ssusd" {
+			ssusdPrice, err := oracleK.GetPriceDec(ctx, "ssusd")
+			if err != nil {
+				return nil, 0, err
+			}
+			nativePrice, err := oracleK.GetPriceDec(ctx, "stake") // Assumed native
+			if err != nil {
+				// Fallback
+				nativePrice, err = oracleK.GetPriceDec(ctx, "uatom")
+				if err != nil {
+					return nil, 0, err
+				}
+			}
+			requiredSSUSD := minRequiredFee.Mul(nativePrice).Quo(ssusdPrice)
+			if feeAmount.LT(requiredSSUSD) {
+				return nil, 0, errorsmod.Wrapf(types.ErrInsufficientFee, "insufficient ssusd fee")
+			}
+			return feeCoins, int64(gas), nil
+		}
+
 		// Check minimum
 		if feeAmount.LT(minRequiredFee) {
 			return nil, 0, errorsmod.Wrapf(
@@ -179,10 +246,10 @@ func DynamicFeeChecker(fmk keeper.Keeper) authante.TxFeeChecker {
 
 // FeeMarketCheckTxFeeWithMinGasPrices implements a fee checker that uses the fee market
 // in combination with validator minimum gas prices.
-func FeeMarketCheckTxFeeWithMinGasPrices(fmk keeper.Keeper) authante.TxFeeChecker {
+func FeeMarketCheckTxFeeWithMinGasPrices(fmk keeper.Keeper, oracleK OracleKeeper) authante.TxFeeChecker {
 	return func(ctx sdk.Context, tx sdk.Tx) (sdk.Coins, int64, error) {
-		feeTx, ok := tx.(sdk.FeeTx)
-		if !ok {
+		feeTx, isFeeTx := tx.(sdk.FeeTx)
+		if !isFeeTx {
 			return nil, 0, errorsmod.Wrap(sdkerrors.ErrTxDecode, "tx must implement FeeTx interface")
 		}
 
@@ -211,6 +278,30 @@ func FeeMarketCheckTxFeeWithMinGasPrices(fmk keeper.Keeper) authante.TxFeeChecke
 		}
 
 		feeCoin := feeCoins[0]
+
+		// Special handling for ssusd
+		if feeCoin.Denom == "ssusd" {
+			ssusdPrice, err := oracleK.GetPriceDec(ctx, "ssusd")
+			if err != nil {
+				return nil, 0, err
+			}
+			nativePrice, err := oracleK.GetPriceDec(ctx, "stake")
+			if err != nil {
+				nativePrice, err = oracleK.GetPriceDec(ctx, "uatom")
+				if err != nil {
+					return nil, 0, err
+				}
+			}
+			
+			// Convert minFee (native) to ssusd
+			requiredSSUSD := minFee.Mul(nativePrice).Quo(ssusdPrice)
+			
+			feeAmount := sdkmath.LegacyNewDecFromInt(feeCoin.Amount)
+			if feeAmount.LT(requiredSSUSD) {
+				return nil, 0, errorsmod.Wrapf(types.ErrInsufficientFee, "insufficient ssusd fee")
+			}
+			return feeCoins, int64(gas), nil
+		}
 
 		// Also check against validator's minimum gas prices (if set)
 		minGasPrices := ctx.MinGasPrices()

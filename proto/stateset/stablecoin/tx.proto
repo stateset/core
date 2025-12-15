@@ -25,6 +25,26 @@ service Msg {
   rpc UpdateReserveParams(MsgUpdateReserveParams) returns (MsgUpdateReserveParamsResponse);
   rpc RecordAttestation(MsgRecordAttestation) returns (MsgRecordAttestationResponse);
   rpc SetApprovedAttester(MsgSetApprovedAttester) returns (MsgSetApprovedAttesterResponse);
+
+  // Peg Stability Module (PSM)
+  rpc PSMSwapIn(MsgPSMSwapIn) returns (MsgPSMSwapInResponse);
+  rpc PSMSwapOut(MsgPSMSwapOut) returns (MsgPSMSwapOutResponse);
+  rpc UpdatePSMConfig(MsgUpdatePSMConfig) returns (MsgUpdatePSMConfigResponse);
+
+  // Savings Rate (ssSR)
+  rpc DepositSavings(MsgDepositSavings) returns (MsgDepositSavingsResponse);
+  rpc WithdrawSavings(MsgWithdrawSavings) returns (MsgWithdrawSavingsResponse);
+  rpc ClaimSavingsInterest(MsgClaimSavingsInterest) returns (MsgClaimSavingsInterestResponse);
+  rpc UpdateSavingsParams(MsgUpdateSavingsParams) returns (MsgUpdateSavingsParamsResponse);
+
+  // Dutch Auction Liquidations
+  rpc BidAuction(MsgBidAuction) returns (MsgBidAuctionResponse);
+  rpc UpdateAuctionParams(MsgUpdateAuctionParams) returns (MsgUpdateAuctionParamsResponse);
+
+  // Flash Minting
+  rpc FlashMint(MsgFlashMint) returns (MsgFlashMintResponse);
+  rpc FlashMintCallback(MsgFlashMintCallback) returns (MsgFlashMintCallbackResponse);
+  rpc UpdateFlashMintParams(MsgUpdateFlashMintParams) returns (MsgUpdateFlashMintParamsResponse);
 }
 
 message MsgCreateVault {
@@ -164,3 +184,147 @@ message MsgSetApprovedAttester {
 }
 
 message MsgSetApprovedAttesterResponse {}
+
+// ============================================================================
+// Peg Stability Module (PSM) Messages
+// ============================================================================
+
+// MsgPSMSwapIn swaps a stablecoin (USDC/USDT) for ssUSD at 1:1 (minus fee).
+message MsgPSMSwapIn {
+  string sender = 1;
+  cosmos.base.v1beta1.Coin amount = 2 [
+    (gogoproto.nullable) = false,
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Coin"
+  ];
+}
+
+message MsgPSMSwapInResponse {
+  string ssusd_minted = 1;
+  string fee_charged = 2;
+}
+
+// MsgPSMSwapOut swaps ssUSD for a stablecoin (USDC/USDT) at 1:1 (minus fee).
+message MsgPSMSwapOut {
+  string sender = 1;
+  string ssusd_amount = 2;
+  string output_denom = 3;
+}
+
+message MsgPSMSwapOutResponse {
+  string output_amount = 1;
+  string fee_charged = 2;
+}
+
+// MsgUpdatePSMConfig updates PSM configuration (governance).
+message MsgUpdatePSMConfig {
+  string authority = 1;
+  repeated PSMConfig configs = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgUpdatePSMConfigResponse {}
+
+// ============================================================================
+// Savings Rate (ssSR) Messages
+// ============================================================================
+
+// MsgDepositSavings deposits ssUSD into the savings module to earn interest.
+message MsgDepositSavings {
+  string depositor = 1;
+  string amount = 2;
+}
+
+message MsgDepositSavingsResponse {
+  string total_deposit = 1;
+}
+
+// MsgWithdrawSavings withdraws ssUSD (principal + interest) from savings.
+message MsgWithdrawSavings {
+  string depositor = 1;
+  string amount = 2;
+}
+
+message MsgWithdrawSavingsResponse {
+  string amount_withdrawn = 1;
+  string interest_earned = 2;
+}
+
+// MsgClaimSavingsInterest claims accrued interest without withdrawing principal.
+message MsgClaimSavingsInterest {
+  string depositor = 1;
+}
+
+message MsgClaimSavingsInterestResponse {
+  string interest_claimed = 1;
+}
+
+// MsgUpdateSavingsParams updates savings parameters (governance).
+message MsgUpdateSavingsParams {
+  string authority = 1;
+  SavingsParams params = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgUpdateSavingsParamsResponse {}
+
+// ============================================================================
+// Dutch Auction Messages
+// ============================================================================
+
+// MsgBidAuction places a bid on a Dutch auction.
+message MsgBidAuction {
+  string bidder = 1;
+  uint64 auction_id = 2;
+  // max_collateral_amount is the maximum collateral the bidder wants to purchase.
+  string max_collateral_amount = 3;
+  // max_ssusd_to_spend is the maximum ssUSD the bidder is willing to spend.
+  string max_ssusd_to_spend = 4;
+}
+
+message MsgBidAuctionResponse {
+  string collateral_purchased = 1;
+  string ssusd_spent = 2;
+  string price_per_unit = 3;
+}
+
+// MsgUpdateAuctionParams updates auction parameters (governance).
+message MsgUpdateAuctionParams {
+  string authority = 1;
+  AuctionParams params = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgUpdateAuctionParamsResponse {}
+
+// ============================================================================
+// Flash Minting Messages
+// ============================================================================
+
+// MsgFlashMint initiates a flash mint operation.
+// The minted ssUSD must be returned (plus fee) within the same transaction.
+message MsgFlashMint {
+  string sender = 1;
+  // amount is the ssUSD amount to flash mint.
+  string amount = 2;
+  // callback_data contains arbitrary data for the callback (e.g., swap instructions).
+  bytes callback_data = 3;
+}
+
+message MsgFlashMintResponse {
+  string amount_minted = 1;
+  string fee_paid = 2;
+}
+
+// MsgFlashMintCallback is called after flash mint to return the funds.
+// This message must be sent in the same transaction as MsgFlashMint.
+message MsgFlashMintCallback {
+  string sender = 1;
+  string amount_to_return = 2;
+}
+
+message MsgFlashMintCallbackResponse {}
+
+// MsgUpdateFlashMintParams updates flash mint parameters (governance).
+message MsgUpdateFlashMintParams {
+  string authority = 1;
+  FlashMintParams params = 2 [(gogoproto.nullable) = false];
+}
+
+message MsgUpdateFlashMintParamsResponse {}
