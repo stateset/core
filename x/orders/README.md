@@ -95,10 +95,10 @@ Delivered orders auto-complete after configurable window:
 | `default_order_expiration` | int64 | 86400 | Order expiration in seconds (24h) |
 | `default_escrow_expiration` | int64 | 604800 | Escrow duration in seconds (7d) |
 | `dispute_window` | int64 | 1209600 | Dispute opening window (14d) |
-| `min_order_amount` | Coin | 100ussUSD | Minimum order amount |
-| `max_order_amount` | Coin | 1000000000000ussUSD | Maximum order amount ($1M) |
+| `min_order_amount` | Coin | 100ssusd | Minimum order amount |
+| `max_order_amount` | Coin | 1000000000000ssusd | Maximum order amount ($1M) |
 | `default_fee_rate_bps` | uint32 | 100 | Default fee rate (1%) |
-| `stablecoin_denom` | string | ussUSD | Payment denomination |
+| `stablecoin_denom` | string | ssusd | Payment denomination |
 | `auto_complete_after_delivery` | bool | true | Enable auto-completion |
 | `auto_complete_window` | int64 | 259200 | Auto-complete delay (3d) |
 

@@ -26,7 +26,7 @@ const (
 	ReserveParamspace = "ReserveParams"
 
 	// StablecoinDenom is the denomination of the stablecoin (ssUSD)
-	StablecoinDenom = "ussUSD"
+	StablecoinDenom = "ssusd"
 )
 
 var (
@@ -52,9 +52,9 @@ var (
 	PSMStateKeyPrefix  = []byte{0x21}
 
 	// Savings Rate keys
-	SavingsParamsKey         = []byte{0x30}
-	SavingsDepositKeyPrefix  = []byte{0x31}
-	SavingsStatsKey          = []byte{0x32}
+	SavingsParamsKey        = []byte{0x30}
+	SavingsDepositKeyPrefix = []byte{0x31}
+	SavingsStatsKey         = []byte{0x32}
 
 	// Dutch Auction keys
 	AuctionParamsKey       = []byte{0x40}
@@ -63,9 +63,9 @@ var (
 	ActiveAuctionKeyPrefix = []byte{0x43}
 
 	// Flash Mint keys
-	FlashMintParamsKey       = []byte{0x50}
-	FlashMintStatsKey        = []byte{0x51}
-	FlashMintSessionKey      = []byte{0x52} // Tracks active flash mint sessions within a tx
+	FlashMintParamsKey  = []byte{0x50}
+	FlashMintStatsKey   = []byte{0x51}
+	FlashMintSessionKey = []byte{0x52} // Tracks active flash mint sessions within a tx
 )
 
 func DailyMintStatsKey(date string) []byte {
@@ -182,20 +182,20 @@ const (
 	AttributeKeySwapFee     = "swap_fee"
 
 	// Savings Attributes
-	AttributeKeyPrincipal       = "principal"
-	AttributeKeyInterest        = "interest"
-	AttributeKeySavingsRate     = "savings_rate"
-	AttributeKeyTotalDeposits   = "total_deposits"
+	AttributeKeyPrincipal     = "principal"
+	AttributeKeyInterest      = "interest"
+	AttributeKeySavingsRate   = "savings_rate"
+	AttributeKeyTotalDeposits = "total_deposits"
 
 	// Auction Attributes
-	AttributeKeyAuctionID         = "auction_id"
-	AttributeKeyBidder            = "bidder"
-	AttributeKeyStartPrice        = "start_price"
-	AttributeKeyEndPrice          = "end_price"
-	AttributeKeyCurrentPrice      = "current_price"
-	AttributeKeyCollateralSold    = "collateral_sold"
-	AttributeKeyDebtRaised        = "debt_raised"
-	AttributeKeyDebtToCover       = "debt_to_cover"
+	AttributeKeyAuctionID      = "auction_id"
+	AttributeKeyBidder         = "bidder"
+	AttributeKeyStartPrice     = "start_price"
+	AttributeKeyEndPrice       = "end_price"
+	AttributeKeyCurrentPrice   = "current_price"
+	AttributeKeyCollateralSold = "collateral_sold"
+	AttributeKeyDebtRaised     = "debt_raised"
+	AttributeKeyDebtToCover    = "debt_to_cover"
 
 	// Flash Mint Attributes
 	AttributeKeyFlashMintAmount = "flash_mint_amount"

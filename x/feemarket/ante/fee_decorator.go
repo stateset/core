@@ -113,8 +113,8 @@ func (fmd FeeMarketDecorator) validateFee(ctx sdk.Context, feeCoins sdk.Coins, m
 	feeCoin := feeCoins[0]
 	feeAmount := sdkmath.LegacyNewDecFromInt(feeCoin.Amount)
 
-	// Native Gas Abstraction: Handle ssUSD or other whitelisted stablecoins
-	// Supported fee denoms: ussUSD (ssUSD micro units)
+	// Native Gas Abstraction: Handle ssUSD or other whitelisted stablecoins.
+	// Supported fee denoms: ssusd (legacy: ussUSD)
 	isAllowedDenom := feeCoin.Denom == "ussUSD" || feeCoin.Denom == "ssusd"
 
 	if isAllowedDenom {
@@ -292,10 +292,10 @@ func FeeMarketCheckTxFeeWithMinGasPrices(fmk keeper.Keeper, oracleK OracleKeeper
 					return nil, 0, err
 				}
 			}
-			
+
 			// Convert minFee (native) to ssusd
 			requiredSSUSD := minFee.Mul(nativePrice).Quo(ssusdPrice)
-			
+
 			feeAmount := sdkmath.LegacyNewDecFromInt(feeCoin.Amount)
 			if feeAmount.LT(requiredSSUSD) {
 				return nil, 0, errorsmod.Wrapf(types.ErrInsufficientFee, "insufficient ssusd fee")

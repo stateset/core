@@ -71,15 +71,15 @@ func TestGetSetParams(t *testing.T) {
 
 	// Set custom params
 	customParams := orderstypes.Params{
-		DefaultOrderExpiration:  172800, // 2 days
-		DefaultEscrowExpiration: 1209600, // 14 days
-		DisputeWindow:           2419200, // 28 days
-		MinOrderAmount:          sdk.NewCoin("ussUSD", sdkmath.NewInt(500_000)),
-		MaxOrderAmount:          sdk.NewCoin("ussUSD", sdkmath.NewInt(500_000_000_000)),
-		DefaultFeeRateBps:       150, // 1.5%
-		StablecoinDenom:         "ussUSD",
+		DefaultOrderExpiration:    172800,  // 2 days
+		DefaultEscrowExpiration:   1209600, // 14 days
+		DisputeWindow:             2419200, // 28 days
+		MinOrderAmount:            sdk.NewCoin("ssusd", sdkmath.NewInt(500_000)),
+		MaxOrderAmount:            sdk.NewCoin("ssusd", sdkmath.NewInt(500_000_000_000)),
+		DefaultFeeRateBps:         150, // 1.5%
+		StablecoinDenom:           "ssusd",
 		AutoCompleteAfterDelivery: true,
-		AutoCompleteWindow:      345600, // 4 days
+		AutoCompleteWindow:        345600, // 4 days
 	}
 	err := k.SetParams(ctx, customParams)
 	require.NoError(t, err)
@@ -130,15 +130,15 @@ func TestParamsValidation(t *testing.T) {
 		{
 			name: "valid params",
 			params: orderstypes.Params{
-				DefaultOrderExpiration:  86400,
-				DefaultEscrowExpiration: 604800,
-				DisputeWindow:           1209600,
-				MinOrderAmount:          sdk.NewCoin("ussUSD", sdkmath.NewInt(100_000)),
-				MaxOrderAmount:          sdk.NewCoin("ussUSD", sdkmath.NewInt(1_000_000_000_000)),
-				DefaultFeeRateBps:       100,
-				StablecoinDenom:         "ussUSD",
+				DefaultOrderExpiration:    86400,
+				DefaultEscrowExpiration:   604800,
+				DisputeWindow:             1209600,
+				MinOrderAmount:            sdk.NewCoin("ssusd", sdkmath.NewInt(100_000)),
+				MaxOrderAmount:            sdk.NewCoin("ssusd", sdkmath.NewInt(1_000_000_000_000)),
+				DefaultFeeRateBps:         100,
+				StablecoinDenom:           "ssusd",
 				AutoCompleteAfterDelivery: true,
-				AutoCompleteWindow:      259200,
+				AutoCompleteWindow:        259200,
 			},
 			expectErr: false,
 		},
@@ -148,10 +148,10 @@ func TestParamsValidation(t *testing.T) {
 				DefaultOrderExpiration:  0,
 				DefaultEscrowExpiration: 604800,
 				DisputeWindow:           1209600,
-				MinOrderAmount:          sdk.NewCoin("ussUSD", sdkmath.NewInt(100_000)),
-				MaxOrderAmount:          sdk.NewCoin("ussUSD", sdkmath.NewInt(1_000_000_000_000)),
+				MinOrderAmount:          sdk.NewCoin("ssusd", sdkmath.NewInt(100_000)),
+				MaxOrderAmount:          sdk.NewCoin("ssusd", sdkmath.NewInt(1_000_000_000_000)),
 				DefaultFeeRateBps:       100,
-				StablecoinDenom:         "ussUSD",
+				StablecoinDenom:         "ssusd",
 			},
 			expectErr: true,
 		},
@@ -161,10 +161,10 @@ func TestParamsValidation(t *testing.T) {
 				DefaultOrderExpiration:  86400,
 				DefaultEscrowExpiration: 604800,
 				DisputeWindow:           1209600,
-				MinOrderAmount:          sdk.NewCoin("ussUSD", sdkmath.NewInt(100_000)),
-				MaxOrderAmount:          sdk.NewCoin("ussUSD", sdkmath.NewInt(1_000_000_000_000)),
+				MinOrderAmount:          sdk.NewCoin("ssusd", sdkmath.NewInt(100_000)),
+				MaxOrderAmount:          sdk.NewCoin("ssusd", sdkmath.NewInt(1_000_000_000_000)),
 				DefaultFeeRateBps:       10001, // > 100%
-				StablecoinDenom:         "ussUSD",
+				StablecoinDenom:         "ssusd",
 			},
 			expectErr: true,
 		},
@@ -174,8 +174,8 @@ func TestParamsValidation(t *testing.T) {
 				DefaultOrderExpiration:  86400,
 				DefaultEscrowExpiration: 604800,
 				DisputeWindow:           1209600,
-				MinOrderAmount:          sdk.NewCoin("ussUSD", sdkmath.NewInt(100_000)),
-				MaxOrderAmount:          sdk.NewCoin("ussUSD", sdkmath.NewInt(1_000_000_000_000)),
+				MinOrderAmount:          sdk.NewCoin("ssusd", sdkmath.NewInt(100_000)),
+				MaxOrderAmount:          sdk.NewCoin("ssusd", sdkmath.NewInt(1_000_000_000_000)),
 				DefaultFeeRateBps:       100,
 				StablecoinDenom:         "",
 			},
